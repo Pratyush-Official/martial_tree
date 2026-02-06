@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>martial_tree</name>
+  <version>0.1.0</version>
+  <description>Behavior tree package for robot</description>
+  <maintainer email="you@example.com">alakh</maintainer>
+  <license>MIT</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <depend>rclcpp</depend>
+  <depend>std_msgs</depend>
+  <depend>std_srvs</depend>
+  <depend>nav_msgs</depend>
+  <depend>behaviortree_cpp_v3</depend>
+  <depend>ar_interfaces</depend>
+  <depend>ament_index_cpp</depend>
+  <depend>oakd_roi_detector_interfaces</depend>
+
+
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+
+</package>

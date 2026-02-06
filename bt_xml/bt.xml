@@ -1,0 +1,87 @@
+<root main_tree_to_execute="MainTree">
+    <BehaviorTree ID="MainTree">
+        <Sequence name="root_sequence">
+                        <!-- for delay  -->
+            <!-- <Delay name="startup_delay" delay_msec="1000">
+                <RetryUntilSuccessful num_attempts="-1">
+                    <Sequence name="roi_detection_retry">
+                            <GetROIDetections
+                                    name="get_roi_detections"
+                                    stage="1"
+                                    detections="{stage1_detections}"
+                            />
+                    </Sequence>
+                </RetryUntilSuccessful>
+            </Delay> -->
+
+            <YawSetpoint name="yaw_setpoint" pi = "-3.141592653589793"/>
+            <GoToSpear name="go_to_spear"/>
+            <GoToForest 
+                name="go_to_forest"
+                SP1="6574.0"
+                SP2="6050.0"
+                SP3="0.0"
+                SP4="0.0"/>
+            <YawSetpoint name="yaw_setpoint" pi="0"/>
+
+            <GoToForest 
+                name="go_to_forest_for_climb"
+                SP1="1020.0"
+                SP2="6170.0"
+                SP3="0.0"
+                SP4="0.0"/>
+
+
+                        <!-- <Delay name="startup_delay" delay_msec="10000">
+                            <RetryUntilSuccessful num_attempts="-1">
+                                <Sequence name="roi_detection_retry">
+                                        <GetROIDetections
+                                                name="get_roi_detections"
+                                                stage="2"
+                                                detections="{stage2_detections}"
+                                        />
+                                </Sequence>
+                            </RetryUntilSuccessful>
+                        </Delay> -->
+
+
+            <AkClient name="ak_client" up= "true" down= "false"/>
+            <AkClient name="ak_client" up= "false" down= "true"/>
+                        <!-- <Delay name="startup_delay" delay_msec="10000">
+                            <RetryUntilSuccessful num_attempts="-1">
+                                <Sequence name="roi_detection_retry">
+                                        <GetROIDetections
+                                                name="get_roi_detections"
+                                                stage="3"
+                                                detections="{stage3_detections}"
+                                        />
+                                </Sequence>
+                            </RetryUntilSuccessful>
+                        </Delay>                        
+                        
+                        <Delay name="startup_delay" delay_msec="10000">
+                            <RetryUntilSuccessful num_attempts="-1">
+                                <Sequence name="roi_detection_retry">
+                                        <GetROIDetections
+                                                name="get_roi_detections"
+                                                stage="4"
+                                                detections="{stage4_detections}"
+                                        />
+                                </Sequence>
+                            </RetryUntilSuccessful>
+                        </Delay>
+
+
+                        <FindHiddenScroll
+                            stage1="{stage1_detections}"
+                            stage2="{stage2_detections}"
+                            stage3="{stage3_detections}"
+                            stage4="{stage4_detections}" /> -->
+
+
+            <!-- <OpenGripper name="open_gripper"/>
+            <ApproachObject name="approach_object"/>
+            <CloseGripper name="close_gripper"/> -->
+        </Sequence>
+    </BehaviorTree>
+</root>
