@@ -24,6 +24,8 @@ public:
 private:
 
     bool request_sent;
+    bool service_done_;
+    bool service_success_;
     uint8_t prox_data;
     std_msgs::msg::Byte rear;
 
@@ -31,11 +33,12 @@ private:
     rclcpp::Client<std_srvs::srv::SetBool>::SharedPtr client_up;
     rclcpp::Client<std_srvs::srv::SetBool>::SharedPtr client_down;
     rclcpp::Client<std_srvs::srv::SetBool>::SharedPtr active_client;
-
-    rclcpp::Client<std_srvs::srv::SetBool>::SharedFuture future_;
+    
     rclcpp::Publisher<std_msgs::msg::Byte>::SharedPtr rear_pub;
 
     rclcpp::Subscription<std_msgs::msg::Byte>::SharedPtr prox_sub;
+
+    std::shared_future<std::shared_ptr<std_srvs::srv::SetBool::Response>> future_;
     
     void prox_callback(const std_msgs::msg::Byte::SharedPtr msg);
 };

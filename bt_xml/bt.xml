@@ -14,7 +14,7 @@
                 </RetryUntilSuccessful>
             </Delay> -->
 
-            <YawSetpoint name="yaw_setpoint" pi = "-3.141592653589793"/>
+            <!-- <YawSetpoint name="yaw_setpoint" pi = "-3.141592653589793"/>
             <GoToSpear name="go_to_spear"/>
             <GoToForest 
                 name="go_to_forest"
@@ -22,14 +22,14 @@
                 SP2="6050.0"
                 SP3="0.0"
                 SP4="0.0"/>
-            <YawSetpoint name="yaw_setpoint" pi="0"/>
-
+            <YawSetpoint name="yaw_setpoint" pi="0"/> 
+ 
             <GoToForest 
                 name="go_to_forest_for_climb"
                 SP1="1020.0"
                 SP2="6170.0"
                 SP3="0.0"
-                SP4="0.0"/>
+                SP4="0.0"/> -->
 
 
                         <!-- <Delay name="startup_delay" delay_msec="10000">
@@ -46,7 +46,7 @@
 
 
             <AkClient name="ak_client" up= "true" down= "false"/>
-            <AkClient name="ak_client" up= "false" down= "true"/>
+            <!-- <AkClient name="ak_client" up= "false" down= "true"/> -->
                         <!-- <Delay name="startup_delay" delay_msec="10000">
                             <RetryUntilSuccessful num_attempts="-1">
                                 <Sequence name="roi_detection_retry">
