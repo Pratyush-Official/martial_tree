@@ -6,6 +6,7 @@
 #include <map>
 
 #include "get_roi_detections.hpp" 
+#include "qos_profiles.hpp"
 
 class FindHiddenScroll : public BT::SyncActionNode
 {

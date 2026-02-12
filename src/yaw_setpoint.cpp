@@ -5,9 +5,8 @@ YawSetpoint::YawSetpoint(const std::string& name, const BT::NodeConfiguration& c
 
             rclcpp::QoS qos_profile(10);
             bno_sub = node_->create_subscription<std_msgs::msg::Float32>("/imu_data", 10, std::bind(&YawSetpoint::yaw_callback, this, std::placeholders::_1));
-            setpoint_pub = node_->create_publisher<std_msgs::msg::Float32MultiArray>("setpoint_yaw", 10);
+            setpoint_pub = node_->create_publisher<std_msgs::msg::Float32MultiArray>("setpoint_yaw",10);
             //slider_sub = node_->create_subscription<std_msgs::msg::Float32MultiArray>("/pid_gains", 10, std::bind(&YawSetpoint::slider_callback, this, std::placeholders::_1));
-
         }
 
 BT::PortsList YawSetpoint::providedPorts() 
@@ -31,7 +30,7 @@ BT::NodeStatus YawSetpoint::onStart(){
     turn_ = wrapAngle(turn_);
     first_time_i = 1;
 
-    printf("Turn Setpoint: %.2f\n", turn_);
+    // printf("Turn Setpoint: %.2f\n", turn_);
 
     // setpoint_.data.clear();
     // setpoint_.data.push_back(turn_);
@@ -68,7 +67,7 @@ BT::NodeStatus YawSetpoint::onRunning(){
                  std::chrono::steady_clock::now().time_since_epoch())
                  .count();
     
-    printf("Turn Setpoint on running: %.2f\n", turn_);
+    // printf("Turn Setpoint on running: %.2f\n", turn_);
 
     // if(fabs(yaw - slider_data_[4]) < 20.0f){
     //     SET_YAW_BYTE = 0x00; // stop sending setpoints  
@@ -103,7 +102,7 @@ void YawSetpoint::onHalted(){
 
 void YawSetpoint::yaw_callback(const std_msgs::msg::Float32::SharedPtr msg) {
             imu_data = wrapAngle(msg->data);
-            printf("Current Yaw: %.2f\n", imu_data);
+            // printf("Current Yaw: %.2f\n", imu_data);
 }
 
 void YawSetpoint::slider_callback(const std_msgs::msg::Float32MultiArray::SharedPtr msg) {

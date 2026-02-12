@@ -8,6 +8,8 @@
 #include "behaviortree_cpp_v3/action_node.h"
 #include "std_srvs/srv/set_bool.hpp"
 #include "std_msgs/msg/byte.hpp"
+#include "qos_profiles.hpp"
+#include "geometry_msgs/msg/twist.hpp"
 
 class AkClient : public BT::StatefulActionNode
 {
@@ -23,24 +25,48 @@ public:
 
 private:
 
+    enum class Movement{     
+        UP,
+        DOWN,
+        IDLE
+    };
+
+    enum class Actuation{
+        IDLE,
+        C_DOWN,
+        C_UP,
+
+    };
+
+    Movement movement_state;
+    Actuation actuation_state;
+    
     bool request_sent;
-    bool service_done_;
+    bool rear_status_forward; 
+    bool rear_status_reverse;
+    bool ran;
     bool service_success_;
+    bool service_done_;
+    
     uint8_t prox_data;
     std_msgs::msg::Byte rear;
 
     rclcpp::Node::SharedPtr node_;
-    rclcpp::Client<std_srvs::srv::SetBool>::SharedPtr client_up;
-    rclcpp::Client<std_srvs::srv::SetBool>::SharedPtr client_down;
+    rclcpp::Client<std_srvs::srv::SetBool>::SharedPtr client_c_up;
+    rclcpp::Client<std_srvs::srv::SetBool>::SharedPtr client_c_down;
     rclcpp::Client<std_srvs::srv::SetBool>::SharedPtr active_client;
-    
+    rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr cmd_pub_; 
     rclcpp::Publisher<std_msgs::msg::Byte>::SharedPtr rear_pub;
-
     rclcpp::Subscription<std_msgs::msg::Byte>::SharedPtr prox_sub;
+
+    geometry_msgs::msg::Twist cmd;
 
     std::shared_future<std::shared_ptr<std_srvs::srv::SetBool::Response>> future_;
     
     void prox_callback(const std_msgs::msg::Byte::SharedPtr msg);
+
+    void reset();
+    
 };
 
 #endif

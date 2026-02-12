@@ -7,6 +7,7 @@
 #include "behaviortree_cpp_v3/action_node.h"
 #include "rclcpp/rclcpp.hpp"
 #include "oakd_roi_detector_interfaces/srv/get_detections.hpp"
+#include "qos_profiles.hpp"
 
 struct StageDetections
 {

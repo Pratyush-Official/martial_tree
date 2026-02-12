@@ -5,6 +5,7 @@
 #include <memory>
 
 #include "rclcpp/rclcpp.hpp"
+#include "qos_profiles.hpp"
 #include "behaviortree_cpp_v3/bt_factory.h"
 #include "behaviortree_cpp_v3/action_node.h"
 #include "nav_msgs/msg/odometry.hpp"

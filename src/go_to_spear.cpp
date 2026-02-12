@@ -1,23 +1,12 @@
 #include "go_to_spear.hpp"
+#include "qos_profiles.hpp"
  
 using namespace std::placeholders;
 GoToSpear::GoToSpear(const std::string &name, const BT::NodeConfiguration &config, rclcpp::Node::SharedPtr node) : 
     BT::StatefulActionNode(name, config), node_(node)
 {
 
-        rclcpp::QoS qos_profile(10);
-        qos_profile.reliability(RMW_QOS_POLICY_RELIABILITY_RELIABLE); 
-
         client_ptr_spear = rclcpp_action::create_client<ar_interfaces::action::Movement>(node, "/movement_pid"); //movement_pid is the service name
-        // sick_subscriber = node_->create_subscription<std_msgs::msg::Float32MultiArray>(
-        //     "/sick_data", qos_profile,
-        //     std::bind(&GoToSpear::sickCallback, node_, std::placeholders::_1));
-
-
-
-        // odom_subscriber = node_->create_subscription<nav_msgs::msg::Odometry>(
-        //     "/odom_data", qos_profile,
-        //     std::bind(&GoToSpear::odometry_callback, node_, std::placeholders::_1));
 
         RCLCPP_INFO(node_->get_logger(),"Go to Spear_Front initialized");
         done_flag = false;

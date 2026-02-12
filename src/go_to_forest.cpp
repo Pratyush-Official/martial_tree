@@ -9,15 +9,6 @@ GoToForest::GoToForest(const std::string &name, const BT::NodeConfiguration &con
         qos_profile.reliability(RMW_QOS_POLICY_RELIABILITY_RELIABLE); 
 
         client_ptr_forest = rclcpp_action::create_client<ar_interfaces::action::Movement>(node, "/movement_pid"); //movement_pid is the service name
-        sick_subscriber = node_->create_subscription<std_msgs::msg::Float32MultiArray>(
-            "/sick_data", qos_profile,
-            std::bind(&GoToForest::sickCallback, this, std::placeholders::_1));
-
-
-
-        odom_subscriber = node_->create_subscription<nav_msgs::msg::Odometry>(
-            "/odom_data", qos_profile,
-            std::bind(&GoToForest::odometry_callback, this, std::placeholders::_1));
 
         RCLCPP_INFO(node_->get_logger(),"Go to Forest_Front initialized");
         done_flag = false;

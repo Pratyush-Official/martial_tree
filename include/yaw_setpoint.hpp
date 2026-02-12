@@ -14,6 +14,7 @@
 #include "std_msgs/msg/u_int16_multi_array.hpp"
 #include "std_msgs/msg/float32_multi_array.hpp"
 #include "std_msgs/msg/float32.hpp"
+#include "qos_profiles.hpp"
 #include <cmath> 
 
 #include "ament_index_cpp/get_package_share_directory.hpp"
