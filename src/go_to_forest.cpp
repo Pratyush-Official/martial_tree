@@ -8,7 +8,7 @@ GoToForest::GoToForest(const std::string &name, const BT::NodeConfiguration &con
         rclcpp::QoS qos_profile(10);
         qos_profile.reliability(RMW_QOS_POLICY_RELIABILITY_RELIABLE); 
 
-        client_ptr_forest = rclcpp_action::create_client<ar_interfaces::action::Movement>(node, "/movement_pid"); //movement_pid is the service name
+        client_ptr_forest = rclcpp_action::create_client<ar_interfaces::action::Movement>(node, "/movement_sick"); //movement_pid is the service name
 
         RCLCPP_INFO(node_->get_logger(),"Go to Forest_Front initialized");
         done_flag = false;

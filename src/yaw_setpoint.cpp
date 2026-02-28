@@ -82,7 +82,7 @@ BT::NodeStatus YawSetpoint::onRunning(){
     // setpoint_.data.push_back(SET_YAW_BYTE); 
     // setpoint_pub->publish(setpoint_);
 
-    if(fabs(turn_ - imu_data) < 1.5f && (current_time - start_time) > 200){ 
+    if(fabs(turn_ - imu_data) < 0.017f && (current_time - start_time) > 200){ 
         setpoint_.data.clear();
         setpoint_.data.push_back(turn_);
         setpoint_.data.push_back(RESET_YAW_BYTE); 

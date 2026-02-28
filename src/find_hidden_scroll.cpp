@@ -13,7 +13,6 @@ BT::PortsList FindHiddenScroll::providedPorts()
     BT::InputPort<StageDetections>("stage2"),
     BT::InputPort<StageDetections>("stage3"),
     BT::InputPort<StageDetections>("stage4"),
-
     // we overwrite stage4
     BT::OutputPort<StageDetections>("stage4")
   };

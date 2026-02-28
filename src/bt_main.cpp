@@ -1,11 +1,5 @@
 #include "bt_main.hpp"
-#include "go_to_spear.hpp"
-#include "ak_client.hpp"
-#include "get_roi_detections.hpp"  
-#include "find_hidden_scroll.hpp"
-#include <ament_index_cpp/get_package_share_directory.hpp>
-#include <fstream>
-#include <chrono>
+
 
 using namespace std::chrono_literals;
 
@@ -18,9 +12,12 @@ tree_ticker::tree_ticker(const std::string &node_name)
 void tree_ticker::setup()
 {
     create_behavior_tree();
+    timer_group = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
+
     timer_ = create_wall_timer(
         10ms,
-        std::bind(&tree_ticker::update_behavior_tree, this)
+        std::bind(&tree_ticker::update_behavior_tree, this),
+        timer_group
     );
 }
 
@@ -41,56 +38,67 @@ void tree_ticker::create_behavior_tree()
 
 void tree_ticker::register_custom_action_nodes()
 {
+    auto shared_self = std::static_pointer_cast<tree_ticker>(this->shared_from_this());
     factory.registerBuilder<GoToSpear>(
         "GoToSpear",
-        [self = shared_from_this()]
+        [shared_self]
         (const std::string &name, const BT::NodeConfiguration &config)
         {
-            return std::make_unique<GoToSpear>(name, config, self);
+            return std::make_unique<GoToSpear>(name, config, shared_self);
         }
     );
 
     factory.registerBuilder<GoToForest>(
         "GoToForest",
-        [self = shared_from_this()]
+        [shared_self]
         (const std::string &name, const BT::NodeConfiguration &config)
         {
-            return std::make_unique<GoToForest>(name, config, self);
+            return std::make_unique<GoToForest>(name, config, shared_self);
         }
     );
 
     factory.registerBuilder<AkClient>(
         "AkClient",
-        [self = shared_from_this()]
+        [shared_self]
         (const std::string &name, const BT::NodeConfiguration &config)
         {
-            return std::make_unique<AkClient>(name, config, self);
+            return std::make_unique<AkClient>(name, config, shared_self);
         }
     );
 
     factory.registerBuilder<YawSetpoint>(
         "YawSetpoint",
-        [self = shared_from_this()]
+        [shared_self]
         (const std::string &name, const BT::NodeConfiguration &config)
         {
-            return std::make_unique<YawSetpoint>(name, config, self);
+            return std::make_unique<YawSetpoint>(name, config, shared_self);
         }
     );
 
     factory.registerBuilder<GetROIDetections>(
         "GetROIDetections",
-        [self = shared_from_this()]
+        [shared_self]
         (const std::string &name, const BT::NodeConfiguration &config)
         {
-            return std::make_unique<GetROIDetections>(name, config, self);
+            return std::make_unique<GetROIDetections>(name, config, shared_self);
         }
     );
 
     factory.registerBuilder<FindHiddenScroll>(
         "FindHiddenScroll",
-        [](const std::string &name, const BT::NodeConfiguration &config)
+        [](const std::string &name, const BT::NodeConfiguration &config) 
         {
+            // Call the constructor with only 2 arguments
             return std::make_unique<FindHiddenScroll>(name, config);
+        }
+    );
+
+    factory.registerBuilder<OdomClient>(
+        "OdomClient",
+        [shared_self]
+        (const std::string &name, const BT::NodeConfiguration &config)
+        {
+            return std::make_unique<OdomClient>(name, config, shared_self);
         }
     );
 
@@ -115,8 +123,13 @@ int main(int argc, char **argv)
 {
     rclcpp::init(argc, argv);
     auto node = std::make_shared<tree_ticker>("tree_ticker");
+    
+    rclcpp::executors::MultiThreadedExecutor executor;
+    executor.add_node(node);
+    
     node->setup();
-    rclcpp::spin(node);
+    executor.spin(); 
+    
     rclcpp::shutdown();
     return 0;
 }

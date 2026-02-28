@@ -14,6 +14,12 @@ struct StageDetections
   std::string roi1;
   std::string roi2;
   std::string roi3;
+  std::string roi1_martial;
+  std::string roi2_martial;
+  std::string roi3_martial;
+  std::string roi4_martial;
+  std::string roi5_martial;
+  std::string roi6_martial;
   std::string status;
 };
 

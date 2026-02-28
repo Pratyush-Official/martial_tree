@@ -6,8 +6,9 @@ GoToSpear::GoToSpear(const std::string &name, const BT::NodeConfiguration &confi
     BT::StatefulActionNode(name, config), node_(node)
 {
 
-        client_ptr_spear = rclcpp_action::create_client<ar_interfaces::action::Movement>(node, "/movement_pid"); //movement_pid is the service name
+        client_ptr_spear = rclcpp_action::create_client<ar_interfaces::action::Movement>(node, "/movement_sick"); //movement_pid is the service name
 
+        cmd_pub_ = node_->create_publisher<geometry_msgs::msg::Twist>("/cmd_vel", cmd_vel_qos());
         RCLCPP_INFO(node_->get_logger(),"Go to Spear_Front initialized");
         done_flag = false;
 }
@@ -21,6 +22,7 @@ BT::NodeStatus GoToSpear::onStart()
 {
     done_flag = false;
     success = false;
+    goal_handle = nullptr;
     auto goal_options = rclcpp_action::Client<ar_interfaces::action::Movement>::SendGoalOptions();
     goal_options.goal_response_callback = std::bind(&GoToSpear::goal_response_callback, this, _1); //When server sends a response to a goal request, run node_ callback
     goal_options.feedback_callback = std::bind(&GoToSpear::feedback_callback, this, _1, _2);
@@ -53,46 +55,28 @@ BT::NodeStatus GoToSpear::onRunning()
                  std::chrono::steady_clock::now().time_since_epoch())
                  .count();
 
-    // if ( now - start_time >= 3000)
-    //     {
-    //      if( fabs(prev_x - odom_msg.pose.pose.position.x) < 0.01 && fabs((prev_y - odom_msg.pose.pose.position.y)) < 0.01)
-    //      {
-    //          cancel_goal();
-    //          done_flag = true;
-    //          is_on_line = false;
-    //          RCLCPP_INFO(node_->get_logger(), " RecoveryNode::Robot static.. cancel goal ");
-    //          return BT::NodeStatus::SUCCESS;
-    //      }
-    //      else
-    //      {
-    //          start_time = get_tick_ms();
-    //      }
-    //      prev_x = odom_msg.pose.pose.position.x;
-    //      prev_y = odom_msg.pose.pose.position.y;
-     
-    //  if ( fabs(odom_msg.pose.pose.position.y) >= 2.70 && fabs(odom_msg.pose.pose.position.x -  goal_msg.pose.pose.position.x) < 0.3 )
-    //  {
-    //      if (is_on_line)
-    //      {
-    //          cancel_goal();
+    if (done_flag){
 
-    //         done_flag = true;
-    //         is_on_line = false;
-    //         x_horiz_line_detected = false;
+        if(success)
+        {
+            RCLCPP_INFO(node_->get_logger(), "Success Sent");
+            cmd.linear.x = 0.0f; 
+            cmd.linear.y = 0.0f;
+            cmd_pub_->publish(cmd);
 
-    //      }
-    // }
-    if (this->done_flag && this->success)
-    {
-        return BT::NodeStatus::SUCCESS; 
-        RCLCPP_INFO(node_->get_logger(), "Success Sent");
-    }
+            return BT::NodeStatus::SUCCESS; 
+        }
     
-    if (this->done_flag && !this->success)
-    {
-        return BT::NodeStatus::FAILURE;
-    }
+        if (!success)
+        {
+            RCLCPP_INFO(node_->get_logger(), "Failure Sent");
 
+            cmd.linear.x = 0.0f; 
+            cmd.linear.y = 0.0f;
+            cmd_pub_->publish(cmd);
+            return BT::NodeStatus::FAILURE;
+        }
+    }
     return BT::NodeStatus::RUNNING;
 }
 
@@ -103,10 +87,19 @@ void GoToSpear::onHalted()
 
 void GoToSpear::cancel_goal()
 {
-    if (goal_handle)
-    {
-        client_ptr_spear->async_cancel_goal(goal_handle);
-        RCLCPP_INFO(node_->get_logger(), "GoToSpear::Goal canceled");
+    if (goal_handle) {
+        // Check if the goal is still active before canceling
+        auto status = goal_handle->get_status();
+        if (status == action_msgs::msg::GoalStatus::STATUS_ACCEPTED || 
+            status == action_msgs::msg::GoalStatus::STATUS_EXECUTING) 
+        {
+            cmd.linear.x = 0.0f; 
+            cmd.linear.y = 0.0f;
+            cmd_pub_->publish(cmd);
+            
+            client_ptr_spear->async_cancel_goal(goal_handle);
+            RCLCPP_INFO(node_->get_logger(), "GoToSpear::Goal canceled");
+        }
     }
 }
 
@@ -117,8 +110,8 @@ void GoToSpear::goal_response_callback(const GoalHandleMovement::SharedPtr &goal
     {
         RCLCPP_ERROR(node_->get_logger(),
                      "GoToSpear::Goal rejected by server");
-        this->done_flag = true;
-        this->success = false;
+        done_flag = true;
+        success = false;
     }
     else
     {
@@ -146,15 +139,23 @@ void GoToSpear::result_callback(const GoalHandleMovement::WrappedResult &result)
     {
         RCLCPP_INFO(node_->get_logger(),
                     "GoToSpear::Goal succeeded");
-        this->success = true;
+
+        cmd.linear.x = 0.0f; 
+        cmd.linear.y = 0.0f;
+        cmd_pub_->publish(cmd); 
+        success = true;
     }
     else
     {
         RCLCPP_WARN(node_->get_logger(),
                     "GoToSpear::Goal failed or canceled");
-        this->success = false;
+
+        cmd.linear.x = 0.0f; 
+        cmd.linear.y = 0.0f;
+        cmd_pub_->publish(cmd);
+        success = false;
     }
-    this->done_flag = true;
+    done_flag = true;
 }
 
 void GoToSpear::feedback_callback(

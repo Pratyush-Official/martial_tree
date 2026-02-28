@@ -18,6 +18,7 @@ find_package(std_srvs REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(ament_index_cpp REQUIRED)
 find_package(oakd_roi_detector_interfaces REQUIRED)
+find_package(geometry_msgs REQUIRED)
 
 set(BEHAVIOUR_SOURCES
   src/go_to_spear.cpp
@@ -27,6 +28,9 @@ set(BEHAVIOUR_SOURCES
   src/bt_main.cpp
   src/get_roi_detections.cpp
   src/find_hidden_scroll.cpp
+  src/odom_client.cpp
+
+  include/robotlibpc/cpp/controller/pid.cpp
 )
 
 add_executable(tree_ticker ${BEHAVIOUR_SOURCES})
@@ -44,6 +48,7 @@ ament_target_dependencies(tree_ticker
   std_srvs
   ar_interfaces
   oakd_roi_detector_interfaces
+  geometry_msgs
 )
 
 target_link_libraries(tree_ticker

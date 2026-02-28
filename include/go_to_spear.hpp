@@ -29,8 +29,8 @@ public:
     BT::NodeStatus onStart() override;
     BT::NodeStatus onRunning() override;
     void onHalted() override;
-    bool done_flag{false};
-    bool success{false};
+    std::atomic<bool> done_flag{false};
+    std::atomic<bool> success{false};
     uint32_t start_time;
 
     using GoalHandleMovement = rclcpp_action::ClientGoalHandle<ar_interfaces::action::Movement>;
@@ -49,12 +49,13 @@ private:
     rclcpp::Subscription<std_msgs::msg::Float32MultiArray>::SharedPtr sick_subscriber;
     rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_subscriber;
     rclcpp_action::Client<ar_interfaces::action::Movement>::SharedPtr client_ptr_spear;
+    rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr cmd_pub_;
 
     ar_interfaces::action::Movement::Goal goal_msg;
     nav_msgs::msg::Odometry odom_msg;
+    geometry_msgs::msg::Twist cmd;
 
-    rclcpp_action::ClientGoalHandle<ar_interfaces::action::Movement>::SharedPtr goal_handle;
-    std::vector<float> sick_data;
+    rclcpp_action::ClientGoalHandle<ar_interfaces::action::Movement>::SharedPtr goal_handle = nullptr;
 };
 
 #endif

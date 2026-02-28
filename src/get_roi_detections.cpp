@@ -93,17 +93,33 @@ BT::NodeStatus GetROIDetections::onRunning()
       detections.roi1   = res->roi1_class;
       detections.roi2   = res->roi2_class;
       detections.roi3   = res->roi3_class;
+      detections.roi1_martial = res->roi1_martial;
+      detections.roi2_martial = res->roi2_martial;
+      detections.roi3_martial = res->roi3_martial;
+      detections.roi3_martial = res->roi4_martial;
+      detections.roi3_martial = res->roi5_martial;
+      detections.roi3_martial = res->roi6_martial;
       detections.status = res->status;
 
       setOutput("detections", detections);
 
       RCLCPP_INFO(
         node_->get_logger(),
-        "BT Tick [stage %d]: roi1='%s', roi2='%s', roi3='%s', status='%s'",
+        "BT Tick [stage %d]: "
+        "roi1='%s', roi2='%s', roi3='%s', "
+        "roi1_martial='%s', roi2_martial='%s', roi3_martial='%s', "
+        "roi4_martial='%s', roi5_martial='%s', roi6_martial='%s', "
+        "status='%s'",
         stage_,
         detections.roi1.c_str(),
         detections.roi2.c_str(),
         detections.roi3.c_str(),
+        detections.roi1_martial.c_str(),
+        detections.roi2_martial.c_str(),
+        detections.roi3_martial.c_str(),
+        detections.roi4_martial.c_str(),
+        detections.roi5_martial.c_str(),
+        detections.roi6_martial.c_str(),
         detections.status.c_str());
 
       if (res->success)

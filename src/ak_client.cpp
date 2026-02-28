@@ -76,13 +76,13 @@ BT::NodeStatus AkClient::onRunning()
     {
         // Only trigger if we are in the starting state (0x09)
         if(!ran && actuation_state == Actuation::C_DOWN && movement_state == Movement::UP){ //If ak-60 hasnt been actuated, give +ve x vel
-            cmd.linear.x = 0.2f;
+            cmd.linear.x = 0.3f;
             cmd.linear.y = 0.0f;
             cmd_pub_->publish(cmd);
         }
 
         else if(!ran && actuation_state == Actuation::C_DOWN && movement_state == Movement::DOWN){ //If ak-60 hasnt been actuated, give -ve x vel
-            cmd.linear.x = -0.2f;
+            cmd.linear.x = -0.3f;
             cmd.linear.y = 0.0f;
             cmd_pub_->publish(cmd);
         }
@@ -91,17 +91,25 @@ BT::NodeStatus AkClient::onRunning()
         if(actuation_state == Actuation::C_DOWN) {
             if(prox_data == 0x09 && movement_state == Movement::UP) {
                 active_client = client_c_down;
-                
+
+                cmd.linear.x = 0.0f;
+                cmd.linear.y = 0.0f;
+                cmd_pub_->publish(cmd);
             }
 
             else if(prox_data == 0x00 && movement_state == Movement::DOWN) {
                 active_client = client_c_down;
+
+                cmd.linear.x = 0.0f;
+                cmd.linear.y = 0.0f;
+                cmd_pub_->publish(cmd);
             }
         }
 
         else if(actuation_state == Actuation::C_UP) {
             if((prox_data == 0x01 || prox_data == 0x00) && movement_state == Movement::DOWN) {
                 active_client = client_c_up;
+
                 cmd.linear.x = 0.0f;
                 cmd.linear.y = 0.0f;
                 cmd_pub_->publish(cmd);
@@ -109,6 +117,10 @@ BT::NodeStatus AkClient::onRunning()
 
             else if(prox_data == 0x09 && movement_state == Movement::UP) {
                 active_client = client_c_up;
+
+                cmd.linear.x = 0.0f;
+                cmd.linear.y = 0.0f;
+                cmd_pub_->publish(cmd);
             }
         }
     
