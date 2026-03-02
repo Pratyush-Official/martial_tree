@@ -1,12 +1,12 @@
-#include "go_to_spear.hpp"
-#include "go_to_forest.hpp"
+
+#include "sick_pid_client.hpp"
 #include "yaw_setpoint.hpp"
 
 #include "qos_profiles.hpp"
 #include "ak_client.hpp"
 #include "get_roi_detections.hpp"  
 #include "find_hidden_scroll.hpp"
-#include "odom_client.hpp"
+#include "odom_pid_client.hpp"
 
 #include <ament_index_cpp/get_package_share_directory.hpp>
 #include <fstream>

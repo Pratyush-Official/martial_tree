@@ -16,7 +16,7 @@
                                                                                                                    
             <!-- <YawSetpoint name="yaw_setpoint" pi = "-3.141592653589793"/> -->
             <GoToSpear name="go_to_spear"/>
-            <GoToForest 
+            <SickPIDClient 
                 name="go_to_forest"
                 SP1="6574.0"
                 SP2="6050.0"
@@ -24,7 +24,7 @@
                 SP4="0.0"/>
             
             <GoToSpear name="go_to_spear"/>
-            <GoToForest 
+            <SickPIDClient 
                 name="go_to_forest"
                 SP1="6574.0"
                 SP2="6050.0"
@@ -32,7 +32,7 @@
                 SP4="0.0"/>
 
             <GoToSpear name="go_to_spear"/>
-            <GoToForest 
+            <SickPIDClient 
                 name="go_to_forest"
                 SP1="6574.0"
                 SP2="6050.0"
@@ -40,7 +40,7 @@
                 SP4="0.0"/>
             
             <GoToSpear name="go_to_spear"/>
-            <GoToForest 
+            <SickPIDClient 
                 name="go_to_forest"
                 SP1="6574.0"
                 SP2="6050.0"
@@ -48,7 +48,7 @@
                 SP4="0.0"/>
 
             <GoToSpear name="go_to_spear"/>
-            <GoToForest 
+            <SickPIDClient 
                 name="go_to_forest"
                 SP1="6574.0"
                 SP2="6050.0"
@@ -56,7 +56,7 @@
                 SP4="0.0"/>
             
             <GoToSpear name="go_to_spear"/>
-            <GoToForest 
+            <SickPIDClient 
                 name="go_to_forest"
                 SP1="6574.0"
                 SP2="6050.0"
@@ -64,7 +64,7 @@
                 SP4="0.0"/>
             
             <!-- <YawSetpoint name="yaw_setpoint" pi="0"/> 
-            <GoToForest 
+            <SickPIDClient 
                 name="go_to_forest_for_climb"
                 SP1="1100.0"
                 SP2="6170.0"
@@ -78,7 +78,7 @@
                                 <Sequence name="roi_detection_retry">
                                         <GetROIDetections
                                                 name="get_roi_detections"
-                                                stage="2"
+                                                stage="5"
                                                 detections="{stage2_detections}"
                                         />
                                 </Sequence>

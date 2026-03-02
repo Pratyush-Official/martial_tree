@@ -2,7 +2,7 @@
 // #include "qos_profiles.hpp"
  
 // using namespace std::placeholders;
-// OdomClient::OdomClient(const std::string &name, const BT::NodeConfiguration &config, rclcpp::Node::SharedPtr node) : 
+// OdomPIDClient::OdomPIDClient(const std::string &name, const BT::NodeConfiguration &config, rclcpp::Node::SharedPtr node) : 
 //     BT::StatefulActionNode(name, config), node_(node)
 // {
 
@@ -12,19 +12,19 @@
 //         done_flag = false;
 // }
 
-// BT::PortsList OdomClient::providedPorts()
+// BT::PortsList OdomPIDClient::providedPorts()
 // {
 //     return {};
 // }
 
-// BT::NodeStatus OdomClient::onStart()
+// BT::NodeStatus OdomPIDClient::onStart()
 // {
 //     done_flag = false;
 //     success = false;
 //     auto goal_options = rclcpp_action::Client<ar_interfaces::action::Movement>::SendGoalOptions();
-//     goal_options.goal_response_callback = std::bind(&OdomClient::goal_response_callback, this, _1); //When server sends a response to a goal request, run node_ callback
-//     goal_options.feedback_callback = std::bind(&OdomClient::feedback_callback, this, _1, _2);
-//     goal_options.result_callback = std::bind(&OdomClient::result_callback, this, _1);
+//     goal_options.goal_response_callback = std::bind(&OdomPIDClient::goal_response_callback, this, _1); //When server sends a response to a goal request, run node_ callback
+//     goal_options.feedback_callback = std::bind(&OdomPIDClient::feedback_callback, this, _1, _2);
+//     goal_options.result_callback = std::bind(&OdomPIDClient::result_callback, this, _1);
 
 //     goal_msg.setpoint_odom = std::vector<float>{2.0f, 0.0f, 0.0f, 0.0f};
 //     goal_msg.tolerance_odom = 0.0;
@@ -47,7 +47,7 @@
 //     return BT::NodeStatus::RUNNING;
 // }
 
-// BT::NodeStatus OdomClient::onRunning()
+// BT::NodeStatus OdomPIDClient::onRunning()
 //     {
 //     uint32_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
 //                  std::chrono::steady_clock::now().time_since_epoch())
@@ -96,79 +96,79 @@
 //     return BT::NodeStatus::RUNNING;
 // }
 
-// void OdomClient::onHalted()
+// void OdomPIDClient::onHalted()
 // {
 //     cancel_goal();  
 // }
 
-// void OdomClient::cancel_goal()
+// void OdomPIDClient::cancel_goal()
 // {
 //     if (goal_handle)
 //     {
 //         client_ptr_spear->async_cancel_goal(goal_handle);
-//         RCLCPP_INFO(node_->get_logger(), "OdomClient::Goal canceled");
+//         RCLCPP_INFO(node_->get_logger(), "OdomPIDClient::Goal canceled");
 //     }
 // }
 
-// void OdomClient::goal_response_callback(const GoalHandleMovement::SharedPtr &goal_handle_)
+// void OdomPIDClient::goal_response_callback(const GoalHandleMovement::SharedPtr &goal_handle_)
 // {
 
 //     if (!goal_handle_)
 //     {
 //         RCLCPP_ERROR(node_->get_logger(),
-//                      "OdomClient::Goal rejected by server");
+//                      "OdomPIDClient::Goal rejected by server");
 //         this->done_flag = true;
 //         this->success = false;
 //     }
 //     else
 //     {
 //         RCLCPP_INFO(node_->get_logger(),
-//                     "OdomClient::Goal accepted");
+//                     "OdomPIDClient::Goal accepted");
 //         goal_handle = goal_handle_;
 //     }
 //     // if (!goal_handle_)
 //     // {
-//     //     RCLCPP_ERROR(node_->get_logger(), "OdomClient::Navigate to spear %i goal rejected by server", node_->silo_numbers.data[0]);
+//     //     RCLCPP_ERROR(node_->get_logger(), "OdomPIDClient::Navigate to spear %i goal rejected by server", node_->silo_numbers.data[0]);
 //     //     setOutput<uint8_t>("Op_SiloNumber", 0);
 //     // }
 //     // else
 //     // {
-//     //     RCLCPP_INFO(node_->get_logger(), "OdomClient::Navigating to spear %i ", node_->silo_numbers.data[0]);
+//     //     RCLCPP_INFO(node_->get_logger(), "OdomPIDClient::Navigating to spear %i ", node_->silo_numbers.data[0]);
 //     //     node_->goal_handle = goal_handle_;
 
 //     // }
 
 // }
 
-// void OdomClient::result_callback(const GoalHandleMovement::WrappedResult &result)
+// void OdomPIDClient::result_callback(const GoalHandleMovement::WrappedResult &result)
 // {
 //     if (result.code == rclcpp_action::ResultCode::SUCCEEDED)
 //     {
 //         RCLCPP_INFO(node_->get_logger(),
-//                     "OdomClient::Goal succeeded");
+//                     "OdomPIDClient::Goal succeeded");
 //         this->success = true;
 //     }
 //     else
 //     {
 //         RCLCPP_WARN(node_->get_logger(),
-//                     "OdomClient::Goal failed or canceled");
+//                     "OdomPIDClient::Goal failed or canceled");
 //         this->success = false;
 //     }
 //     this->done_flag = true;
 // }
 
-// void OdomClient::feedback_callback(
+// void OdomPIDClient::feedback_callback(
 //     GoalHandleMovement::SharedPtr,
 //     const std::shared_ptr<const ar_interfaces::action::Movement::Feedback> feedback)
 // {
 //     (void)feedback;
 
 // }
-#include "odom_client.hpp"
+#include "odom_pid_client.hpp"
 
 using namespace std::placeholders;
 
-OdomClient::OdomClient(
+OdomPIDClient::OdomPIDClient(
     const std::string &name,
     const BT::NodeConfiguration &config,
     rclcpp::Node::SharedPtr node)
@@ -178,10 +178,10 @@ OdomClient::OdomClient(
     odom_client_ =
         rclcpp_action::create_client<Movement>(node_, "/movement_odom");
 
-    RCLCPP_INFO(node_->get_logger(), "OdomClient initialized");
+    RCLCPP_INFO(node_->get_logger(), "OdomPIDClient initialized");
 }
 
-BT::PortsList OdomClient::providedPorts()
+BT::PortsList OdomPIDClient::providedPorts()
 {
     return {
         BT::InputPort<std::vector<float>>("setpoint_odom"),
@@ -190,7 +190,7 @@ BT::PortsList OdomClient::providedPorts()
     };
 }
 
-BT::NodeStatus OdomClient::onStart()
+BT::NodeStatus OdomPIDClient::onStart()
 {
     done_ = false;
     success_ = false;
@@ -210,19 +210,19 @@ BT::NodeStatus OdomClient::onStart()
 
     rclcpp_action::Client<Movement>::SendGoalOptions options;
     options.goal_response_callback =
-        std::bind(&OdomClient::goal_response_callback, this, _1);
+        std::bind(&OdomPIDClient::goal_response_callback, this, _1);
     options.feedback_callback =
-        std::bind(&OdomClient::feedback_callback, this, _1, _2);
+        std::bind(&OdomPIDClient::feedback_callback, this, _1, _2);
     options.result_callback =
-        std::bind(&OdomClient::result_callback, this, _1);
+        std::bind(&OdomPIDClient::result_callback, this, _1);
 
     odom_client_->async_send_goal(goal_msg_, options);
 
-    RCLCPP_INFO(node_->get_logger(), "OdomClient goal sent");
+    RCLCPP_INFO(node_->get_logger(), "OdomPIDClient goal sent");
     return BT::NodeStatus::RUNNING;
 }
 
-BT::NodeStatus OdomClient::onRunning()
+BT::NodeStatus OdomPIDClient::onRunning()
 {
     if (!done_) {
         return BT::NodeStatus::RUNNING;
@@ -233,45 +233,45 @@ BT::NodeStatus OdomClient::onRunning()
         : BT::NodeStatus::FAILURE;
 }
 
-void OdomClient::onHalted()
+void OdomPIDClient::onHalted()
 {
     cancel_goal();
 }
 
-void OdomClient::cancel_goal()
+void OdomPIDClient::cancel_goal()
 {
     if (goal_handle_) {
         odom_client_->async_cancel_goal(goal_handle_);
-        RCLCPP_WARN(node_->get_logger(), "OdomClient goal canceled");
+        RCLCPP_WARN(node_->get_logger(), "OdomPIDClient goal canceled");
     }
 }
 
-void OdomClient::goal_response_callback(
+void OdomPIDClient::goal_response_callback(
     const GoalHandleMovement::SharedPtr &handle)
 {
     if (!handle) {
-        RCLCPP_ERROR(node_->get_logger(), "OdomClient goal rejected");
+        RCLCPP_ERROR(node_->get_logger(), "OdomPIDClient goal rejected");
         done_ = true;
         success_ = false;
         return;
     }
 
     goal_handle_ = handle;
-    RCLCPP_INFO(node_->get_logger(), "OdomClient goal accepted");
+    RCLCPP_INFO(node_->get_logger(), "OdomPIDClient goal accepted");
 }
 
-void OdomClient::result_callback(
+void OdomPIDClient::result_callback(
     const GoalHandleMovement::WrappedResult &result)
 {
     success_ = (result.code == rclcpp_action::ResultCode::SUCCEEDED);
     done_ = true;
 
     RCLCPP_INFO(node_->get_logger(),
-        "OdomClient result: %s",
+        "OdomPIDClient result: %s",
         success_ ? "SUCCESS" : "FAILURE");
 }
 
-void OdomClient::feedback_callback(
+void OdomPIDClient::feedback_callback(
     GoalHandleMovement::SharedPtr,
     const std::shared_ptr<const Movement::Feedback>)
 {

@@ -1,7 +1,7 @@
-#include "go_to_forest.hpp"
+#include "sick_pid_client.hpp"
  
 using namespace std::placeholders;
-GoToForest::GoToForest(const std::string &name, const BT::NodeConfiguration &config, rclcpp::Node::SharedPtr node) : 
+SickPIDClient::SickPIDClient(const std::string &name, const BT::NodeConfiguration &config, rclcpp::Node::SharedPtr node) : 
     BT::StatefulActionNode(name, config), node_(node)
 {
 
@@ -9,12 +9,12 @@ GoToForest::GoToForest(const std::string &name, const BT::NodeConfiguration &con
         qos_profile.reliability(RMW_QOS_POLICY_RELIABILITY_RELIABLE); 
 
         client_ptr_forest = rclcpp_action::create_client<ar_interfaces::action::Movement>(node, "/movement_sick"); //movement_pid is the service name
-
-        RCLCPP_INFO(node_->get_logger(),"Go to Forest_Front initialized");
+        cmd_pub_ = node_->create_publisher<geometry_msgs::msg::Twist>("/cmd_vel", cmd_vel_qos());
+        RCLCPP_INFO(node_->get_logger(),"SickPIDClient initialized");
         done_flag = false;
 }
 
-BT::PortsList GoToForest::providedPorts()
+BT::PortsList SickPIDClient::providedPorts()
 {
     return {
         BT::InputPort<float>("SP1", "Setpoint 1"),
@@ -24,7 +24,7 @@ BT::PortsList GoToForest::providedPorts()
     };
 }
 
-BT::NodeStatus GoToForest::onStart()
+BT::NodeStatus SickPIDClient::onStart()
 {
     
     float sp1 = getInput<float>("SP1").value();
@@ -35,9 +35,9 @@ BT::NodeStatus GoToForest::onStart()
     done_flag = false;
     success = false;
     auto goal_options = rclcpp_action::Client<ar_interfaces::action::Movement>::SendGoalOptions();
-    goal_options.goal_response_callback = std::bind(&GoToForest::goal_response_callback, this, _1); //When server sends a response to a goal request, run this callback
-    goal_options.feedback_callback = std::bind(&GoToForest::feedback_callback, this, _1, _2);
-    goal_options.result_callback = std::bind(&GoToForest::result_callback, this, _1);
+    goal_options.goal_response_callback = std::bind(&SickPIDClient::goal_response_callback, this, _1); //When server sends a response to a goal request, run this callback
+    goal_options.feedback_callback = std::bind(&SickPIDClient::feedback_callback, this, _1, _2);
+    goal_options.result_callback = std::bind(&SickPIDClient::result_callback, this, _1);
 
     goal_msg.setpoint_sick = std::vector<float>{sp1, sp2, sp3, sp4};
     goal_msg.tolerance_sick = 0.0;
@@ -55,12 +55,12 @@ BT::NodeStatus GoToForest::onStart()
     }
 
     client_ptr_forest->async_send_goal(goal_msg, goal_options);
-    RCLCPP_INFO(node_->get_logger(), "GoToForest::sent goal");
+    RCLCPP_INFO(node_->get_logger(), "SickPIDClient::sent goal");
     
     return BT::NodeStatus::RUNNING;
 }
 
-BT::NodeStatus GoToForest::onRunning()
+BT::NodeStatus SickPIDClient::onRunning()
     {
     // Commented timeout logic - check status every tick like GoToSpear
     // if ( now - start_time >= 3000)
@@ -106,34 +106,34 @@ BT::NodeStatus GoToForest::onRunning()
     return BT::NodeStatus::RUNNING;
 }
 
-void GoToForest::onHalted()
+void SickPIDClient::onHalted()
 {
     cancel_goal();  
 }
 
-void GoToForest::cancel_goal()
+void SickPIDClient::cancel_goal()
 {
     if (goal_handle)
     {
         client_ptr_forest->async_cancel_goal(goal_handle);
-        RCLCPP_INFO(node_->get_logger(), "GoToForest::Goal canceled");
+        RCLCPP_INFO(node_->get_logger(), "SickPIDClient::Goal canceled");
     }
 }
 
-void GoToForest::goal_response_callback(const GoalHandleMovement::SharedPtr &goal_handle_)
+void SickPIDClient::goal_response_callback(const GoalHandleMovement::SharedPtr &goal_handle_)
 {
 
     if (!goal_handle_)
     {
         RCLCPP_ERROR(node_->get_logger(),
-                     "GoToForest::Goal rejected by server");
+                     "SickPIDClient::Goal rejected by server");
         done_flag = true;
         success = false;
     }
     else
     {
         RCLCPP_INFO(node_->get_logger(),
-                    "GoToForest::Goal accepted");
+                    "SickPIDClient::Goal accepted");
         goal_handle = goal_handle_;
     }
     // if (!goal_handle_)
@@ -150,24 +150,24 @@ void GoToForest::goal_response_callback(const GoalHandleMovement::SharedPtr &goa
 
 }
 
-void GoToForest::result_callback(const GoalHandleMovement::WrappedResult &result)
+void SickPIDClient::result_callback(const GoalHandleMovement::WrappedResult &result)
 {
     if (result.code == rclcpp_action::ResultCode::SUCCEEDED)
     {
         RCLCPP_INFO(node_->get_logger(),
-                    "GoToForest::Goal succeeded");
+                    "SickPIDClient::Goal succeeded");
         success = true;
     }
     else
     {
         RCLCPP_WARN(node_->get_logger(),
-                    "GoToForest::Goal failed or canceled");
+                    "SickPIDClient::Goal failed or canceled");
         success = false;
     }
     done_flag = true;
 }
 
-void GoToForest::feedback_callback(
+void SickPIDClient::feedback_callback(
     GoalHandleMovement::SharedPtr,
     const std::shared_ptr<const ar_interfaces::action::Movement::Feedback> feedback)
 {
@@ -175,12 +175,20 @@ void GoToForest::feedback_callback(
 
 }
 
-void GoToForest::odometry_callback(const nav_msgs::msg::Odometry &msg)
+void SickPIDClient::odometry_callback(const nav_msgs::msg::Odometry &msg)
 {
     this->odom_msg = msg;
 }
 
-void GoToForest::sickCallback(const std_msgs::msg::Float32MultiArray::SharedPtr msg)
+void SickPIDClient::sickCallback(const std_msgs::msg::Float32MultiArray::SharedPtr msg)
 {
     this->sick_data = msg->data;
+}
+
+void SickPIDClient::resetVel()
+{
+    geometry_msgs::msg::Twist cmd;
+    cmd.linear.x = 0.0f;
+    cmd.linear.y = 0.0f;
+    cmd_pub_->publish(cmd);
 }

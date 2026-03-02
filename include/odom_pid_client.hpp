@@ -10,13 +10,13 @@
 
 #include <ar_interfaces/action/movement.hpp>
 
-class OdomClient : public BT::StatefulActionNode
+class OdomPIDClient : public BT::StatefulActionNode
 {
 public:
     using Movement = ar_interfaces::action::Movement;
     using GoalHandleMovement = rclcpp_action::ClientGoalHandle<Movement>;
 
-    OdomClient(const std::string & name,
+    OdomPIDClient(const std::string & name,
                const BT::NodeConfiguration & config,
                rclcpp::Node::SharedPtr node);
 

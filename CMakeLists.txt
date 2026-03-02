@@ -21,14 +21,13 @@ find_package(oakd_roi_detector_interfaces REQUIRED)
 find_package(geometry_msgs REQUIRED)
 
 set(BEHAVIOUR_SOURCES
-  src/go_to_spear.cpp
-  src/go_to_forest.cpp
+  src/sick_pid_client.cpp
   src/ak_client.cpp
   src/yaw_setpoint.cpp
   src/bt_main.cpp
   src/get_roi_detections.cpp
   src/find_hidden_scroll.cpp
-  src/odom_client.cpp
+  src/odom_pid_client.cpp
 
   include/robotlibpc/cpp/controller/pid.cpp
 )

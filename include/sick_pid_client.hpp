@@ -1,5 +1,5 @@
-#ifndef GO_TO_FOREST_HPP
-#define GO_TO_FOREST_HPP
+#ifndef SICK_PID_CLIENT_HPP
+#define SICK_PID_CLIENT_HPP
 
 #include <string>
 #include <memory>
@@ -17,10 +17,10 @@
 #include "nav_msgs/msg/odometry.hpp"
 #include "qos_profiles.hpp"
 
-class GoToForest : public BT::StatefulActionNode
+class SickPIDClient : public BT::StatefulActionNode
 {
 public:
-    GoToForest(const std::string & name,
+    SickPIDClient(const std::string & name,
               const BT::NodeConfiguration & config,
               rclcpp::Node::SharedPtr node);
 
@@ -40,6 +40,7 @@ public:
     void cancel_goal();
     void sickCallback(const std_msgs::msg::Float32MultiArray::SharedPtr msg);
     void odometry_callback(const nav_msgs::msg::Odometry &msg);   
+    void resetVel();
 
     void goal_response_callback(const GoalHandleMovement::SharedPtr &goal_handle_);
     void result_callback(const GoalHandleMovement::WrappedResult &result);
@@ -51,6 +52,7 @@ private:
     rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_subscriber;
     rclcpp_action::Client<ar_interfaces::action::Movement>::SharedPtr client_ptr_forest;
     rclcpp::Publisher<std_msgs::msg::Float32MultiArray>::SharedPtr setpoint_pub;
+    rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr cmd_pub_;
 
     ar_interfaces::action::Movement::Goal goal_msg;
     nav_msgs::msg::Odometry odom_msg;

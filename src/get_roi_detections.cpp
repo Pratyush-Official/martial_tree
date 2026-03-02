@@ -96,9 +96,9 @@ BT::NodeStatus GetROIDetections::onRunning()
       detections.roi1_martial = res->roi1_martial;
       detections.roi2_martial = res->roi2_martial;
       detections.roi3_martial = res->roi3_martial;
-      detections.roi3_martial = res->roi4_martial;
-      detections.roi3_martial = res->roi5_martial;
-      detections.roi3_martial = res->roi6_martial;
+      detections.roi4_martial = res->roi4_martial;
+      detections.roi5_martial = res->roi5_martial;
+      detections.roi6_martial = res->roi6_martial;
       detections.status = res->status;
 
       setOutput("detections", detections);

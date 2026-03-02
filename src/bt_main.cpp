@@ -39,21 +39,13 @@ void tree_ticker::create_behavior_tree()
 void tree_ticker::register_custom_action_nodes()
 {
     auto shared_self = std::static_pointer_cast<tree_ticker>(this->shared_from_this());
-    factory.registerBuilder<GoToSpear>(
-        "GoToSpear",
-        [shared_self]
-        (const std::string &name, const BT::NodeConfiguration &config)
-        {
-            return std::make_unique<GoToSpear>(name, config, shared_self);
-        }
-    );
 
-    factory.registerBuilder<GoToForest>(
-        "GoToForest",
+    factory.registerBuilder<SickPIDClient>(
+        "SickPIDClient",
         [shared_self]
         (const std::string &name, const BT::NodeConfiguration &config)
         {
-            return std::make_unique<GoToForest>(name, config, shared_self);
+            return std::make_unique<SickPIDClient>(name, config, shared_self);
         }
     );
 
@@ -93,12 +85,12 @@ void tree_ticker::register_custom_action_nodes()
         }
     );
 
-    factory.registerBuilder<OdomClient>(
-        "OdomClient",
+    factory.registerBuilder<OdomPIDClient>(
+        "OdomPIDClient",
         [shared_self]
         (const std::string &name, const BT::NodeConfiguration &config)
         {
-            return std::make_unique<OdomClient>(name, config, shared_self);
+            return std::make_unique<OdomPIDClient>(name, config, shared_self);
         }
     );
 
