@@ -15,47 +15,13 @@
             </Delay> -->
                                                                                                                    
             <!-- <YawSetpoint name="yaw_setpoint" pi = "-3.141592653589793"/> -->
-            <GoToSpear name="go_to_spear"/>
             <SickPIDClient 
-                name="go_to_forest"
-                SP1="6574.0"
-                SP2="6050.0"
-                SP3="0.0"
-                SP4="0.0"/>
-            
-            <GoToSpear name="go_to_spear"/>
-            <SickPIDClient 
-                name="go_to_forest"
-                SP1="6574.0"
-                SP2="6050.0"
+                name="go_to_spear"
+                SP1="1400.0"
+                SP2="3000.0"
                 SP3="0.0"
                 SP4="0.0"/>
 
-            <GoToSpear name="go_to_spear"/>
-            <SickPIDClient 
-                name="go_to_forest"
-                SP1="6574.0"
-                SP2="6050.0"
-                SP3="0.0"
-                SP4="0.0"/>
-            
-            <GoToSpear name="go_to_spear"/>
-            <SickPIDClient 
-                name="go_to_forest"
-                SP1="6574.0"
-                SP2="6050.0"
-                SP3="0.0"
-                SP4="0.0"/>
-
-            <GoToSpear name="go_to_spear"/>
-            <SickPIDClient 
-                name="go_to_forest"
-                SP1="6574.0"
-                SP2="6050.0"
-                SP3="0.0"
-                SP4="0.0"/>
-            
-            <GoToSpear name="go_to_spear"/>
             <SickPIDClient 
                 name="go_to_forest"
                 SP1="6574.0"
