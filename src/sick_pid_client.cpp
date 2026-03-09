@@ -8,7 +8,7 @@ SickPIDClient::SickPIDClient(const std::string &name, const BT::NodeConfiguratio
         rclcpp::QoS qos_profile(10);
         qos_profile.reliability(RMW_QOS_POLICY_RELIABILITY_RELIABLE); 
 
-        client_ptr_forest = rclcpp_action::create_client<ar_interfaces::action::Movement>(node, "/movement_sick"); //movement_pid is the service name
+        client_ptr = rclcpp_action::create_client<ar_interfaces::action::Movement>(node, "/movement_sick"); //movement_pid is the service name
         cmd_pub_ = node_->create_publisher<geometry_msgs::msg::Twist>("/cmd_vel", cmd_vel_qos());
         RCLCPP_INFO(node_->get_logger(),"SickPIDClient initialized");
         done_flag = false;
@@ -47,14 +47,14 @@ BT::NodeStatus SickPIDClient::onStart()
                  std::chrono::steady_clock::now().time_since_epoch())
                  .count();
     
-    if (!client_ptr_forest->wait_for_action_server(std::chrono::seconds(5))) {
+    if (!client_ptr->wait_for_action_server(std::chrono::seconds(5))) {
         RCLCPP_ERROR(node_->get_logger(), "Action server not available after waiting");
         done_flag = true;
         success = false;
         return BT::NodeStatus::FAILURE;
     }
 
-    client_ptr_forest->async_send_goal(goal_msg, goal_options);
+    client_ptr->async_send_goal(goal_msg, goal_options);
     RCLCPP_INFO(node_->get_logger(), "SickPIDClient::sent goal");
     
     return BT::NodeStatus::RUNNING;
@@ -115,7 +115,7 @@ void SickPIDClient::cancel_goal()
 {
     if (goal_handle)
     {
-        client_ptr_forest->async_cancel_goal(goal_handle);
+        client_ptr->async_cancel_goal(goal_handle);
         RCLCPP_INFO(node_->get_logger(), "SickPIDClient::Goal canceled");
     }
 }

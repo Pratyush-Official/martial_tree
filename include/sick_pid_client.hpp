@@ -50,7 +50,7 @@ private:
     rclcpp::Node::SharedPtr node_;
     rclcpp::Subscription<std_msgs::msg::Float32MultiArray>::SharedPtr sick_subscriber;
     rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_subscriber;
-    rclcpp_action::Client<ar_interfaces::action::Movement>::SharedPtr client_ptr_forest;
+    rclcpp_action::Client<ar_interfaces::action::Movement>::SharedPtr client_ptr;
     rclcpp::Publisher<std_msgs::msg::Float32MultiArray>::SharedPtr setpoint_pub;
     rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr cmd_pub_;
 

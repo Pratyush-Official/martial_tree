@@ -1,7 +1,7 @@
 
 #include "sick_pid_client.hpp"
 #include "yaw_setpoint.hpp"
-
+#include "yaw_pid_client.hpp"
 #include "qos_profiles.hpp"
 #include "ak_client.hpp"
 #include "get_roi_detections.hpp"  

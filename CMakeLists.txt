@@ -28,6 +28,7 @@ set(BEHAVIOUR_SOURCES
   src/get_roi_detections.cpp
   src/find_hidden_scroll.cpp
   src/odom_pid_client.cpp
+  src/yaw_pid_client.cpp
 
   include/robotlibpc/cpp/controller/pid.cpp
 )

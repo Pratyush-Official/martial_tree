@@ -49,6 +49,15 @@ void tree_ticker::register_custom_action_nodes()
         }
     );
 
+    factory.registerBuilder<YawPIDClient>(
+        "YawPIDClient",
+        [shared_self]
+        (const std::string &name, const BT::NodeConfiguration &config)
+        {
+            return std::make_unique<YawPIDClient>(name, config, shared_self);
+        }
+    );
+
     factory.registerBuilder<AkClient>(
         "AkClient",
         [shared_self]
