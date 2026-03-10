@@ -17,66 +17,25 @@
             <!-- <YawSetpoint name="yaw_setpoint" pi = "-3.141592653589793"/> -->
             <!-- <SickPIDClient 
                 name="go_to_spear"
-                SP1="6400.0"
+                SP1="3400.0"
                 SP2="3000.0"
                 SP3="0.0"
                 SP4="0.0"/>
 
             <SickPIDClient 
                 name="go_to_forest"
-                SP1="6574.0"
-                SP2="6050.0"
-                SP3="0.0"
-                SP4="0.0"/>
-
-            <SickPIDClient 
-                name="go_to_spear"
-                SP1="6400.0"
+                SP1="8000.0"
                 SP2="3000.0"
-                SP3="0.0"
-                SP4="0.0"/>
-
-            <SickPIDClient 
-                name="go_to_forest"
-                SP1="6574.0"
-                SP2="6050.0"
-                SP3="0.0"
-                SP4="0.0"/>
-
-            <SickPIDClient 
-                name="go_to_spear"
-                SP1="6400.0"
-                SP2="3000.0"
-                SP3="0.0"
-                SP4="0.0"/>
-
-            <SickPIDClient 
-                name="go_to_forest"
-                SP1="6574.0"
-                SP2="6050.0"
-                SP3="0.0"
-                SP4="0.0"/>
-
-            <SickPIDClient 
-                name="go_to_spear"
-                SP1="6400.0"
-                SP2="3000.0"
-                SP3="0.0"
-                SP4="0.0"/>
-
-            <SickPIDClient 
-                name="go_to_forest"
-                SP1="6574.0"
-                SP2="6050.0"
                 SP3="0.0"
                 SP4="0.0"/> -->
-            
+
             <YawPIDClient
                 name="yaw_pid_client"
                 Angle = "1.5707"
-                Velocity-max = "0.2"/>
-            <!-- <YawSetpoint name="yaw_setpoint" pi="0"/> 
-            <SickPIDClient 
+                Velocity-max = "0.2"/>s
+
+            <!-- <YawSetpoint name="yaw_setpoint" pi="-3.14"/>  -->
+            <!-- <SickPIDClient 
                 name="go_to_forest_for_climb"
                 SP1="1100.0"
                 SP2="6170.0"
