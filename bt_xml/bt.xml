@@ -1,46 +1,46 @@
 <root main_tree_to_execute="MainTree">
     <BehaviorTree ID="MainTree">
+        <Repeat num_cycles = "7">
         <Sequence name="root_sequence">
                         <!-- for delay  -->
-            <!-- <Delay name="startup_delay" delay_msec="1000">
-                <RetryUntilSuccessful num_attempts="-1">
-                    <Sequence name="roi_detection_retry">
-                            <GetROIDetections
-                                    name="get_roi_detections"
-                                    stage="1"
-                                    detections="{stage1_detections}"
-                            />
-                    </Sequence>
-                </RetryUntilSuccessful>
-            </Delay> -->
+
                                                                                                                    
             <!-- <YawSetpoint name="yaw_setpoint" pi = "-3.141592653589793"/> -->
-            <!-- <SickPIDClient 
-                name="go_to_spear"
-                SP1="3400.0"
-                SP2="3000.0"
-                SP3="0.0"
-                SP4="0.0"/>
+            
+                <SickPIDClient 
+                    name="go_to_forest_for_climb"
+                    SP1="5670.0"
+                    SP2="3470.0"
+                    SP3="0.0"
+                    SP4="0.0"/>
 
-            <SickPIDClient 
-                name="go_to_forest"
-                SP1="8000.0"
-                SP2="3000.0"
-                SP3="0.0"
-                SP4="0.0"/> -->
+                <Delay name="startup_delay" delay_msec="1000">
+                    <RetryUntilSuccessful num_attempts="-1">
+                        <Sequence name="roi_detection_retry">
+                                <GetROIDetections
+                                        name="get_roi_detections"
+                                        stage="1"
+                                        detections="{stage1_detections}"
+                                />
+                        </Sequence>
+                    </RetryUntilSuccessful>
+                </Delay>
 
-            <YawPIDClient
+                <SickPIDClient 
+                    name="go_to_forest_for_climb"
+                    SP1="2280.0"
+                    SP2="6360.0"
+                    SP3="0.0"
+                    SP4="0.0"/>
+            
+
+            <!-- <YawPIDClient
                 name="yaw_pid_client"
                 Angle = "1.5707"
-                Velocity-max = "0.2"/>s
+                Velocity-max = "0.2"/> -->
 
             <!-- <YawSetpoint name="yaw_setpoint" pi="-3.14"/>  -->
-            <!-- <SickPIDClient 
-                name="go_to_forest_for_climb"
-                SP1="1100.0"
-                SP2="6170.0"
-                SP3="0.0"
-                SP4="0.0"/> -->
+
             
             <!-- <OdomClient name="odom_client" setpoint_odom_1="5.230" setpoint_odom_2="0.0" tolerance="0.05"/> -->
 
@@ -118,5 +118,6 @@
             <ApproachObject name="approach_object"/>
             <CloseGripper name="close_gripper"/> -->
         </Sequence>
+        </Repeat>
     </BehaviorTree>
 </root>
