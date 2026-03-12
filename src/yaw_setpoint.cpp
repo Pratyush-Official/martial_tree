@@ -4,7 +4,7 @@ YawSetpoint::YawSetpoint(const std::string& name, const BT::NodeConfiguration& c
         : BT::StatefulActionNode(name, config), node_(node){
 
             rclcpp::QoS qos_profile(10);
-            bno_sub = node_->create_subscription<std_msgs::msg::Float32>("/imu_data", 10, std::bind(&YawSetpoint::yaw_callback, this, std::placeholders::_1));
+            bno_sub = node_->create_subscription<std_msgs::msg::Float32>("/imu_data", sensor_qos(), std::bind(&YawSetpoint::yaw_callback, this, std::placeholders::_1));
             setpoint_pub = node_->create_publisher<std_msgs::msg::Float32MultiArray>("setpoint_yaw",10);
             //slider_sub = node_->create_subscription<std_msgs::msg::Float32MultiArray>("/pid_gains", 10, std::bind(&YawSetpoint::slider_callback, this, std::placeholders::_1));
         }
@@ -82,11 +82,13 @@ BT::NodeStatus YawSetpoint::onRunning(){
     // setpoint_.data.push_back(SET_YAW_BYTE); 
     // setpoint_pub->publish(setpoint_);
 
-    if(fabs(turn_ - imu_data) < 0.017f && (current_time - start_time) > 200){ 
+    if(fabs(turn_ - imu_data) < 1.617f && (current_time - start_time) > 200){ 
         setpoint_.data.clear();
         setpoint_.data.push_back(turn_);
         setpoint_.data.push_back(RESET_YAW_BYTE); 
         setpoint_pub->publish(setpoint_);
+        rclcpp::sleep_for(std::chrono::milliseconds(500));
+
         return BT::NodeStatus::SUCCESS;
 
     }

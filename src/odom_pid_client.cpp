@@ -184,7 +184,8 @@ OdomPIDClient::OdomPIDClient(
 BT::PortsList OdomPIDClient::providedPorts()
 {
     return {
-        BT::InputPort<std::vector<float>>("setpoint_odom"),
+        BT::InputPort<float>("setpoint_odom_1"),
+        BT::InputPort<float>("setpoint_odom_2"),
         BT::InputPort<float>("tolerance"),
         BT::InputPort<float>("timeout")
     };

@@ -1,13 +1,13 @@
 <root main_tree_to_execute="MainTree">
     <BehaviorTree ID="MainTree">
-        <Repeat num_cycles = "7">
+        <!-- <Repeat num_cycles = "7"> -->
         <Sequence name="root_sequence">
                         <!-- for delay  -->
 
                                                                                                                    
             <!-- <YawSetpoint name="yaw_setpoint" pi = "-3.141592653589793"/> -->
             
-                <SickPIDClient 
+                <!-- <SickPIDClient 
                     name="go_to_forest_for_climb"
                     SP1="5670.0"
                     SP2="3470.0"
@@ -24,25 +24,24 @@
                                 />
                         </Sequence>
                     </RetryUntilSuccessful>
-                </Delay>
+                </Delay> -->
 
-                <SickPIDClient 
+                <!-- <SickPIDClient 
                     name="go_to_forest_for_climb"
                     SP1="2280.0"
                     SP2="6360.0"
                     SP3="0.0"
-                    SP4="0.0"/>
+                    SP4="0.0"/> -->
             
 
-            <!-- <YawPIDClient
+            <YawPIDClient
                 name="yaw_pid_client"
                 Angle = "1.5707"
-                Velocity-max = "0.2"/> -->
+                Velocity-max = "0.2"/>
 
             <!-- <YawSetpoint name="yaw_setpoint" pi="-3.14"/>  -->
-
             
-            <!-- <OdomClient name="odom_client" setpoint_odom_1="5.230" setpoint_odom_2="0.0" tolerance="0.05"/> -->
+            <!-- <OdomPIDClient name="odom_client" setpoint_odom_1="-2.530" setpoint_odom_2="0.0" tolerance="0.05" /> -->
 
                         <!-- <Delay name="startup_delay" delay_msec="10000">
                             <RetryUntilSuccessful num_attempts="-1">
@@ -118,6 +117,6 @@
             <ApproachObject name="approach_object"/>
             <CloseGripper name="close_gripper"/> -->
         </Sequence>
-        </Repeat>
+        <!-- </Repeat> -->
     </BehaviorTree>
 </root>

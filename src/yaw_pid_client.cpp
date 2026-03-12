@@ -53,6 +53,7 @@ BT::NodeStatus YawPIDClient::onStart()
 
     client_ptr->async_send_goal(goal_msg, goal_options);
     RCLCPP_INFO(node_->get_logger(), "YawPIDClient::sent goal");
+    RCLCPP_INFO(node_->get_logger(), "setpoint_yaw: %f", goal_msg.setpoint_yaw);
     
     return BT::NodeStatus::RUNNING;
 }
