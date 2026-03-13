@@ -34,14 +34,14 @@
                     SP4="0.0"/> -->
             
 
-            <YawPIDClient
+            <!-- <YawPIDClient
                 name="yaw_pid_client"
                 Angle = "1.5707"
-                Velocity-max = "0.2"/>
+                Velocity-max = "0.2"/> -->
 
             <!-- <YawSetpoint name="yaw_setpoint" pi="-3.14"/>  -->
             
-            <!-- <OdomPIDClient name="odom_client" setpoint_odom_1="-2.530" setpoint_odom_2="0.0" tolerance="0.05" /> -->
+            <OdomPIDClient name="odom_client" setpoint_odom_1="-1.530" setpoint_odom_2="0.0" tolerance="0.05" />
 
                         <!-- <Delay name="startup_delay" delay_msec="10000">
                             <RetryUntilSuccessful num_attempts="-1">
