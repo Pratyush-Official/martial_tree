@@ -16,7 +16,7 @@
 #include "ament_index_cpp/get_package_share_directory.hpp"
 #include "nav_msgs/msg/odometry.hpp"
 #include "qos_profiles.hpp"
-
+#include "get_roi_detections.hpp"
 class SickPIDClient : public BT::StatefulActionNode
 {
 public:
@@ -49,23 +49,9 @@ public:
     //     float sp4;
     // }
 
-    struct StageDetections
-    {
-      std::string roi1;
-      std::string roi2;
-      std::string roi3;
-      std::string roi1_martial;
-      std::string roi2_martial;
-      std::string roi3_martial;
-      std::string roi4_martial;
-      std::string roi5_martial;
-      std::string roi6_martial;
-      std::string status;
-    };
-
-    const std::vector<float> ROI1_SP = { 1600.0f, 0.0f, 0.0f, 0.0f };
-    const std::vector<float> ROI2_SP = { 800.0f, 1600.0f, 0.0f, 0.0f };
-    const std::vector<float> ROI3_SP = { 0.0f, 800.0f, 1600.0f, 0.0f };
+    const std::vector<float> ROI1_SP = { 2100.0f, 8500.0f, 0.0f, 0.0f };
+    const std::vector<float> ROI2_SP = { 2140.0f, 6000.0f, 0.0f, 0.0f };
+    const std::vector<float> ROI3_SP = { 2135.0f, 4000.0f, 0.0f, 0.0f };
     std::vector<float> true_setpoint;
     
     void cancel_goal();
