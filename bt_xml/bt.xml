@@ -6,13 +6,14 @@
 
                                                                                                                    
             <!-- <YawSetpoint name="yaw_setpoint" pi = "-3.141592653589793"/> -->
-            
-                <!-- <SickPIDClient 
+<!--             
+                <SickPIDClient 
                     name="go_to_forest_for_climb"
                     SP1="5670.0"
                     SP2="3470.0"
                     SP3="0.0"
                     SP4="0.0"/>
+ -->
 
                 <Delay name="startup_delay" delay_msec="1000">
                     <RetryUntilSuccessful num_attempts="-1">
@@ -24,7 +25,15 @@
                                 />
                         </Sequence>
                     </RetryUntilSuccessful>
-                </Delay> -->
+                </Delay>
+
+                <SickPIDClient
+                    name="sick1"
+                    stage1="{stage1_detections}"/>
+
+                <SickPIDClient
+                    name="sick2"
+                    stage1="{stage1_detections}"/>
 
                 <!-- <SickPIDClient 
                     name="go_to_forest_for_climb"
@@ -41,7 +50,7 @@
 
             <!-- <YawSetpoint name="yaw_setpoint" pi="-3.14"/>  -->
             
-            <OdomPIDClient name="odom_client" setpoint_odom_1="-1.530" setpoint_odom_2="0.0" tolerance="0.05" />
+            <!-- <OdomPIDClient name="odom_client" setpoint_odom_1="-1.530" setpoint_odom_2="0.0" tolerance="0.05" /> -->
 
                         <!-- <Delay name="startup_delay" delay_msec="10000">
                             <RetryUntilSuccessful num_attempts="-1">

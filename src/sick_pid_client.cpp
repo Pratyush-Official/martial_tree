@@ -14,23 +14,44 @@ SickPIDClient::SickPIDClient(const std::string &name, const BT::NodeConfiguratio
         done_flag = false;
 }
 
+// BT::PortsList SickPIDClient::providedPorts()
+// {
+//     return {
+//         BT::InputPort<float>("SP1", "Setpoint 1"),
+//         BT::InputPort<float>("SP2", "Setpoint 2"),
+//         BT::InputPort<float>("SP3", "Setpoint 3"),
+//         BT::InputPort<float>("SP4", "Setpoint 4")
+//     };
+// }
+
 BT::PortsList SickPIDClient::providedPorts()
 {
     return {
-        BT::InputPort<float>("SP1", "Setpoint 1"),
-        BT::InputPort<float>("SP2", "Setpoint 2"),
-        BT::InputPort<float>("SP3", "Setpoint 3"),
-        BT::InputPort<float>("SP4", "Setpoint 4")
+        BT::OutputPort<StageDetections>("stage1"),
+       BT::InputPort<StageDetections>("stage1"),
     };
 }
 
 BT::NodeStatus SickPIDClient::onStart()
 {
     
-    float sp1 = getInput<float>("SP1").value();
-    float sp2 = getInput<float>("SP2").value();
-    float sp3 = getInput<float>("SP3").value();
-    float sp4 = getInput<float>("SP4").value();
+    // float sp1 = getInput<float>("SP1").value();
+    // float sp2 = getInput<float>("SP2").value();
+    // float sp3 = getInput<float>("SP3").value();
+    // float sp4 = getInput<float>("SP4").value();
+
+
+    auto scroll_detections = getInput<StageDetections>("stage1");
+    check = false;
+
+    if (!scroll_detections)
+    {
+    RCLCPP_WARN(node_->get_logger(), "No detections on port: %s",
+                scroll_detections.error().c_str());
+        return BT::NodeStatus::FAILURE;
+    }
+    set_setpoints(scroll_detections.value());
+    
 
     done_flag = false;
     success = false;
@@ -39,7 +60,7 @@ BT::NodeStatus SickPIDClient::onStart()
     goal_options.feedback_callback = std::bind(&SickPIDClient::feedback_callback, this, _1, _2);
     goal_options.result_callback = std::bind(&SickPIDClient::result_callback, this, _1);
 
-    goal_msg.setpoint_sick = std::vector<float>{sp1, sp2, sp3, sp4};
+    goal_msg.setpoint_sick = true_setpoint;
     goal_msg.tolerance_sick = 0.0;
     goal_msg.timeout_sick = 0.0;
 
@@ -62,44 +83,27 @@ BT::NodeStatus SickPIDClient::onStart()
 
 BT::NodeStatus SickPIDClient::onRunning()
     {
-    // Commented timeout logic - check status every tick like GoToSpear
-    // if ( now - start_time >= 3000)
-    //     {
-    //      if( fabs(prev_x - odom_msg.pose.pose.position.x) < 0.01 && fabs((prev_y - odom_msg.pose.pose.position.y)) < 0.01)
-    //      {
-    //          cancel_goal();
-    //          done_flag = true;
-    //          is_on_line = false;
-    //          RCLCPP_INFO(node_->get_logger(), " RecoveryNode::Robot static.. cancel goal ");
-    //          return BT::NodeStatus::SUCCESS;
-    //      }
-    //      else
-    //      {
-    //          start_time = get_tick_ms();
-    //      }
-    //      prev_x = odom_msg.pose.pose.position.x;
-    //      prev_y = odom_msg.pose.pose.position.y;
-     
-    //  if ( fabs(odom_msg.pose.pose.position.y) >= 2.70 && fabs(odom_msg.pose.pose.position.x -  goal_msg.pose.pose.position.x) < 0.3 )
-    //  {
-    //      if (is_on_line)
-    //      {
-    //          cancel_goal();
 
-    //         done_flag = true;
-    //         is_on_line = false;
-    //         x_horiz_line_detected = false;
-
-    //      }
-    // }
-    
     if (done_flag && success)
     {
-        return BT::NodeStatus::SUCCESS; 
+        check = false;
+        auto scroll_detections = getInput<StageDetections>("stage1");
+        
+        if(scroll_detections){           
+
+            StageDetections det = scroll_detections.value();
+            if(under_roi == "roi1"){det.roi1 = "none";} 
+            else if(under_roi == "roi2"){det.roi2 = "none";} 
+            else if(under_roi == "roi3"){det.roi3 = "none";} 
+            setOutput("stage1", det);
+        }
+
+        return BT::NodeStatus::SUCCESS;
     }
     
     if (done_flag && !success)
     {
+        check = false;
         return BT::NodeStatus::FAILURE;
     }
 
@@ -183,6 +187,33 @@ void SickPIDClient::odometry_callback(const nav_msgs::msg::Odometry &msg)
 void SickPIDClient::sickCallback(const std_msgs::msg::Float32MultiArray::SharedPtr msg)
 {
     this->sick_data = msg->data;
+}
+
+void SickPIDClient::set_setpoints(const StageDetections &det){
+
+        if(!check && det.roi3 == "real")
+        {
+            check = true;
+            under_roi = "roi3";
+            true_setpoint = ROI3_SP;
+        }
+
+        if(!check && det.roi2 == "real")
+        {   
+            check = true;
+            under_roi = "roi2";
+            true_setpoint = ROI2_SP;
+            
+        }
+
+        if(!check && det.roi1 == "real")
+        {
+            check = true;
+            under_roi = "roi1";
+            true_setpoint = ROI1_SP;
+            
+        }
+
 }
 
 void SickPIDClient::resetVel()

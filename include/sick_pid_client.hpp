@@ -32,11 +32,42 @@ public:
     bool done_flag{false};
     bool success{false};
 
+    float sp1;
+    float sp2;
+    float sp3;
+    float sp4;
+
     uint32_t start_time;
 
     using GoalHandleMovement = rclcpp_action::ClientGoalHandle<ar_interfaces::action::Movement>;
     using Movement = ar_interfaces::action::Movement;
 
+    // struct Setpoints{
+    //     float sp1;
+    //     float sp2;
+    //     float sp3;
+    //     float sp4;
+    // }
+
+    struct StageDetections
+    {
+      std::string roi1;
+      std::string roi2;
+      std::string roi3;
+      std::string roi1_martial;
+      std::string roi2_martial;
+      std::string roi3_martial;
+      std::string roi4_martial;
+      std::string roi5_martial;
+      std::string roi6_martial;
+      std::string status;
+    };
+
+    const std::vector<float> ROI1_SP = { 1600.0f, 0.0f, 0.0f, 0.0f };
+    const std::vector<float> ROI2_SP = { 800.0f, 1600.0f, 0.0f, 0.0f };
+    const std::vector<float> ROI3_SP = { 0.0f, 800.0f, 1600.0f, 0.0f };
+    std::vector<float> true_setpoint;
+    
     void cancel_goal();
     void sickCallback(const std_msgs::msg::Float32MultiArray::SharedPtr msg);
     void odometry_callback(const nav_msgs::msg::Odometry &msg);   
@@ -45,6 +76,8 @@ public:
     void goal_response_callback(const GoalHandleMovement::SharedPtr &goal_handle_);
     void result_callback(const GoalHandleMovement::WrappedResult &result);
     void feedback_callback(GoalHandleMovement::SharedPtr, const std::shared_ptr<const ar_interfaces::action::Movement::Feedback> feedback);
+
+    void set_setpoints(const StageDetections & det);
 
 private:
     rclcpp::Node::SharedPtr node_;
@@ -56,7 +89,8 @@ private:
 
     ar_interfaces::action::Movement::Goal goal_msg;
     nav_msgs::msg::Odometry odom_msg;
-
+    bool check;
+    std::string under_roi;
     rclcpp_action::ClientGoalHandle<ar_interfaces::action::Movement>::SharedPtr goal_handle;
     std::vector<float> sick_data;
 };
