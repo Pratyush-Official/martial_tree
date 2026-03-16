@@ -17,6 +17,7 @@
 #include "nav_msgs/msg/odometry.hpp"
 #include "qos_profiles.hpp"
 #include "get_roi_detections.hpp"
+#include "yaw_setpoint.hpp"
 class SickPIDClient : public BT::StatefulActionNode
 {
 public:
@@ -52,6 +53,15 @@ public:
     const std::vector<float> ROI1_SP = { 2100.0f, 8500.0f, 0.0f, 0.0f };
     const std::vector<float> ROI2_SP = { 2140.0f, 6000.0f, 0.0f, 0.0f };
     const std::vector<float> ROI3_SP = { 2135.0f, 4000.0f, 0.0f, 0.0f };
+
+    const std::vector<float> RIGHT_ROI1_SP = { 9200.0f, 6500.0f, 0.0f, 0.0f };
+    const std::vector<float> RIGHT_ROI2_SP = { 6450.0f, 6180.0f, 0.0f, 0.0f };
+    const std::vector<float> RIGHT_ROI3_SP = { 4230.0f, 5580.0f, 0.0f, 0.0f };
+
+    const std::vector<float> LEFT_ROI1_SP = { 2100.0f, 8500.0f, 0.0f, 0.0f };
+    const std::vector<float> LEFT_ROI2_SP = { 2140.0f, 6000.0f, 0.0f, 0.0f };
+    const std::vector<float> LEFT_ROI3_SP = { 2135.0f, 4000.0f, 0.0f, 0.0f };
+
     std::vector<float> true_setpoint;
     
     void cancel_goal();
@@ -63,7 +73,7 @@ public:
     void result_callback(const GoalHandleMovement::WrappedResult &result);
     void feedback_callback(GoalHandleMovement::SharedPtr, const std::shared_ptr<const ar_interfaces::action::Movement::Feedback> feedback);
 
-    void set_setpoints(const StageDetections & det);
+    void set_setpoints(const StageDetections & det, const int yaw_int_, std::string &turn_output);
 
 private:
     rclcpp::Node::SharedPtr node_;
@@ -76,6 +86,7 @@ private:
     ar_interfaces::action::Movement::Goal goal_msg;
     nav_msgs::msg::Odometry odom_msg;
     bool check;
+    bool first_stage_done;
     std::string under_roi;
     rclcpp_action::ClientGoalHandle<ar_interfaces::action::Movement>::SharedPtr goal_handle;
     std::vector<float> sick_data;

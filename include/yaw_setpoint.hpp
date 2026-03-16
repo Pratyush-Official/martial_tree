@@ -19,6 +19,24 @@
 
 #include "ament_index_cpp/get_package_share_directory.hpp"
 
+enum CurrentYaw{
+    FRONT = 0,
+    RIGHT = 1,
+    BACK = 2,
+    LEFT = 3,
+};
+
+namespace BT {
+    template <>
+    inline CurrentYaw convertFromString(StringView str) {
+        if      (str == "FRONT") return CurrentYaw::FRONT;
+        else if (str == "RIGHT") return CurrentYaw::RIGHT;
+        else if (str == "BACK")  return CurrentYaw::BACK;
+        else if (str == "LEFT")  return CurrentYaw::LEFT;
+        throw RuntimeError("Invalid CurrentYaw string: ", str);
+    }
+}
+
 class YawSetpoint : public BT::StatefulActionNode
 {
     public:
@@ -55,6 +73,9 @@ class YawSetpoint : public BT::StatefulActionNode
 
         float imu_data = 0.0f;
         float turn_ = 0.0f; 
+        float port_yaw = 0.0f;
+        CurrentYaw current_yaw_ = CurrentYaw::FRONT;
+
         std::vector<float> slider_data_{0.0f, 0.0f, 0.0f, 0.0f, 0.0f}; //kp, ki, kd
         long start_time = 0;
 

@@ -27,8 +27,9 @@ SickPIDClient::SickPIDClient(const std::string &name, const BT::NodeConfiguratio
 BT::PortsList SickPIDClient::providedPorts()
 {
     return {
-        BT::OutputPort<StageDetections>("stage1"),
-       BT::InputPort<StageDetections>("stage1"),
+        BT::BidirectionalPort<StageDetections>("stage1"),
+        BT::InputPort<CurrentYaw>("current_yaw"),
+        BT::OutputPort<std::string>("turn", "Direction: Right, Left, Back, Front or raw float")
     };
 }
 
@@ -42,7 +43,10 @@ BT::NodeStatus SickPIDClient::onStart()
 
 
     auto scroll_detections = getInput<StageDetections>("stage1");
+    auto current_yaw_ = getInput<CurrentYaw>("current_yaw");
+
     check = false;
+    first_stage_done = false;
 
     if (!scroll_detections)
     {
@@ -50,8 +54,20 @@ BT::NodeStatus SickPIDClient::onStart()
                 scroll_detections.error().c_str());
         return BT::NodeStatus::FAILURE;
     }
-    set_setpoints(scroll_detections.value());
-    
+
+    if (!current_yaw_) {
+        RCLCPP_WARN(node_->get_logger(), "No current_yaw on port");
+        return BT::NodeStatus::FAILURE;
+    }
+
+    int yaw_int = static_cast<int>(current_yaw_.value());
+
+    std::string turn_output;
+    set_setpoints(scroll_detections.value(), yaw_int, turn_output);
+
+    if (!turn_output.empty()) {
+        setOutput<std::string>("turn", turn_output);
+    }
 
     done_flag = false;
     success = false;
@@ -189,31 +205,78 @@ void SickPIDClient::sickCallback(const std_msgs::msg::Float32MultiArray::SharedP
     this->sick_data = msg->data;
 }
 
-void SickPIDClient::set_setpoints(const StageDetections &det){
+// pass turn_output by reference instead of calling setOutput inside
+void SickPIDClient::set_setpoints(const StageDetections &det, const int yaw_int_, std::string &turn_output){
 
-        if(!check && det.roi3 == "real")
-        {
+    if (first_stage_done || (det.roi1 != "real" && det.roi3 != "real")) {
+        under_roi = "roi2";
+
+        switch(yaw_int_) {
+            case 0:
+                true_setpoint = ROI2_SP;
+                break;
+
+            case 1:
+                true_setpoint = RIGHT_ROI2_SP;
+                turn_output = "Left";
+                break;
+
+            case 3:
+                true_setpoint = LEFT_ROI2_SP;
+                turn_output = "Right";
+                break;
+
+        }
+        return;
+    }
+
+    if (!check) {
+        if (det.roi3 == "real") {
             check = true;
+            first_stage_done = true;
             under_roi = "roi3";
-            true_setpoint = ROI3_SP;
-        }
 
-        if(!check && det.roi2 == "real")
-        {   
-            check = true;
-            under_roi = "roi2";
-            true_setpoint = ROI2_SP;
-            
-        }
+            switch(yaw_int_) {
+                case 0:
+                    true_setpoint = ROI3_SP;
+                    break;
 
-        if(!check && det.roi1 == "real")
-        {
+                case 1:
+                    true_setpoint = RIGHT_ROI3_SP;
+                    turn_output = "Left";
+                    break;
+
+                case 3:
+                    true_setpoint = LEFT_ROI3_SP;
+                    turn_output = "Right";
+                    break;
+
+            }
+            return;
+        }
+        else if (det.roi1 == "real") {
             check = true;
+            first_stage_done = true;
             under_roi = "roi1";
-            true_setpoint = ROI1_SP;
-            
-        }
 
+            switch(yaw_int_) {
+                case 0:
+                    true_setpoint = ROI1_SP;
+                    break;
+
+                case 1:
+                    true_setpoint = RIGHT_ROI1_SP;
+                    turn_output = "Left";
+                    break;
+
+                case 3:
+                    true_setpoint = LEFT_ROI1_SP;
+                    turn_output = "Right";
+                    break;
+            }
+            return;
+        }
+    }
 }
 
 void SickPIDClient::resetVel()

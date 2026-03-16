@@ -12,30 +12,41 @@ YawSetpoint::YawSetpoint(const std::string& name, const BT::NodeConfiguration& c
 BT::PortsList YawSetpoint::providedPorts() 
 {
     return {
-        BT::InputPort<float>(
-            "pi",
-            3.14159265358979323846f,
-            "Value of pi (can be negative)"
-        )
+        BT::InputPort<std::string>("turn", "Direction: Right, Left, Back, Front or raw float"),
+        BT::BidirectionalPort<CurrentYaw>("current_yaw", CurrentYaw::FRONT, "Current facing direction"),
     };
 }
 
 BT::NodeStatus YawSetpoint::onStart(){
+
+    std::string turn_input;
     start_time = std::chrono::duration_cast<std::chrono::milliseconds>(
                  std::chrono::steady_clock::now().time_since_epoch())
                  .count();
 
-    getInput<float>("pi", pi);
-    turn_ = pi/2;
+
+    getInput<std::string>("turn", turn_input);
+    getInput<CurrentYaw>("current_yaw", current_yaw_);
+
+    if      (turn_input == "Right") port_yaw = -1.5707f;
+    else if (turn_input == "Left")  port_yaw =  1.5707f;
+    else if (turn_input == "Back")  port_yaw =  3.14159f;
+    else if (turn_input == "Front") port_yaw =  0.0f;
+    else                            port_yaw =  std::stof(turn_input);
+
+    turn_ = imu_data + port_yaw;
     turn_ = wrapAngle(turn_);
-    first_time_i = 1;
 
-    // printf("Turn Setpoint: %.2f\n", turn_);
+    int yaw_int = static_cast<int>(current_yaw_);
+    if      (port_yaw == -1.5707f)  yaw_int = (yaw_int + 1) % 4;  // Right
+    else if (port_yaw ==  1.5707f)  yaw_int = (yaw_int + 3) % 4;  // Left 
+    else if (port_yaw ==  3.14159f) yaw_int = (yaw_int + 2) % 4;  // Back
+    current_yaw_ = static_cast<CurrentYaw>(yaw_int);
 
-    // setpoint_.data.clear();
-    // setpoint_.data.push_back(turn_);
-    // setpoint_.data.push_back(RESET_YAW_BYTE); 
-    // setpoint_pub->publish(setpoint_);
+    setpoint_.data.clear();
+    setpoint_.data.push_back(turn_);
+    setpoint_.data.push_back(RESET_YAW_BYTE); 
+    setpoint_pub->publish(setpoint_);
 
     
     // setpoint_.data.clear();
@@ -67,34 +78,34 @@ BT::NodeStatus YawSetpoint::onRunning(){
                  std::chrono::steady_clock::now().time_since_epoch())
                  .count();
     
-    // printf("Turn Setpoint on running: %.2f\n", turn_);
 
-    // if(fabs(yaw - slider_data_[4]) < 20.0f){
-    //     SET_YAW_BYTE = 0x00; // stop sending setpoints  
+    // if(fabs(turn_ - imu_data) < 1.617f && (current_time - start_time) > 200){ 
+    //     setpoint_.data.clear();
+    //     setpoint_.data.push_back(turn_);
+    //     setpoint_.data.push_back(RESET_YAW_BYTE); 
+    //     setpoint_pub->publish(setpoint_);
+    //     rclcpp::sleep_for(std::chrono::milliseconds(500));
+
+    //     return BT::NodeStatus::SUCCESS;
+
     // }
-
     // else{
-    //     SET_YAW_BYTE = 0x14; // continue sending setpoints
-    // }
+    //     return BT::NodeStatus::RUNNING;
+    // }   
 
-    // setpoint_.data.clear();
-    // setpoint_.data.push_back(90.0f);
-    // setpoint_.data.push_back(SET_YAW_BYTE); 
-    // setpoint_pub->publish(setpoint_);
-
-    if(fabs(turn_ - imu_data) < 1.617f && (current_time - start_time) > 200){ 
+    if(current_time - start_time > 200){
         setpoint_.data.clear();
         setpoint_.data.push_back(turn_);
         setpoint_.data.push_back(RESET_YAW_BYTE); 
         setpoint_pub->publish(setpoint_);
         rclcpp::sleep_for(std::chrono::milliseconds(500));
 
+        setOutput("current_yaw", current_yaw_);
         return BT::NodeStatus::SUCCESS;
-
     }
     else{
         return BT::NodeStatus::RUNNING;
-    }   
+    }
 }
 
 void YawSetpoint::onHalted(){

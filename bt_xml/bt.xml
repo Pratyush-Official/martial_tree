@@ -4,8 +4,19 @@
         <Sequence name="root_sequence">
                         <!-- for delay  -->
 
-                                                                                                                   
-            <!-- <YawSetpoint name="yaw_setpoint" pi = "-3.141592653589793"/> -->
+            <Delay name="startup_delay" delay_msec="1000">
+                <RetryUntilSuccessful num_attempts="-1">
+                    <Sequence name="roi_detection_retry">
+                            <GetROIDetections
+                                    name="get_roi_detections"
+                                    stage="1"
+                                    detections="{stage1_detections}"
+                            />
+                    </Sequence>
+                </RetryUntilSuccessful>
+            </Delay>
+
+             <YawSetpoint name="face_arena" turn="Right" current_yaw="{current_yaw}"/>
 <!--             
                 <SickPIDClient 
                     name="go_to_forest_for_climb"
@@ -15,25 +26,19 @@
                     SP4="0.0"/>
  -->
 
-                <Delay name="startup_delay" delay_msec="1000">
-                    <RetryUntilSuccessful num_attempts="-1">
-                        <Sequence name="roi_detection_retry">
-                                <GetROIDetections
-                                        name="get_roi_detections"
-                                        stage="1"
-                                        detections="{stage1_detections}"
-                                />
-                        </Sequence>
-                    </RetryUntilSuccessful>
-                </Delay>
+            <SickPIDClient
+                name="sick1"
+                stage1="{stage1_detections}"
+                current_yaw="{current_yaw}"
+                turn="{turn}"/>
 
-                <SickPIDClient
-                    name="sick1"
-                    stage1="{stage1_detections}"/>
-
-                <SickPIDClient
-                    name="sick2"
-                    stage1="{stage1_detections}"/>
+            <YawSetpoint name="face_arena" turn="{turn}" current_yaw="{current_yaw}"/>
+            
+            <SickPIDClient
+                name="sick1"
+                stage1="{stage1_detections}"
+                current_yaw="{current_yaw}"
+                turn="{turn}"/>
 
                 <!-- <SickPIDClient 
                     name="go_to_forest_for_climb"
