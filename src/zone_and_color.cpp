@@ -24,6 +24,10 @@ BT::PortsList ZoneAndColor::providedPorts(){
     return{
         BT::OutputPort<std::string>("color"),
         BT::InputPort<int>("zone_enum"),
+        BT::BidirectionalPort<int>("in_arena"),
+        BT::BidirectionalPort<int>("in_martial"),
+        BT::BidirectionalPort<int>("photo_sequence_flag"),
+        BT::BidirectionalPort<int>("in_forest")
     };
 }
 
@@ -45,20 +49,25 @@ BT::NodeStatus ZoneAndColor::onStart(){
 
 BT::NodeStatus ZoneAndColor::onRunning(){
 
-    auto res = getInput<int>("zone_enum");
-    ZoneEnum zone_enum = static_cast<ZoneEnum>(res.value());
+    auto res = getInput<int>("in_arena");
 
-    if(!color_.empty){
-        setOutput("team_color", color_);
+    if(color_.empty()){
+        return BT::NodeStatus::RUNNING;
     }
+    
+    setOutput("color", color_);
 
     if(set_reset_val_ == 0x00){
 
-        if(zone_enum == ZoneEnum::ARENA_RESET){ //When the robot is in arena and reset is called, the "else" condition of the IF_THEN_ELSE node is run, 
+        if(res.value() == 1){ //When the robot is in arena and reset is called, the "else" condition of the IF_THEN_ELSE node is run, 
              // but if the reset_to_martial button is pressed while in Arena, "then" code of the IF_THEN_ELSE code is run
             if(reset_to_martial_ == 0x01){
                 state_ = "success";
-                setOutput("zone_enum", static_cast<int>(ZoneEnum::START_ZONE));
+                setOutput("in_arena", 0);
+                setOutput("photo_sequence_flag", 1);
+                setOutput("in_martial", 1);
+                setOutput("in_forest", 0);
+
                 return BT::NodeStatus::SUCCESS;
             }
             else{
@@ -66,6 +75,7 @@ BT::NodeStatus ZoneAndColor::onRunning(){
                 return BT::NodeStatus::FAILURE;
             }
         }
+
         else{
             state_ = "success";
             return BT::NodeStatus::SUCCESS;

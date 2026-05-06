@@ -1,6 +1,6 @@
-#include "wait_and_initialize.hpp"   
+#include "wait_for_set.hpp"   
 
-WaitAndInitialize::WaitAndInitialize(
+WaitForSet::WaitForSet(
     const std::string &name,
     const BT::NodeConfiguration &config,
     rclcpp::Node::SharedPtr node_ptr)
@@ -9,29 +9,29 @@ WaitAndInitialize::WaitAndInitialize(
     rclcpp::QoS qos_profile(10);
     qos_profile.reliability(RMW_QOS_POLICY_RELIABILITY_BEST_EFFORT);
 
-    set_reset = node_ptr_->create_subscription<std_msgs::msg::UInt8>( "set_reset", qos_profile, std::bind(&WaitAndInitialize::set_reset_subscriber_callback,this,std::placeholders::_1));
-    RCLCPP_INFO(node_ptr_->get_logger(),"WaitAndInitialize::Ready..");
+    set_reset = node_ptr_->create_subscription<std_msgs::msg::UInt8>( "set_reset", qos_profile, std::bind(&WaitForSet::set_reset_subscriber_callback,this,std::placeholders::_1));
+    RCLCPP_INFO(node_ptr_->get_logger(),"WaitForSet::Ready..");
     wait = true;
 }
 
-BT::PortsList WaitAndInitialize::providedPorts()
+BT::PortsList WaitForSet::providedPorts()
 {
     return {
         };
 }
 
- BT::NodeStatus WaitAndInitialize::tick()
+ BT::NodeStatus WaitForSet::tick()
  {  
     if(!wait && start)
     {
         return BT::NodeStatus::SUCCESS;
     }
-    RCLCPP_INFO(node_ptr_->get_logger(),"WaitAndInitialize::WAIT");
+    RCLCPP_INFO(node_ptr_->get_logger(),"WaitForSet::WAIT");
 
     return BT::NodeStatus::FAILURE;
  }
 
-void WaitAndInitialize::set_reset_subscriber_callback(std_msgs::msg::UInt8 msg)
+void WaitForSet::set_reset_subscriber_callback(std_msgs::msg::UInt8 msg)
 {   
     if(msg.data == 0x1f && wait )
     {
