@@ -1,0 +1,17 @@
+<root main_tree_to_execute = "ScrollPickFromXml">
+    <BehaviorTree ID="ScrollPickFromXml">
+        <SequenceStar>
+        
+            <SickPIDClient name="sick1" stage1="{stage1_detections}" current_yaw="{current_yaw}" turn="{turn}" color="{color}"/>
+            <YawSetpoint name="face_arena" turn="{turn}" current_yaw="{current_yaw}"/>
+
+            <PickupScroll> </PickupScroll>
+
+            <Precondition if= "under_roi != &quot;roi2&quot;" else="SUCCESS">
+                <SickPIDClient name="sick1" stage1="{stage1_detections}" current_yaw="{current_yaw}" turn="{turn}" color="{color}"/>
+            </Precondition>    
+            
+            <AkClient name="ak_client" up= "true" down= "false"/>
+        </SequenceStar>
+    </BehaviorTree>
+</root>

@@ -1,0 +1,53 @@
+<root main_tree_to_execute = "MainTree">
+    <BehaviorTree ID="MainTree">
+        <SequenceStar>
+            <Delay name="startup_delay" delay_msec="1000">
+                <RetryUntilSuccessful num_attempts="-1">
+                    <Sequence name="roi_detection_retry">
+                            <GetROIDetections
+                                    name="get_roi_detections"
+                                    stage="1"
+                                    detections="{stage1_detections}"
+                            />
+                    </Sequence>
+                </RetryUntilSuccessful>
+            </Delay>
+
+            <SequenceStar>
+                <InitializePortsActuators></InitializePortsActuators>
+                <Inverter>
+                    <KeepRunningUntilFailure>
+                        <Inverter>
+                            <IfThenElse>
+                                <ZoneAndColor/>
+
+                                <WhileDoElse>
+                                    <SequenceStar>
+                                        <Precondition>
+                                            <SubTree ID = "SpearAssemblyTree">
+                                        </Precondition>
+                                        <Precondition>
+                                            <SubTree ID = "ScrollPickFromEntrance">
+                                        </Precondition>
+                                        <Precondition>
+                                            <SubTree ID = "ClimbThreePhotos">
+                                        </Precondition>
+                                        <Precondition>
+                                            <SubTree ID = "ForestTree">
+                                        </Precondition>
+                                    </SequenceStar>
+                                </WhileDoElse>
+
+                                <SubTree ID = "arena_reset_zone">
+                                
+                            </IfThenElse>
+                        </Inverter>
+                    </KeepRunningUntilFailure>
+                </Inverter>
+
+            </SequenceStar>
+        </SequenceStar>
+
+
+    </BehaviorTree>
+</root>

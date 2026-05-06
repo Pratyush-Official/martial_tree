@@ -33,6 +33,8 @@ BT::PortsList InitializePortsActuators::providedPorts()
 
  BT::NodeStatus InitializePortsActuators::tick()
  {  
+
+    flag_alter(FLAG_ALTER_CASE::)
     geometry_msgs::msg::Twist cmd;
     cmd.linear.x = 0.0f;
     cmd.linear.y = 0.0f;

@@ -1,0 +1,48 @@
+<root main_tree_to_execute = "ClimbThreePhotos">
+    <BehaviorTree ID="ClimbThreePhotos">
+        <SequenceStar>
+
+            <Precondition if= "under_roi != &quot;roi2&quot;" else="SUCCESS">
+                <SickPIDClient name="sick1" stage1="{stage1_detections}" current_yaw="{current_yaw}" turn="{turn}" color="{color}"/>
+            </Precondition>    
+            
+            <Delay name="startup_delay" delay_msec="1000">
+                <RetryUntilSuccessful num_attempts="-1">
+                    <Sequence name="roi_detection_retry">
+                            <GetROIDetections
+                                    name="get_roi_detections"
+                                    stage="1"
+                                    detections="{stage1_detections}"
+                            />
+                    </Sequence>
+                </RetryUntilSuccessful>
+            </Delay>
+
+            <AkClient name="ak_client" up= "true" down= "false"/>
+
+            <Delay name="startup_delay" delay_msec="1000">
+                <RetryUntilSuccessful num_attempts="-1">
+                    <Sequence name="roi_detection_retry">
+                            <GetROIDetections
+                                    name="get_roi_detections"
+                                    stage="1"
+                                    detections="{stage1_detections}"
+                            />
+                    </Sequence>
+                </RetryUntilSuccessful>
+            </Delay>
+
+            <Delay name="startup_delay" delay_msec="1000">
+                <RetryUntilSuccessful num_attempts="-1">
+                    <Sequence name="roi_detection_retry">
+                            <GetROIDetections
+                                    name="get_roi_detections"
+                                    stage="1"
+                                    detections="{stage1_detections}"
+                            />
+                    </Sequence>
+                </RetryUntilSuccessful>
+            </Delay>
+        </SequenceStar>
+    </BehaviorTree>
+</root>

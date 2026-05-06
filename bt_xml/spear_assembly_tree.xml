@@ -1,0 +1,20 @@
+<root main_tree_to_execute = "MartialTree">
+    <BehaviorTree ID="MartialTree">
+        <SequenceStar>
+            <Delay name="startup_delay" delay_msec="1000">
+                <RetryUntilSuccessful num_attempts="-1">
+                    <Sequence name="roi_detection_retry">
+                            <GetROIDetections
+                                    name="get_roi_detections"
+                                    stage="1"
+                                    detections="{stage1_detections}"
+                            />
+                    </Sequence>
+                </RetryUntilSuccessful>
+            </Delay>
+
+            <YawSetpoint name="face_spear" turn="{turn}" current_yaw="{current_yaw}"/>
+            <SpearPickingTree> </SpearPickingTree>
+        </SequenceStar>
+    </BehaviorTree>
+</root>

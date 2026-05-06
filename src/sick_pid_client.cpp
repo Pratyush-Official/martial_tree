@@ -30,7 +30,8 @@ BT::PortsList SickPIDClient::providedPorts()
         BT::BidirectionalPort<StageDetections>("stage1"),
         BT::InputPort<CurrentYaw>("current_yaw"),
         BT::OutputPort<std::string>("turn", "Direction: Right, Left, Back, Front or raw float"),
-        BT::InputPort<std::string>("color", "red or blue")
+        BT::InputPort<std::string>("color", "red or blue"),
+        BT::OutputPort<std::string>("under_roi")
     };
 }
 
@@ -42,10 +43,10 @@ BT::NodeStatus SickPIDClient::onStart()
     // float sp3 = getInput<float>("SP3").value();
     // float sp4 = getInput<float>("SP4").value();
 
-
+    under_roi = "roi2"; //Default roi
     auto scroll_detections = getInput<StageDetections>("stage1");
     auto current_yaw_ = getInput<CurrentYaw>("current_yaw");
-    auto color = getInput<std::string>("color").value_or("blue");
+    auto color = getInput<std::string>("color");
 
     check = false;
     first_stage_done = false;
@@ -66,7 +67,7 @@ BT::NodeStatus SickPIDClient::onStart()
     int yaw_int = static_cast<int>(current_yaw_.value());
 
     std::string turn_output;
-    set_setpoints(scroll_detections.value(), yaw_int, turn_output, color);
+    set_setpoints(scroll_detections.value(), yaw_int, turn_output, color.value());
 
     if (!turn_output.empty()) {
         setOutput<std::string>("turn", turn_output);
@@ -115,6 +116,7 @@ BT::NodeStatus SickPIDClient::onRunning()
             else if(under_roi == "roi2"){det.roi2 = "none";} 
             else if(under_roi == "roi3"){det.roi3 = "none";} 
             setOutput("stage1", det);
+            setOutput("under_roi",under_roi);
         }
 
         return BT::NodeStatus::SUCCESS;
