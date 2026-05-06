@@ -6,7 +6,7 @@ AkClient::AkClient(const std::string &name, const BT::NodeConfiguration &config,
     client_c_down = node_->create_client<std_srvs::srv::SetBool>("/ak_motor_up_execute"); //c section applies normal force
     client_c_up = node_->create_client<std_srvs::srv::SetBool>("/ak_motor_down_exec"); //body "applies" normal force
 
-     rear_pub = node_->create_publisher<std_msgs::msg::Byte>("/rear_drive", cmd_vel_qos());
+    rear_pub = node_->create_publisher<std_msgs::msg::Byte>("/rear_drive", cmd_vel_qos());
     prox_sub = node_->create_subscription<std_msgs::msg::Byte>(
         "/prox_data", sensor_qos(), std::bind(&AkClient::prox_callback, this, std::placeholders::_1));
 

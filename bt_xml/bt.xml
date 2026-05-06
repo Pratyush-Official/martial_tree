@@ -26,11 +26,12 @@
                     SP4="0.0"/>
  -->
 
-            <SickPIDClient
-                name="sick1"
-                stage1="{stage1_detections}"
-                current_yaw="{current_yaw}"
-                turn="{turn}"/>
+        <SickPIDClient
+            name="sick1"
+            stage1="{stage1_detections}"
+            current_yaw="{current_yaw}"
+            turn="{turn}"
+            color="{color}"/>
 
             <YawSetpoint name="face_arena" turn="{turn}" current_yaw="{current_yaw}"/>
             
