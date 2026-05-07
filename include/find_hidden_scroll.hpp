@@ -1,7 +1,7 @@
 #ifndef FIND_HIDDEN_SCROLL_HPP_
 #define FIND_HIDDEN_SCROLL_HPP_
 
-#include <behaviortree_cpp_v3/action_node.h>
+#include <behaviortree_cpp/action_node.h>
 #include <string>
 #include <map>
 
@@ -12,7 +12,7 @@ class FindHiddenScroll : public BT::SyncActionNode
 {
 public:
   FindHiddenScroll(const std::string& name,
-                   const BT::NodeConfiguration& config);
+                   const BT::NodeConfig& config);
 
   static BT::PortsList providedPorts();
 

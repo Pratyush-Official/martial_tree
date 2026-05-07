@@ -2,7 +2,7 @@
 
 FindHiddenScroll::FindHiddenScroll(
   const std::string& name,
-  const BT::NodeConfiguration& config)
+  const BT::NodeConfig& config)
 : BT::SyncActionNode(name, config)
 {}
 

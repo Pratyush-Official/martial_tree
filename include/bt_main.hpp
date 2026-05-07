@@ -1,4 +1,3 @@
-
 #include "sick_pid_client.hpp"
 #include "yaw_setpoint.hpp"
 #include "yaw_pid_client.hpp"
@@ -7,18 +6,18 @@
 #include "get_roi_detections.hpp"  
 #include "find_hidden_scroll.hpp"
 #include "odom_pid_client.hpp"
+#include "initialize_ports_actuators.hpp"
+#include "wait_for_set.hpp"
+#include "zone_change.hpp"
 
 #include <ament_index_cpp/get_package_share_directory.hpp>
 #include <fstream>
 #include <chrono>
 
 #include "rclcpp/rclcpp.hpp"
-#include "ament_index_cpp/get_package_share_directory.hpp"
-#include "behaviortree_cpp_v3/behavior_tree.h"
-#include "behaviortree_cpp_v3/bt_factory.h"
-#include "behaviortree_cpp_v3/xml_parsing.h"
-
-#include <fstream>
+#include "behaviortree_cpp/behavior_tree.h"
+#include "behaviortree_cpp/bt_factory.h"
+#include "behaviortree_cpp/xml_parsing.h"
 
 class tree_ticker : public rclcpp::Node
 { 
@@ -28,14 +27,9 @@ public:
     void setup();
     void create_behavior_tree();
     void update_behavior_tree();
-
     void register_custom_action_nodes();
-    // void register_condition_nodes();
-    // void register_control_nodes();
-    // void register_decorator_nodes();
-    // void register_actionClient_nodes();
-private:
 
+private:
     rclcpp::CallbackGroup::SharedPtr timer_group;
     rclcpp::TimerBase::SharedPtr timer_;
     BT::Tree tree_;

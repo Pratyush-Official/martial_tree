@@ -2,7 +2,7 @@
 
 GripperOpen::GripperOpen(
     const std::string &name,
-    const BT::NodeConfiguration &config)
+    const BT::NodeConfig &config)
     : BT::SyncActionNode(name,config)
 {
     // Gripper is open initially

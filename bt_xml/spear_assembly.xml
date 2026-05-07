@@ -1,0 +1,25 @@
+<root BTCPP_format="4">
+    <BehaviorTree ID="SpearAssembly">
+        <SequenceWithMemory>
+            <Delay name="startup_delay" delay_msec="1000">
+                <RetryUntilSuccessful num_attempts="-1">
+                    <Sequence name="roi_detection_retry">
+                        <GetROIDetections
+                            name="get_roi_detections"
+                            stage="1"
+                            detections="{stage1_detections}"
+                        />
+                    </Sequence>
+                </RetryUntilSuccessful>
+            </Delay>
+
+            <Precondition if="photo_sequence != 1" else="SUCCESS">
+                <Sequence>
+                    <YawSetpoint name="face_spear" turn="{turn}" current_yaw="{current_yaw}"/>
+                    <!-- <SubTree ID="SpearPickingTree"/> -->
+                </Sequence>
+            </Precondition>
+
+        </SequenceWithMemory>
+    </BehaviorTree>
+</root>

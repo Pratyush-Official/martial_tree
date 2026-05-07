@@ -1,28 +1,27 @@
-#include "zone_and_color.hpp"
+#include "zone_change.hpp"
 using namespace std::placeholders; 
 
-ZoneAndColor::ZoneAndColor(const string &name, const BT::NodeConfiguration &config, const rclcpp::Node::SharedPtr node)
+ZoneChange::ZoneChange(const string &name, const BT::NodeConfig &config, const rclcpp::Node::SharedPtr node)
     : BT::StatefulActionNode(name, config), node_(node)
     {
         rclcpp::QoS qos_profile(10);
         qos_profile.reliability(RMW_QOS_POLICY_RELIABILITY_BEST_EFFORT);
 
-        team_color_ = node_->create_subscription<std_msgs::msg::String>("team_color", 
-            qos_profile, 
-            std::bind(&ZoneAndColor::team_color_subscriber_callback, this, _1));
-
         set_reset_ = node_->create_subscription<std_msgs::msg::UInt8>("set_reset", 
             qos_profile, 
-            std::bind(&ZoneAndColor::set_reset_subscriber_callback, this, _1));
+            std::bind(&ZoneChange::set_reset_subscriber_callback, this, _1));
         
         reset_to_martial_sub_ = node_->create_subscription<std_msgs::msg::UInt8>("reset_to_martial", 
             qos_profile, 
-            std::bind(&ZoneAndColor::reset_to_martial_callback, this, _1));
+            std::bind(&ZoneChange::reset_to_martial_callback, this, _1));
+
+        RCLCPP_INFO(node_->get_logger(),"ZoneChange initialized");
     }
 
-BT::PortsList ZoneAndColor::providedPorts(){
+
+BT::PortsList ZoneChange::providedPorts(){
     return{
-        BT::OutputPort<std::string>("color"),
+        
         BT::InputPort<int>("zone_enum"),
         BT::BidirectionalPort<int>("in_arena"),
         BT::BidirectionalPort<int>("in_martial"),
@@ -31,31 +30,21 @@ BT::PortsList ZoneAndColor::providedPorts(){
     };
 }
 
-void ZoneAndColor::team_color_subscriber_callback(const std_msgs::msg::String::SharedPtr msg){
-    color_ = msg->data;
-}
-
-void ZoneAndColor::set_reset_subscriber_callback(const std_msgs::msg::UInt8::SharedPtr msg){
+void ZoneChange::set_reset_subscriber_callback(const std_msgs::msg::UInt8::SharedPtr msg){
     set_reset_val_ = msg->data;
 }
 
-void ZoneAndColor::reset_to_martial_callback(const std_msgs::msg::UInt8::SharedPtr msg){
+void ZoneChange::reset_to_martial_callback(const std_msgs::msg::UInt8::SharedPtr msg){
     reset_to_martial_ = msg->data;
 }
 
-BT::NodeStatus ZoneAndColor::onStart(){
+BT::NodeStatus ZoneChange::onStart(){
     return onRunning(); 
 }
 
-BT::NodeStatus ZoneAndColor::onRunning(){
+BT::NodeStatus ZoneChange::onRunning(){
 
     auto res = getInput<int>("in_arena");
-
-    if(color_.empty()){
-        return BT::NodeStatus::RUNNING;
-    }
-    
-    setOutput("color", color_);
 
     if(set_reset_val_ == 0x00){
 
@@ -90,6 +79,6 @@ BT::NodeStatus ZoneAndColor::onRunning(){
     return BT::NodeStatus::RUNNING; 
 }
 
-void ZoneAndColor::onHalted(){
-    RCLCPP_INFO(node_->get_logger(), "ZoneAndColor halted");
+void ZoneChange::onHalted(){
+    RCLCPP_INFO(node_->get_logger(), "ZoneChange halted");
 }

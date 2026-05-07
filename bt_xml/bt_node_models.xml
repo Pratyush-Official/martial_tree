@@ -1,0 +1,54 @@
+<root BTCPP_format="4">
+    <TreeNodesModel>
+        <Action ID="AkClient">
+            <input_port name="down" type="bool">Send true to lower the mechanism</input_port>
+            <input_port name="up" type="bool">Send true to raise the mechanism</input_port>
+        </Action>
+        <Action ID="FindHiddenScroll">
+            <input_port name="stage4" type="StageDetections"/>
+            <input_port name="stage3" type="StageDetections"/>
+            <input_port name="stage2" type="StageDetections"/>
+            <input_port name="stage1" type="StageDetections"/>
+        </Action>
+        <Action ID="GetROIDetections">
+            <output_port name="detections" type="StageDetections"/>
+            <input_port name="reset_delay_ms" type="int" default="1200">Delay after reset in ms</input_port>
+            <input_port name="stage" type="int" default="1">Detection stage (1-3)</input_port>
+        </Action>
+        <Action ID="InitializePortsActuators">
+            <output_port name="turn" type="std::string"/>
+            <output_port name="color" type="std::string"/>
+        </Action>
+        <Action ID="OdomPIDClient">
+            <input_port name="timeout" type="float"/>
+            <input_port name="tolerance" type="float"/>
+            <input_port name="setpoint_odom_2" type="float"/>
+            <input_port name="setpoint_odom_1" type="float"/>
+        </Action>
+        <Action ID="SickPIDClient">
+            <inout_port name="first_stage_done" type="bool"/>
+            <inout_port name="check" type="bool"/>
+            <inout_port name="climb_position_reached" type="bool"/>
+            <input_port name="color" type="std::string">red or blue</input_port>
+            <output_port name="turn" type="std::string">Direction: Right, Left, Back, Front or raw float</output_port>
+            <input_port name="current_yaw" type="CurrentYaw"/>
+            <inout_port name="stage1" type="StageDetections"/>
+        </Action>
+        <Action ID="WaitForSet"/>
+        <Action ID="YawPIDClient">
+            <input_port name="Velocity-max" type="float">Velocity maximum</input_port>
+            <input_port name="Angle" type="float">Angle setpoint</input_port>
+        </Action>
+        <Action ID="YawSetpoint">
+            <inout_port name="current_yaw" type="CurrentYaw" default="json:0">Current facing direction</inout_port>
+            <input_port name="turn" type="std::string">Direction: Right, Left, Back, Front or raw float</input_port>
+        </Action>
+        <Action ID="ZoneChange">
+            <inout_port name="in_forest" type="int"/>
+            <inout_port name="photo_sequence_flag" type="int"/>
+            <inout_port name="in_martial" type="int"/>
+            <inout_port name="in_arena" type="int"/>
+            <input_port name="zone_enum" type="int"/>
+        </Action>
+    </TreeNodesModel>
+</root>

@@ -5,7 +5,7 @@
 #include <memory>
 
 #include "rclcpp/rclcpp.hpp"
-#include "behaviortree_cpp_v3/action_node.h"
+#include "behaviortree_cpp/action_node.h"
 #include "std_srvs/srv/set_bool.hpp"
 #include "std_msgs/msg/byte.hpp"
 #include "qos_profiles.hpp"
@@ -15,7 +15,7 @@ class AkClient : public BT::StatefulActionNode
 {
 public:
     AkClient(const std::string &name,
-             const BT::NodeConfiguration &config,
+             const BT::NodeConfig &config,
              rclcpp::Node::SharedPtr node);
 
     static BT::PortsList providedPorts();

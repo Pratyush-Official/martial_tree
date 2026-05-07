@@ -2,7 +2,7 @@
 
 WaitForSet::WaitForSet(
     const std::string &name,
-    const BT::NodeConfiguration &config,
+    const BT::NodeConfig &config,
     rclcpp::Node::SharedPtr node_ptr)
     : BT::SyncActionNode(name,config), node_ptr_(node_ptr)
 {
@@ -10,7 +10,7 @@ WaitForSet::WaitForSet(
     qos_profile.reliability(RMW_QOS_POLICY_RELIABILITY_BEST_EFFORT);
 
     set_reset = node_ptr_->create_subscription<std_msgs::msg::UInt8>( "set_reset", qos_profile, std::bind(&WaitForSet::set_reset_subscriber_callback,this,std::placeholders::_1));
-    RCLCPP_INFO(node_ptr_->get_logger(),"WaitForSet::Ready..");
+    RCLCPP_INFO(node_ptr_->get_logger(),"WaitForSet Initialized");
     wait = true;
 }
 

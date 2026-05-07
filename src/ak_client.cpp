@@ -1,6 +1,6 @@
 #include "ak_client.hpp"
 
-AkClient::AkClient(const std::string &name, const BT::NodeConfiguration &config, rclcpp::Node::SharedPtr node)
+AkClient::AkClient(const std::string &name, const BT::NodeConfig &config, rclcpp::Node::SharedPtr node)
     : BT::StatefulActionNode(name, config), node_(node)
 {
     client_c_down = node_->create_client<std_srvs::srv::SetBool>("/ak_motor_up_execute"); //c section applies normal force
@@ -25,6 +25,8 @@ AkClient::AkClient(const std::string &name, const BT::NodeConfiguration &config,
 
     cmd.linear.x = 0.0f;
     cmd.linear.y = 0.0f;
+
+    RCLCPP_INFO(node_->get_logger(),"AkClient initialized");
 }
 
 BT::PortsList AkClient::providedPorts()

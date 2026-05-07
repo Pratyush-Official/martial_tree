@@ -11,7 +11,7 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_action REQUIRED)
-find_package(behaviortree_cpp_v3 REQUIRED)
+find_package(behaviortree_cpp REQUIRED)
 find_package(ar_interfaces REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(std_srvs REQUIRED)
@@ -29,6 +29,9 @@ set(BEHAVIOUR_SOURCES
   src/find_hidden_scroll.cpp
   src/odom_pid_client.cpp
   src/yaw_pid_client.cpp
+  src/zone_change.cpp 
+  src/wait_for_set.cpp 
+  src/initialize_ports_actuators.cpp 
 
   include/robotlibpc/cpp/controller/pid.cpp
 )
@@ -49,10 +52,10 @@ ament_target_dependencies(tree_ticker
   ar_interfaces
   oakd_roi_detector_interfaces
   geometry_msgs
+  behaviortree_cpp
 )
 
 target_link_libraries(tree_ticker
-  BT::behaviortree_cpp_v3
 )
 
 install(TARGETS tree_ticker

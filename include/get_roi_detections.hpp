@@ -4,7 +4,7 @@
 #include <chrono>
 #include <string>
 
-#include "behaviortree_cpp_v3/action_node.h"
+#include "behaviortree_cpp/action_node.h"
 #include "rclcpp/rclcpp.hpp"
 #include "oakd_roi_detector_interfaces/srv/get_detections.hpp"
 #include "qos_profiles.hpp"
@@ -31,7 +31,7 @@ public:
 
   GetROIDetections(
     const std::string &name,
-    const BT::NodeConfiguration &config,
+    const BT::NodeConfig &config,
     rclcpp::Node::SharedPtr node);
 
   static BT::PortsList providedPorts();

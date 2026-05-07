@@ -2,7 +2,7 @@
 // #include "qos_profiles.hpp"
  
 // using namespace std::placeholders;
-// OdomPIDClient::OdomPIDClient(const std::string &name, const BT::NodeConfiguration &config, rclcpp::Node::SharedPtr node) : 
+// OdomPIDClient::OdomPIDClient(const std::string &name, const BT::NodeConfig &config, rclcpp::Node::SharedPtr node) : 
 //     BT::StatefulActionNode(name, config), node_(node)
 // {
 
@@ -170,7 +170,7 @@ using namespace std::placeholders;
 
 OdomPIDClient::OdomPIDClient(
     const std::string &name,
-    const BT::NodeConfiguration &config,
+    const BT::NodeConfig &config,
     rclcpp::Node::SharedPtr node)
 : BT::StatefulActionNode(name, config),
   node_(node)

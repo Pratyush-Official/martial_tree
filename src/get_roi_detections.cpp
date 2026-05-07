@@ -4,12 +4,13 @@ using namespace std::chrono;
 
 GetROIDetections::GetROIDetections(
   const std::string & name,
-  const BT::NodeConfiguration & config,
+  const BT::NodeConfig & config,
   rclcpp::Node::SharedPtr node)
 : BT::StatefulActionNode(name, config),
   node_(node)
 {
   client_ = node_->create_client<GetDetections>("/get_detections");
+  RCLCPP_INFO(node_->get_logger(),"GetROIDetections initialized");
 }
 
 BT::PortsList GetROIDetections::providedPorts()

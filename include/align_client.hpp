@@ -7,8 +7,8 @@
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_action/rclcpp_action.hpp"
 
-#include "behaviortree_cpp_v3/action_node.h"
-#include "behaviortree_cpp_v3/bt_factory.h"
+#include "behaviortree_cpp/action_node.h"
+#include "behaviortree_cpp/bt_factory.h"
 
 #include "ar_interfaces/action/bool.hpp"
 #include "std_msgs/msg/u_int16_multi_array.hpp"
@@ -20,7 +20,7 @@ class AlignClient : public BT::StatefulActionNode
 {
 public:
     AlignClient(const std::string & name,
-              const BT::NodeConfiguration & config,
+              const BT::NodeConfig & config,
               rclcpp::Node::SharedPtr node);
 
     static BT::PortsList providedPorts();

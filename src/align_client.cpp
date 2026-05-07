@@ -1,7 +1,7 @@
 #include "align_client.hpp"
  
 using namespace std::placeholders;
-AlignClient::AlignClient(const std::string &name, const BT::NodeConfiguration &config, rclcpp::Node::SharedPtr node) : 
+AlignClient::AlignClient(const std::string &name, const BT::NodeConfig &config, rclcpp::Node::SharedPtr node) : 
     BT::StatefulActionNode(name, config), node_(node)
 {
 

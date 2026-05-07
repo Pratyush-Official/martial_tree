@@ -10,7 +10,7 @@ class WaitForSet : public BT::SyncActionNode
 public:
     WaitForSet(
         const std::string &name,
-        const BT::NodeConfiguration &config,
+        const BT::NodeConfig &config,
         rclcpp::Node::SharedPtr node_ptr);
 
     static BT::PortsList providedPorts();

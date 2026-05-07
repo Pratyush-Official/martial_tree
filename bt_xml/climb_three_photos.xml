@@ -1,48 +1,56 @@
-<root main_tree_to_execute = "ClimbThreePhotos">
+<root BTCPP_format="4">
     <BehaviorTree ID="ClimbThreePhotos">
-        <SequenceStar>
+        <SequenceWithMemory>
 
-            <Precondition if= "under_roi != &quot;roi2&quot;" else="SUCCESS">
-                <SickPIDClient name="sick1" stage1="{stage1_detections}" current_yaw="{current_yaw}" turn="{turn}" color="{color}"/>
-            </Precondition>    
-            
-            <Delay name="startup_delay" delay_msec="1000">
+            <Precondition if="climb_position_reached != 1" else="SUCCESS">
+                <SickPIDClient name="after_scroll_picking" 
+                    stage1="{stage1_detections}" 
+                    current_yaw="{current_yaw}" 
+                    turn="{turn}" 
+                    color="{color}" 
+                    check="{check}" 
+                    first_stage_done="{first_stage_done}" 
+                    climb_position_reached="{climb_position_reached}"/>
+            </Precondition>
+
+            <Delay name="delay_1" delay_msec="1000">
                 <RetryUntilSuccessful num_attempts="-1">
-                    <Sequence name="roi_detection_retry">
-                            <GetROIDetections
-                                    name="get_roi_detections"
-                                    stage="1"
-                                    detections="{stage1_detections}"
-                            />
+                    <Sequence name="roi_detection_retry_1">
+                        <GetROIDetections
+                            name="get_roi_detections_1"
+                            stage="1"
+                            detections="{stage1_detections}"
+                        />
                     </Sequence>
                 </RetryUntilSuccessful>
             </Delay>
 
-            <AkClient name="ak_client" up= "true" down= "false"/>
+            <AkClient name="ak_client" up="true" down="false"/>
 
-            <Delay name="startup_delay" delay_msec="1000">
+            <Delay name="delay_2" delay_msec="1000">
                 <RetryUntilSuccessful num_attempts="-1">
-                    <Sequence name="roi_detection_retry">
-                            <GetROIDetections
-                                    name="get_roi_detections"
-                                    stage="1"
-                                    detections="{stage1_detections}"
-                            />
+                    <Sequence name="roi_detection_retry_2">
+                        <GetROIDetections
+                            name="get_roi_detections_2"
+                            stage="1"
+                            detections="{stage1_detections}"
+                        />
                     </Sequence>
                 </RetryUntilSuccessful>
             </Delay>
 
-            <Delay name="startup_delay" delay_msec="1000">
+            <Delay name="delay_3" delay_msec="1000">
                 <RetryUntilSuccessful num_attempts="-1">
-                    <Sequence name="roi_detection_retry">
-                            <GetROIDetections
-                                    name="get_roi_detections"
-                                    stage="1"
-                                    detections="{stage1_detections}"
-                            />
+                    <Sequence name="roi_detection_retry_3">
+                        <GetROIDetections
+                            name="get_roi_detections_3"
+                            stage="1"
+                            detections="{stage1_detections}"
+                        />
                     </Sequence>
                 </RetryUntilSuccessful>
             </Delay>
-        </SequenceStar>
+
+        </SequenceWithMemory>
     </BehaviorTree>
 </root>

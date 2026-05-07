@@ -1,53 +1,60 @@
-<root main_tree_to_execute = "MainTree">
+<root BTCPP_format="4">
     <BehaviorTree ID="MainTree">
-        <SequenceStar>
+        <SequenceWithMemory>
             <Delay name="startup_delay" delay_msec="1000">
-                <RetryUntilSuccessful num_attempts="-1">
+                <AlwaysSuccess/>
+                <!-- <RetryUntilSuccessful num_attempts="-1">
                     <Sequence name="roi_detection_retry">
-                            <GetROIDetections
-                                    name="get_roi_detections"
-                                    stage="1"
-                                    detections="{stage1_detections}"
-                            />
+                        <GetROIDetections
+                            name="get_roi_detections"
+                            stage="1"
+                            detections="{stage1_detections}"
+                        />
                     </Sequence>
-                </RetryUntilSuccessful>
+                </RetryUntilSuccessful> -->
             </Delay>
 
-            <SequenceStar>
-                <InitializePortsActuators></InitializePortsActuators>
+            <SequenceWithMemory>
+                <InitializePortsActuators/>
                 <Inverter>
                     <KeepRunningUntilFailure>
                         <Inverter>
                             <IfThenElse>
-                                <ZoneAndColor/>
+                                <ZoneChange/>
 
                                 <WhileDoElse>
-                                    <SequenceStar>
-                                        <Precondition>
-                                            <SubTree ID = "SpearAssemblyTree">
+                                    <WaitForSet/>
+                                    <SequenceWithMemory>
+
+                                        <Precondition if="in_martial == 1 && (spear_assembled != 1 || photo_sequence == 1)" else="SUCCESS">
+                                            <SubTree ID="SpearAssembly"/>
                                         </Precondition>
-                                        <Precondition>
-                                            <SubTree ID = "ScrollPickFromEntrance">
+
+                                        <Precondition if="in_martial == 1 && spear_assembled == 1 && scroll_picked_from_entrance != 1" else="SUCCESS">
+                                            <SubTree ID="ScrollPickFromEntrance"/>
                                         </Precondition>
-                                        <Precondition>
-                                            <SubTree ID = "ClimbThreePhotos">
+
+                                        <Precondition if="in_martial == 1 && spear_assembled == 1 && scroll_picked_from_entrance == 1 && climbed_three_photos != 1" else="SUCCESS">
+                                            <SubTree ID="ClimbThreePhotos"/>
                                         </Precondition>
-                                        <Precondition>
-                                            <SubTree ID = "ForestTree">
+
+                                        <Precondition if="in_forest == 1" else="SUCCESS">
+                                            <!-- <SubTree ID="ForestTree"/> -->
+                                            <AlwaysSuccess/>
                                         </Precondition>
-                                    </SequenceStar>
+
+                                    </SequenceWithMemory>
+                                    <AlwaysSuccess/>
                                 </WhileDoElse>
 
-                                <SubTree ID = "arena_reset_zone">
-                                
+                                <!-- <SubTree ID="arena_reset_zone"/> -->
+
                             </IfThenElse>
                         </Inverter>
                     </KeepRunningUntilFailure>
                 </Inverter>
+            </SequenceWithMemory>
 
-            </SequenceStar>
-        </SequenceStar>
-
-
+        </SequenceWithMemory>
     </BehaviorTree>
 </root>

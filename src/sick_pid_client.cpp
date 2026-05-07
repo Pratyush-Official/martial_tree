@@ -1,7 +1,7 @@
 #include "sick_pid_client.hpp"
  
 using namespace std::placeholders;
-SickPIDClient::SickPIDClient(const std::string &name, const BT::NodeConfiguration &config, rclcpp::Node::SharedPtr node) : //name is passes automatically by the bt_xml, its the name = "" thing in the xml
+SickPIDClient::SickPIDClient(const std::string &name, const BT::NodeConfig &config, rclcpp::Node::SharedPtr node) : //name is passes automatically by the bt_xml, its the name = "" thing in the xml
     BT::StatefulActionNode(name, config), node_(node) //config is passed by the bt_xml too for things like ports and shi
 { //bt nodes arent nodes by themselves, so we passa node to make subscribtions, clients etc accessible
 
@@ -31,7 +31,10 @@ BT::PortsList SickPIDClient::providedPorts()
         BT::InputPort<CurrentYaw>("current_yaw"),
         BT::OutputPort<std::string>("turn", "Direction: Right, Left, Back, Front or raw float"),
         BT::InputPort<std::string>("color", "red or blue"),
-        BT::OutputPort<std::string>("under_roi")
+        // BT::OutputPort<std::string>("under_roi")
+        BT::BidirectionalPort<bool>("check"),
+        BT::BidirectionalPort<bool>("first_stage_done"),
+        BT::BidirectionalPort<bool>("climb_position_reached")
     };
 }
 
@@ -47,10 +50,9 @@ BT::NodeStatus SickPIDClient::onStart()
     auto scroll_detections = getInput<StageDetections>("stage1");
     auto current_yaw_ = getInput<CurrentYaw>("current_yaw");
     auto color = getInput<std::string>("color");
-
-    check = false;
-    first_stage_done = false;
-    climb_position_reached = false;
+    check = getInput<bool>("check").value_or(false);
+    first_stage_done = getInput<bool>("first_stage_done").value_or(false);
+    climb_position_reached = getInput<bool>("climb_position_reached").value_or(false);
 
     if (!scroll_detections)
     {
@@ -116,7 +118,11 @@ BT::NodeStatus SickPIDClient::onRunning()
             else if(under_roi == "roi2"){det.roi2 = "none";} 
             else if(under_roi == "roi3"){det.roi3 = "none";} 
             setOutput("stage1", det);
-            setOutput("under_roi",under_roi);
+            // setOutput("under_roi",under_roi);
+            setOutput("check",check);
+            setOutput("climb_position_reached",climb_position_reached);
+            setOutput("first_stage_done",first_stage_done);
+
         }
 
         return BT::NodeStatus::SUCCESS;
@@ -232,7 +238,11 @@ void SickPIDClient::set_setpoints(const StageDetections &det, const int yaw_int_
                 break;
 
         }
+
+        check = true;
+        climb_position_reached = true;
         return;
+
     }
 
     if (!check) { //Initial check of all the scrolls in Stage 1, if roi2 shows real, other blocks dont need to be picked from entrance zone, if not, they do

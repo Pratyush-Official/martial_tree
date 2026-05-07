@@ -6,7 +6,7 @@
 #include <std_msgs/msg/float32_multi_array.hpp>
 #include <nav_msgs/msg/odometry.hpp>
 
-#include <behaviortree_cpp_v3/action_node.h>
+#include <behaviortree_cpp/action_node.h>
 
 #include <ar_interfaces/action/movement.hpp>
 
@@ -17,7 +17,7 @@ public:
     using GoalHandleMovement = rclcpp_action::ClientGoalHandle<Movement>;
 
     OdomPIDClient(const std::string & name,
-               const BT::NodeConfiguration & config,
+               const BT::NodeConfig & config,
                rclcpp::Node::SharedPtr node);
 
     static BT::PortsList providedPorts();

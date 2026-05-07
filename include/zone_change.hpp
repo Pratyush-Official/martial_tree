@@ -1,5 +1,5 @@
-#ifndef ZONE_AND_COLOR_HPP
-#define ZONE_AND_COLOR_HPP
+#ifndef ZONE_CHANGE_HPP
+#define ZONE_CHANGE_HPP
 
 #include <string>
 #include <rclcpp/rclcpp.hpp>
@@ -9,16 +9,10 @@
 
 using std::string;
 
-enum class ZoneEnum {
-    START_ZONE = 0,
-    ARENA_RESET,
-    // add more zones as needed
-};
-
-class ZoneAndColor : public BT::StatefulActionNode
+class ZoneChange : public BT::StatefulActionNode
 {
 public:
-    ZoneAndColor(const string &name, const BT::NodeConfiguration &config, const rclcpp::Node::SharedPtr node);
+    ZoneChange(const string &name, const BT::NodeConfig &config, const rclcpp::Node::SharedPtr node);
 
     static BT::PortsList providedPorts();
 
