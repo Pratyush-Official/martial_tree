@@ -28,13 +28,34 @@ void tree_ticker::create_behavior_tree()
 
     const std::string pkg = ament_index_cpp::get_package_share_directory("martial_tree");
 
-    // register subtrees first
-    factory.registerBehaviorTreeFromFile(pkg + "/bt_xml/climb_three_photos.xml");
-    factory.registerBehaviorTreeFromFile(pkg + "/bt_xml/scroll_pick_from_entrance.xml");
-    factory.registerBehaviorTreeFromFile(pkg + "/bt_xml/spear_assembly.xml");
-    factory.registerBehaviorTreeFromFile(pkg + "/bt_xml/main_bt.xml");//Main tree last
+    try {
+        factory.registerBehaviorTreeFromFile(pkg + "/bt_xml/climb_three_photos.xml");
+        RCLCPP_INFO(get_logger(), "climb_three_photos OK");
+        factory.registerBehaviorTreeFromFile(pkg + "/bt_xml/scroll_pick_from_entrance.xml");
+        RCLCPP_INFO(get_logger(), "scroll_pick_from_entrance OK");
+        factory.registerBehaviorTreeFromFile(pkg + "/bt_xml/spear_assembly.xml");
+        RCLCPP_INFO(get_logger(), "spear_assembly OK");
+        factory.registerBehaviorTreeFromFile(pkg + "/bt_xml/main_bt.xml");
+        RCLCPP_INFO(get_logger(), "main_bt OK");
 
-    tree_ = factory.createTree("MainTree", blackboard);
+        tree_ = factory.createTree("MainTree", blackboard);
+        RCLCPP_INFO(get_logger(), "tree created OK");
+
+        logger_ = std::make_unique<BT::StdCoutLogger>(tree_);
+    } catch (const std::exception &e) {
+        RCLCPP_ERROR(get_logger(), "BT error: %s", e.what());
+        throw;
+    }
+
+    // // register subtrees first
+    // factory.registerBehaviorTreeFromFile(pkg + "/bt_xml/climb_three_photos.xml");
+    // factory.registerBehaviorTreeFromFile(pkg + "/bt_xml/scroll_pick_from_entrance.xml");
+    // factory.registerBehaviorTreeFromFile(pkg + "/bt_xml/spear_assembly.xml");
+    // factory.registerBehaviorTreeFromFile(pkg + "/bt_xml/main_bt.xml");//Main tree last
+
+    // tree_ = factory.createTree("MainTree", blackboard);
+
+    // logger_ = std::make_unique<BT::StdCoutLogger>(tree_); 
 
     std::string home = std::getenv("HOME");
     std::ofstream out(home + "/ROBOCON_26/2026_ros2_ws/src/martial_tree/bt_xml/bt_node_models.xml");

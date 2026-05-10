@@ -18,6 +18,7 @@
 #include "behaviortree_cpp/behavior_tree.h"
 #include "behaviortree_cpp/bt_factory.h"
 #include "behaviortree_cpp/xml_parsing.h"
+#include "behaviortree_cpp/loggers/bt_cout_logger.h"
 
 class tree_ticker : public rclcpp::Node
 { 
@@ -31,6 +32,7 @@ public:
 
 private:
     rclcpp::CallbackGroup::SharedPtr timer_group;
+    std::unique_ptr<BT::StdCoutLogger> logger_;
     rclcpp::TimerBase::SharedPtr timer_;
     BT::Tree tree_;
     BT::BehaviorTreeFactory factory;

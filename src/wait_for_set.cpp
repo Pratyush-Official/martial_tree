@@ -33,13 +33,13 @@ BT::PortsList WaitForSet::providedPorts()
 
 void WaitForSet::set_reset_subscriber_callback(std_msgs::msg::UInt8 msg)
 {   
-    if(msg.data == 0x1f && wait )
+    if(msg.data == 1 && wait )
     {
         start = true;    
         wait = false;
 
     }
-    else if (msg.data == 0x00)
+    else if (msg.data == 0)
     {
         start = false;    
         wait = true;

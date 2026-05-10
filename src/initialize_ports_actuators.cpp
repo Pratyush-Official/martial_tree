@@ -12,9 +12,9 @@ InitializePortsActuators::InitializePortsActuators(
     qos_profile.reliability(RMW_QOS_POLICY_RELIABILITY_BEST_EFFORT);
 
     cmd_pub_ = node_ptr_->create_publisher<geometry_msgs::msg::Twist>("/cmd_vel", cmd_vel_qos());
-    team_color_ = node_ptr_->create_subscription<std_msgs::msg::String>("team_color", 
-                qos_profile, 
-                std::bind(&InitializePortsActuators::team_color_subscriber_callback, this, _1));
+    // team_color_ = node_ptr_->create_subscription<std_msgs::msg::String>("team_color", 
+    //             qos_profile, 
+    //             std::bind(&InitializePortsActuators::team_color_subscriber_callback, this, _1));
 
     RCLCPP_INFO(node_ptr_->get_logger(), "InitializePortsActuators Initialized");
 }
@@ -34,14 +34,14 @@ BT::NodeStatus InitializePortsActuators::onStart()
 
 BT::NodeStatus InitializePortsActuators::onRunning()
 {
-    if(color_.empty()){
-        return BT::NodeStatus::RUNNING;
-    }
+    // if(color_.empty()){
+    //     return BT::NodeStatus::RUNNING;
+    // }
 
-    setOutput("color", color_);
+    // setOutput("color", color_);
 
-    if(color_ == "red") setOutput<std::string>("turn", "Right"); //Setting the yaw value for the initial turn after camera scan
-    else if(color_ == "blue") setOutput<std::string>("turn", "Left");
+    // if(color_ == "red") setOutput<std::string>("turn", "Right"); //Setting the yaw value for the initial turn after camera scan
+    // else if(color_ == "blue") setOutput<std::string>("turn", "Left");
 
     flag_alter(config().blackboard, FLAG_ALTER_CASE::GAME_START);
 

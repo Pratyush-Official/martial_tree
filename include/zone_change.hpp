@@ -6,6 +6,7 @@
 #include <behaviortree_cpp/action_node.h>
 #include <std_msgs/msg/string.hpp>
 #include <std_msgs/msg/u_int8.hpp>
+#include "qos_profiles.hpp"
 
 using std::string;
 

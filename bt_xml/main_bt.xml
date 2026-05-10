@@ -1,9 +1,9 @@
 <root BTCPP_format="4">
     <BehaviorTree ID="MainTree">
         <SequenceWithMemory>
-            <Delay name="startup_delay" delay_msec="1000">
+            <!-- <Delay name="startup_delay" delay_msec="1000">
                 <AlwaysSuccess/>
-                <!-- <RetryUntilSuccessful num_attempts="-1">
+                <RetryUntilSuccessful num_attempts="-1">
                     <Sequence name="roi_detection_retry">
                         <GetROIDetections
                             name="get_roi_detections"
@@ -11,8 +11,8 @@
                             detections="{stage1_detections}"
                         />
                     </Sequence>
-                </RetryUntilSuccessful> -->
-            </Delay>
+                </RetryUntilSuccessful>
+            </Delay> -->
 
             <SequenceWithMemory>
                 <InitializePortsActuators/>
@@ -44,11 +44,13 @@
                                         </Precondition>
 
                                     </SequenceWithMemory>
-                                    <AlwaysSuccess/>
+                                    <Inverter>
+                                        <AlwaysSuccess/>
+                                    </Inverter>
                                 </WhileDoElse>
 
                                 <!-- <SubTree ID="arena_reset_zone"/> -->
-
+                                <AlwaysSuccess/>
                             </IfThenElse>
                         </Inverter>
                     </KeepRunningUntilFailure>
@@ -58,3 +60,11 @@
         </SequenceWithMemory>
     </BehaviorTree>
 </root>
+
+<!-- <root BTCPP_format="4">
+    <BehaviorTree ID="MainTree">
+        <SequenceWithMemory>
+            <OdomPIDClient name="odom_client" setpoint_odom_1="-1.530" setpoint_odom_2="0.0" tolerance="0.05" />
+        </SequenceWithMemory>
+    </BehaviorTree>
+</root> -->

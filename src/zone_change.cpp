@@ -9,11 +9,11 @@ ZoneChange::ZoneChange(const string &name, const BT::NodeConfig &config, const r
 
         set_reset_ = node_->create_subscription<std_msgs::msg::UInt8>("set_reset", 
             qos_profile, 
-            std::bind(&ZoneChange::set_reset_subscriber_callback, this, _1));
+            std::bind(&ZoneChange::set_reset_subscriber_callback, this, std::placeholders::_1));
         
-        reset_to_martial_sub_ = node_->create_subscription<std_msgs::msg::UInt8>("reset_to_martial", 
-            qos_profile, 
-            std::bind(&ZoneChange::reset_to_martial_callback, this, _1));
+        // reset_to_martial_sub_ = node_->create_subscription<std_msgs::msg::UInt8>("reset_to_martial", 
+        //     qos_profile, y
+        //     std::bind(&ZoneChange::reset_to_martial_callback, this, _1));
 
         RCLCPP_INFO(node_->get_logger(),"ZoneChange initialized");
     }
@@ -32,6 +32,7 @@ BT::PortsList ZoneChange::providedPorts(){
 
 void ZoneChange::set_reset_subscriber_callback(const std_msgs::msg::UInt8::SharedPtr msg){
     set_reset_val_ = msg->data;
+    RCLCPP_INFO(node_->get_logger(), "Button: %d", msg->data);
 }
 
 void ZoneChange::reset_to_martial_callback(const std_msgs::msg::UInt8::SharedPtr msg){
@@ -44,40 +45,85 @@ BT::NodeStatus ZoneChange::onStart(){
 
 BT::NodeStatus ZoneChange::onRunning(){
 
-    auto res = getInput<int>("in_arena");
+    auto blackboard = config().blackboard;
+    int in_arena;
 
-    if(set_reset_val_ == 0x00){
+    blackboard->get("in_arena", in_arena);
 
-        if(res.value() == 1){ //When the robot is in arena and reset is called, the "else" condition of the IF_THEN_ELSE node is run, 
-             // but if the reset_to_martial button is pressed while in Arena, "then" code of the IF_THEN_ELSE code is run
-            if(reset_to_martial_ == 0x01){
-                state_ = "success";
-                setOutput("in_arena", 0);
-                setOutput("photo_sequence_flag", 1);
-                setOutput("in_martial", 1);
-                setOutput("in_forest", 0);
+    if(!in_arena){
+        return BT::NodeStatus::RUNNING;
+    }
 
-                return BT::NodeStatus::SUCCESS;
-            }
-            else{
+    if(set_reset_val_ == 0){
+
+        if(in_arena == 1){
+            //     if(reset_to_martial_ == 0x01){
+            //     state_ = "success";
+            //     setOutput("in_arena", 0);
+            //     setOutput("photo_sequence_flag", 1);
+            //     setOutput("in_martial", 1);
+            //     setOutput("in_forest", 0);
+
+            //     return BT::NodeStatus::SUCCESS;
+            // }
+            // else{
                 state_ = "failure";
                 return BT::NodeStatus::FAILURE;
-            }
-        }
+            // }
+            // continue;
 
+        }
         else{
             state_ = "success";
             return BT::NodeStatus::SUCCESS;
         }
     }
 
-    if(set_reset_val_ == 0x01){
+    if(set_reset_val_ == 1){
         if(state_ == "success") return BT::NodeStatus::SUCCESS;
         if(state_ == "failure") return BT::NodeStatus::FAILURE;
     }
 
     return BT::NodeStatus::RUNNING; 
 }
+
+// BT::NodeStatus ZoneChange::onRunning(){s
+
+//     auto res = getInput<int>("in_arena");
+
+//     if(set_reset_val_ == 0){
+
+//         if(res.value() == 1){ //When the robot is in arena and reset is called, the "else" condition of the IF_THEN_ELSE node is run, 
+//              // but if the reset_to_martial button is pressed while in Arena, "then" code of the IF_THEN_ELSE code is run
+//             // if(reset_to_martial_ == 0x01){
+//             //     state_ = "success";
+//             //     setOutput("in_arena", 0);
+//             //     setOutput("photo_sequence_flag", 1);
+//             //     setOutput("in_martial", 1);
+//             //     setOutput("in_forest", 0);
+
+//             //     return BT::NodeStatus::SUCCESS;
+//             // }
+//             // else{
+//             //     state_ = "failure";
+//             //     return BT::NodeStatus::FAILURE;
+//             // }
+//             // continue;
+//         }
+
+//         else{
+//             state_ = "success";
+//             return BT::NodeStatus::SUCCESS;
+//         }
+//     }
+
+//     if(set_reset_val_ == 1){
+//         if(state_ == "success") return BT::NodeStatus::SUCCESS;
+//         if(state_ == "failure") return BT::NodeStatus::FAILURE;
+//     }
+
+//     return BT::NodeStatus::RUNNING; 
+// }
 
 void ZoneChange::onHalted(){
     RCLCPP_INFO(node_->get_logger(), "ZoneChange halted");
