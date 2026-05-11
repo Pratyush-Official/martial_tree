@@ -1,5 +1,5 @@
-#ifndef SICK_PID_CLIENT_HPP
-#define SICK_PID_CLIENT_HPP
+#ifndef GO_TO_ENTRANCE_HPP
+#define GO_TO_ENTRANCE_HPP
 
 #include <string>
 #include <memory>
@@ -17,13 +17,13 @@
 #include "nav_msgs/msg/odometry.hpp"
 #include "geometry_msgs/msg/twist.hpp"
 #include "qos_profiles.hpp"
-#include "get_roi_detections.hpp"
-#include "yaw_setpoint.hpp"
+#include "camera_nodes/get_roi_detections.hpp"
+#include "movement_nodes/yaw_setpoint.hpp"
 
-class SickPIDClient : public BT::StatefulActionNode
+class GoToEntrance : public BT::StatefulActionNode
 {
 public:
-    SickPIDClient(const std::string &name,
+    GoToEntrance(const std::string &name,
                   const BT::NodeConfig &config,
                   rclcpp::Node::SharedPtr node);
 

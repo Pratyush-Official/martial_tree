@@ -1,4 +1,4 @@
-#include "yaw_setpoint.hpp"
+#include "movement_nodes/yaw_setpoint.hpp"
 
 YawSetpoint::YawSetpoint(const std::string& name, const BT::NodeConfig& config, rclcpp::Node::SharedPtr node)
         : BT::StatefulActionNode(name, config), node_(node){

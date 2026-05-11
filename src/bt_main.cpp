@@ -47,16 +47,6 @@ void tree_ticker::create_behavior_tree()
         throw;
     }
 
-    // // register subtrees first
-    // factory.registerBehaviorTreeFromFile(pkg + "/bt_xml/climb_three_photos.xml");
-    // factory.registerBehaviorTreeFromFile(pkg + "/bt_xml/scroll_pick_from_entrance.xml");
-    // factory.registerBehaviorTreeFromFile(pkg + "/bt_xml/spear_assembly.xml");
-    // factory.registerBehaviorTreeFromFile(pkg + "/bt_xml/main_bt.xml");//Main tree last
-
-    // tree_ = factory.createTree("MainTree", blackboard);
-
-    // logger_ = std::make_unique<BT::StdCoutLogger>(tree_); 
-
     std::string home = std::getenv("HOME");
     std::ofstream out(home + "/ROBOCON_26/2026_ros2_ws/src/martial_tree/bt_xml/bt_node_models.xml");
     out << BT::writeTreeNodesModelXML(factory);
@@ -72,6 +62,14 @@ void tree_ticker::register_custom_action_nodes()
         [shared_self](const std::string &name, const BT::NodeConfig &config)
         {
             return std::make_unique<SickPIDClient>(name, config, shared_self);
+        }
+    );
+
+    factory.registerBuilder<GoToEntrance>(
+        "GoToEntrance",
+        [shared_self](const std::string &name, const BT::NodeConfig &config)
+        {
+            return std::make_unique<GoToEntrance>(name, config, shared_self);
         }
     );
 
@@ -144,6 +142,40 @@ void tree_ticker::register_custom_action_nodes()
         [shared_self](const std::string &name, const BT::NodeConfig &config)
         {
             return std::make_unique<ZoneChange>(name, config, shared_self);
+        }
+    );
+
+    // --- newly added nodes ---
+
+    factory.registerBuilder<SetDestinationFromPriority>(
+        "SetDestinationFromPriority",
+        [shared_self](const std::string &name, const BT::NodeConfig &config)
+        {
+            return std::make_unique<SetDestinationFromPriority>(name, config, shared_self);
+        }
+    );
+
+    factory.registerBuilder<GetLocationForStage>(
+        "GetLocationForStage",
+        [shared_self](const std::string &name, const BT::NodeConfig &config)
+        {
+            return std::make_unique<GetLocationForStage>(name, config, shared_self);
+        }
+    );
+
+    factory.registerBuilder<UpdateCurrentStage>(
+        "UpdateCurrentStage",
+        [shared_self](const std::string &name, const BT::NodeConfig &config)
+        {
+            return std::make_unique<UpdateCurrentStage>(name, config, shared_self);
+        }
+    );
+
+    factory.registerBuilder<CheckItemsPicked>(
+        "CheckItemsPicked",
+        [shared_self](const std::string &name, const BT::NodeConfig &config)
+        {
+            return std::make_unique<CheckItemsPicked>(name, config, shared_self);
         }
     );
 }

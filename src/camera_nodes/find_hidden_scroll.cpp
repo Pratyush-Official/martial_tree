@@ -1,4 +1,4 @@
-#include "find_hidden_scroll.hpp"
+#include "camera_nodes/find_hidden_scroll.hpp"
 
 FindHiddenScroll::FindHiddenScroll(
   const std::string& name,

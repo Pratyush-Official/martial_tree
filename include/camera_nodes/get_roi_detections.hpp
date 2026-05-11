@@ -58,6 +58,7 @@ private:
   std::chrono::steady_clock::time_point reset_time_;
 
   int stage_{0};
+  int type_ = 2;
   int reset_delay_ms_{1200};
 };
 

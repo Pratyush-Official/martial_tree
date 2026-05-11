@@ -1,7 +1,7 @@
-<root BTCPP_format="4">
+<!-- <root BTCPP_format="4">
     <BehaviorTree ID="MainTree">
         <SequenceWithMemory>
-            <!-- <Delay name="startup_delay" delay_msec="1000">
+            <Delay name="startup_delay" delay_msec="1000">
                 <AlwaysSuccess/>
                 <RetryUntilSuccessful num_attempts="-1">
                     <Sequence name="roi_detection_retry">
@@ -12,7 +12,7 @@
                         />
                     </Sequence>
                 </RetryUntilSuccessful>
-            </Delay> -->
+            </Delay>
 
             <SequenceWithMemory>
                 <InitializePortsActuators/>
@@ -39,7 +39,7 @@
                                         </Precondition>
 
                                         <Precondition if="in_forest == 1" else="SUCCESS">
-                                            <!-- <SubTree ID="ForestTree"/> -->
+                                            <SubTree ID="ForestTree"/>
                                             <AlwaysSuccess/>
                                         </Precondition>
 
@@ -49,7 +49,7 @@
                                     </Inverter>
                                 </WhileDoElse>
 
-                                <!-- <SubTree ID="arena_reset_zone"/> -->
+                                <SubTree ID="arena_reset_zone"/>
                                 <AlwaysSuccess/>
                             </IfThenElse>
                         </Inverter>
@@ -59,12 +59,13 @@
 
         </SequenceWithMemory>
     </BehaviorTree>
-</root>
+</root> -->
 
-<!-- <root BTCPP_format="4">
+<root BTCPP_format="4">
     <BehaviorTree ID="MainTree">
         <SequenceWithMemory>
-            <OdomPIDClient name="odom_client" setpoint_odom_1="-1.530" setpoint_odom_2="0.0" tolerance="0.05" />
+            <!-- <OdomPIDClient name="odom_client" setpoint_odom_1="-1.530" setpoint_odom_2="0.0" tolerance="0.05" /> -->
+            <AkClient name="ak_client" up="true" down="false"/>
         </SequenceWithMemory>
     </BehaviorTree>
-</root> -->
+</root>

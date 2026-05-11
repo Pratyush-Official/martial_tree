@@ -21,18 +21,26 @@ find_package(oakd_roi_detector_interfaces REQUIRED)
 find_package(geometry_msgs REQUIRED)
 
 set(BEHAVIOUR_SOURCES
-  src/sick_pid_client.cpp
-  src/ak_client.cpp
-  src/yaw_setpoint.cpp
   src/bt_main.cpp
-  src/get_roi_detections.cpp
-  src/find_hidden_scroll.cpp
-  src/odom_pid_client.cpp
-  src/yaw_pid_client.cpp
-  src/zone_change.cpp 
-  src/wait_for_set.cpp 
-  src/initialize_ports_actuators.cpp 
 
+  src/movement_nodes/sick_pid_client.cpp
+  src/movement_nodes/ak_client.cpp
+  src/movement_nodes/yaw_setpoint.cpp
+  src/movement_nodes/odom_pid_client.cpp
+  src/movement_nodes/yaw_pid_client.cpp
+  src/movement_nodes/go_to_entrance.cpp
+
+  src/camera_nodes/get_roi_detections.cpp
+  src/camera_nodes/find_hidden_scroll.cpp
+
+  src/tree_flow_nodes/zone_change.cpp
+  src/tree_flow_nodes/wait_for_set.cpp
+  src/tree_flow_nodes/initialize_ports_actuators.cpp
+  
+  src/set_destination_from_priority.cpp
+  src/get_location_for_stage.cpp
+  src/update_current_stage.cpp
+  src/check_items_picked.cpp
   include/robotlibpc/cpp/controller/pid.cpp
 )
 

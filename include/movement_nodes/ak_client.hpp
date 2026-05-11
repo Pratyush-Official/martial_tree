@@ -41,12 +41,17 @@ private:
     Movement movement_state;
     Actuation actuation_state;
     
-    bool request_sent;
+    bool request_sent_climb;
+    bool request_sent_roll;
     bool rear_status_forward; 
     bool rear_status_reverse;
+
     bool ran;
-    bool service_success_;
-    bool service_done_;
+    bool service_success_climb;
+    bool service_done_climb;
+
+    bool service_success_roll;
+    bool service_done_roll;
     
     uint8_t prox_data;
     std_msgs::msg::Byte rear;
@@ -54,14 +59,21 @@ private:
     rclcpp::Node::SharedPtr node_;
     rclcpp::Client<std_srvs::srv::SetBool>::SharedPtr client_c_up;
     rclcpp::Client<std_srvs::srv::SetBool>::SharedPtr client_c_down;
-    rclcpp::Client<std_srvs::srv::SetBool>::SharedPtr active_client;
+    rclcpp::Client<std_srvs::srv::SetBool>::SharedPtr active_client_climb;
+
+    rclcpp::Client<std_srvs::srv::SetBool>::SharedPtr client_roll_forward;
+    rclcpp::Client<std_srvs::srv::SetBool>::SharedPtr client_roll_backward;
+    rclcpp::Client<std_srvs::srv::SetBool>::SharedPtr active_client_roll;
+
+
     rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr cmd_pub_; 
     rclcpp::Publisher<std_msgs::msg::Byte>::SharedPtr rear_pub;
     rclcpp::Subscription<std_msgs::msg::Byte>::SharedPtr prox_sub;
 
     geometry_msgs::msg::Twist cmd;
 
-    std::shared_future<std::shared_ptr<std_srvs::srv::SetBool::Response>> future_;
+    std::shared_future<std::shared_ptr<std_srvs::srv::SetBool::Response>> future_roll;
+    std::shared_future<std::shared_ptr<std_srvs::srv::SetBool::Response>> future_climb;
     
     void prox_callback(const std_msgs::msg::Byte::SharedPtr msg);
 

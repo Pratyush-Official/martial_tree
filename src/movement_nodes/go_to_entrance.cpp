@@ -1,7 +1,7 @@
-#include "sick_pid_client.hpp"
+#include "movement_nodes/go_to_entrance.hpp"
  
 using namespace std::placeholders;
-SickPIDClient::SickPIDClient(const std::string &name, const BT::NodeConfig &config, rclcpp::Node::SharedPtr node) : //name is passes automatically by the bt_xml, its the name = "" thing in the xml
+GoToEntrance::GoToEntrance(const std::string &name, const BT::NodeConfig &config, rclcpp::Node::SharedPtr node) : //name is passes automatically by the bt_xml, its the name = "" thing in the xml
     BT::StatefulActionNode(name, config), node_(node) //config is passed by the bt_xml too for things like ports and shi
 { //bt nodes arent nodes by themselves, so we passa node to make subscribtions, clients etc accessible
 
@@ -10,21 +10,11 @@ SickPIDClient::SickPIDClient(const std::string &name, const BT::NodeConfig &conf
 
         client_ptr = rclcpp_action::create_client<ar_interfaces::action::Movement>(node, "/movement_sick"); //movement_pid is the service name
         cmd_pub_ = node_->create_publisher<geometry_msgs::msg::Twist>("/cmd_vel", cmd_vel_qos());
-        RCLCPP_INFO(node_->get_logger(),"SickPIDClient initialized");
+        RCLCPP_INFO(node_->get_logger(),"GoToEntrance initialized");
         done_flag = false;
 }
 
-// BT::PortsList SickPIDClient::providedPorts()
-// {
-//     return {
-//         BT::InputPort<float>("SP1", "Setpoint 1"),
-//         BT::InputPort<float>("SP2", "Setpoint 2"),
-//         BT::InputPort<float>("SP3", "Setpoint 3"),
-//         BT::InputPort<float>("SP4", "Setpoint 4")
-//     };
-// }
-
-BT::PortsList SickPIDClient::providedPorts()
+BT::PortsList GoToEntrance::providedPorts()
 {
     return {
         BT::BidirectionalPort<StageDetections>("stage1"),
@@ -38,14 +28,8 @@ BT::PortsList SickPIDClient::providedPorts()
     };
 }
 
-BT::NodeStatus SickPIDClient::onStart()
+BT::NodeStatus GoToEntrance::onStart()
 {
-    
-    // float sp1 = getInput<float>("SP1").value();
-    // float sp2 = getInput<float>("SP2").value();
-    // float sp3 = getInput<float>("SP3").value();
-    // float sp4 = getInput<float>("SP4").value();
-
     under_roi = "roi2"; //Default roi
     auto scroll_detections = getInput<StageDetections>("stage1");
     auto current_yaw_ = getInput<CurrentYaw>("current_yaw");
@@ -78,9 +62,9 @@ BT::NodeStatus SickPIDClient::onStart()
     done_flag = false;
     success = false;
     auto goal_options = rclcpp_action::Client<ar_interfaces::action::Movement>::SendGoalOptions();
-    goal_options.goal_response_callback = std::bind(&SickPIDClient::goal_response_callback, this, _1); //When server sends a response to a goal request, run this callback
-    goal_options.feedback_callback = std::bind(&SickPIDClient::feedback_callback, this, _1, _2);
-    goal_options.result_callback = std::bind(&SickPIDClient::result_callback, this, _1);
+    goal_options.goal_response_callback = std::bind(&GoToEntrance::goal_response_callback, this, _1); //When server sends a response to a goal request, run this callback
+    goal_options.feedback_callback = std::bind(&GoToEntrance::feedback_callback, this, _1, _2);
+    goal_options.result_callback = std::bind(&GoToEntrance::result_callback, this, _1);
 
     goal_msg.setpoint_sick = true_setpoint;
     goal_msg.tolerance_sick = 0.0;
@@ -98,12 +82,12 @@ BT::NodeStatus SickPIDClient::onStart()
     }
 
     client_ptr->async_send_goal(goal_msg, goal_options);
-    RCLCPP_INFO(node_->get_logger(), "SickPIDClient::sent goal");
+    RCLCPP_INFO(node_->get_logger(), "GoToEntrance::sent goal");
     
     return BT::NodeStatus::RUNNING;
 }
 
-BT::NodeStatus SickPIDClient::onRunning()
+BT::NodeStatus GoToEntrance::onRunning()
     {
 
     if (done_flag && success) //Done flag defines whether the execution of the server finished, success defines if the execution was a success or failure.
@@ -137,68 +121,57 @@ BT::NodeStatus SickPIDClient::onRunning()
     return BT::NodeStatus::RUNNING;
 }
 
-void SickPIDClient::onHalted()
+void GoToEntrance::onHalted()
 {
     cancel_goal();  
 }
 
-void SickPIDClient::cancel_goal()
+void GoToEntrance::cancel_goal()
 {
     if (goal_handle)
     {
         client_ptr->async_cancel_goal(goal_handle);
-        RCLCPP_INFO(node_->get_logger(), "SickPIDClient::Goal canceled");
+        RCLCPP_INFO(node_->get_logger(), "GoToEntrance::Goal canceled");
     }
 }
 
-void SickPIDClient::goal_response_callback(const GoalHandleMovement::SharedPtr &goal_handle_)
+void GoToEntrance::goal_response_callback(const GoalHandleMovement::SharedPtr &goal_handle_)
 {
 
     if (!goal_handle_)
     {
         RCLCPP_ERROR(node_->get_logger(),
-                     "SickPIDClient::Goal rejected by server");
+                     "GoToEntrance::Goal rejected by server");
         done_flag = true;
         success = false;
     }
     else
     {
         RCLCPP_INFO(node_->get_logger(),
-                    "SickPIDClient::Goal accepted");
+                    "GoToEntrance::Goal accepted");
         goal_handle = goal_handle_;
     }
-    // if (!goal_handle_)
-    // {
-    //     RCLCPP_ERROR(node_->get_logger(), "GoToSpear::Navigate to spear %i goal rejected by server", this->silo_numbers.data[0]);
-    //     setOutput<uint8_t>("Op_SiloNumber", 0);
-    // }
-    // else
-    // {
-    //     RCLCPP_INFO(node_->get_logger(), "GoToSpear::Navigating to spear %i ", this->silo_numbers.data[0]);
-    //     this->goal_handle = goal_handle_;
-
-    // }
 
 }
 
-void SickPIDClient::result_callback(const GoalHandleMovement::WrappedResult &result)
+void GoToEntrance::result_callback(const GoalHandleMovement::WrappedResult &result)
 {
     if (result.code == rclcpp_action::ResultCode::SUCCEEDED)
     {
         RCLCPP_INFO(node_->get_logger(),
-                    "SickPIDClient::Goal succeeded");
+                    "GoToEntrance::Goal succeeded");
         success = true;
     }
     else
     {
         RCLCPP_WARN(node_->get_logger(),
-                    "SickPIDClient::Goal failed or canceled");
+                    "GoToEntrance::Goal failed or canceled");
         success = false;
     }
     done_flag = true;
 }
 
-void SickPIDClient::feedback_callback(
+void GoToEntrance::feedback_callback(
     GoalHandleMovement::SharedPtr,
     const std::shared_ptr<const ar_interfaces::action::Movement::Feedback> feedback)
 {
@@ -206,18 +179,18 @@ void SickPIDClient::feedback_callback(
 
 }
 
-void SickPIDClient::odometry_callback(const nav_msgs::msg::Odometry &msg)
+void GoToEntrance::odometry_callback(const nav_msgs::msg::Odometry &msg)
 {
     this->odom_msg = msg;
 }
 
-void SickPIDClient::sickCallback(const std_msgs::msg::Float32MultiArray::SharedPtr msg)
+void GoToEntrance::sickCallback(const std_msgs::msg::Float32MultiArray::SharedPtr msg)
 {
     this->sick_data = msg->data;
 }
 
 // pass turn_output by reference instead of calling setOutput inside
-void SickPIDClient::set_setpoints(const StageDetections &det, const int yaw_int_, std::string &turn_output, const std::string &color){
+void GoToEntrance::set_setpoints(const StageDetections &det, const int yaw_int_, std::string &turn_output, const std::string &color){
 
     if (!climb_position_reached && (first_stage_done || (det.roi1 != "real" && det.roi3 != "real"))) { //If roi2 hasnt been reached (i.e real block not on roi2 so roi3 or roi1 needs to be picked up), go to roi2 now
         under_roi = "roi2";
@@ -301,7 +274,7 @@ void SickPIDClient::set_setpoints(const StageDetections &det, const int yaw_int_
     }
 }
 
-void SickPIDClient::resetVel()
+void GoToEntrance::resetVel()
 {
     geometry_msgs::msg::Twist cmd;
     cmd.linear.x = 0.0f;
