@@ -27,6 +27,9 @@
 #include "behaviortree_cpp/bt_factory.h"
 #include "behaviortree_cpp/xml_parsing.h"
 #include "behaviortree_cpp/loggers/bt_cout_logger.h"
+#include <behaviortree_cpp/loggers/groot2_publisher.h>
+#include <behaviortree_cpp/loggers/bt_file_logger_v2.h>
+
 
 class tree_ticker : public rclcpp::Node
 { 
@@ -44,4 +47,6 @@ private:
     rclcpp::TimerBase::SharedPtr timer_;
     BT::Tree tree_;
     BT::BehaviorTreeFactory factory;
+    std::unique_ptr<BT::Groot2Publisher> groot_publisher_;
+    std::unique_ptr<BT::FileLogger2> file_logger_;
 };

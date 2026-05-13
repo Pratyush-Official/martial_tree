@@ -22,8 +22,8 @@ InitializePortsActuators::InitializePortsActuators(
 BT::PortsList InitializePortsActuators::providedPorts()
 {
     return {
-        BT::OutputPort<std::string>("color"),
-        BT::OutputPort<std::string>("turn"),
+        // BT::OutputPort<std::string>("color"),
+        // BT::OutputPort<std::string>("turn"),
     };
 }
 
@@ -34,6 +34,8 @@ BT::NodeStatus InitializePortsActuators::onStart()
 
 BT::NodeStatus InitializePortsActuators::onRunning()
 {
+
+
     // if(color_.empty()){
     //     return BT::NodeStatus::RUNNING;
     // }
@@ -51,6 +53,8 @@ BT::NodeStatus InitializePortsActuators::onRunning()
     cmd.angular.z = 0.0f;
     cmd_pub_->publish(cmd);
 
+    config().blackboard->set<std::string>("color", "red");
+    config().blackboard->set<std::string>("turn", "Right");
     return BT::NodeStatus::SUCCESS;
 }
 
@@ -77,7 +81,7 @@ void InitializePortsActuators::flag_alter(BT::Blackboard::Ptr bb, const FLAG_ALT
     switch(case_){
         case FLAG_ALTER_CASE::GAME_START:
             reset_flags(bb);
-            bb->set<int>("in_martial", 1);
+            bb->set<int>("in_martial", 1); 
             break;
 
         case FLAG_ALTER_CASE::SPEAR_ASSEMBLED:

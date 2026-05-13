@@ -4,28 +4,27 @@
             <input_port name="down" type="bool">Send true to lower the mechanism</input_port>
             <input_port name="up" type="bool">Send true to raise the mechanism</input_port>
         </Action>
+        <Action ID="CheckItemsPicked">
+            <input_port name="items_picked" type="int" default="0">Number of items picked so far</input_port>
+        </Action>
         <Action ID="FindHiddenScroll">
             <input_port name="stage4" type="StageDetections"/>
             <input_port name="stage3" type="StageDetections"/>
             <input_port name="stage2" type="StageDetections"/>
             <input_port name="stage1" type="StageDetections"/>
         </Action>
+        <Action ID="GetLocationForStage">
+            <output_port name="setpoint_odom_2" type="float"/>
+            <output_port name="setpoint_odom_1" type="float"/>
+            <input_port name="destination_stage" type="int"/>
+        </Action>
         <Action ID="GetROIDetections">
             <output_port name="detections" type="StageDetections"/>
+            <input_port name="type" type="int" default="2">For stage&gt;=4: 1=check specific martial ROI, 2=standard logic</input_port>
             <input_port name="reset_delay_ms" type="int" default="1200">Delay after reset in ms</input_port>
-            <input_port name="stage" type="int" default="1">Detection stage (1-3)</input_port>
+            <input_port name="stage" type="int" default="1">Detection stage (1-3, or 4+ for martial ROI mode)</input_port>
         </Action>
-        <Action ID="InitializePortsActuators">
-            <output_port name="turn" type="std::string"/>
-            <output_port name="color" type="std::string"/>
-        </Action>
-        <Action ID="OdomPIDClient">
-            <input_port name="timeout" type="float"/>
-            <input_port name="tolerance" type="float"/>
-            <input_port name="setpoint_odom_2" type="float"/>
-            <input_port name="setpoint_odom_1" type="float"/>
-        </Action>
-        <Action ID="SickPIDClient">
+        <Action ID="GoToEntrance">
             <inout_port name="first_stage_done" type="bool"/>
             <inout_port name="check" type="bool"/>
             <inout_port name="climb_position_reached" type="bool"/>
@@ -33,6 +32,28 @@
             <output_port name="turn" type="std::string">Direction: Right, Left, Back, Front or raw float</output_port>
             <input_port name="current_yaw" type="CurrentYaw"/>
             <inout_port name="stage1" type="StageDetections"/>
+        </Action>
+        <Action ID="InitializePortsActuators"/>
+        <Action ID="OdomPIDClient">
+            <input_port name="timeout" type="float"/>
+            <input_port name="tolerance" type="float"/>
+            <input_port name="setpoint_odom_2" type="float"/>
+            <input_port name="setpoint_odom_1" type="float"/>
+        </Action>
+        <Action ID="SetDestinationFromPriority">
+            <output_port name="destination_stage" type="int"/>
+            <input_port name="color" type="std::string"/>
+            <input_port name="detections" type="StageDetections"/>
+        </Action>
+        <Action ID="SickPIDClient">
+            <input_port name="SP4" type="float">Setpoint 4</input_port>
+            <input_port name="SP3" type="float">Setpoint 3</input_port>
+            <input_port name="SP2" type="float">Setpoint 2</input_port>
+            <input_port name="SP1" type="float">Setpoint 1</input_port>
+        </Action>
+        <Action ID="UpdateCurrentStage">
+            <output_port name="current_stage" type="int"/>
+            <input_port name="destination_stage" type="int"/>
         </Action>
         <Action ID="WaitForSet"/>
         <Action ID="YawPIDClient">

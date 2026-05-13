@@ -9,7 +9,11 @@ WaitForSet::WaitForSet(
     rclcpp::QoS qos_profile(10);
     qos_profile.reliability(RMW_QOS_POLICY_RELIABILITY_BEST_EFFORT);
 
-    set_reset = node_ptr_->create_subscription<std_msgs::msg::UInt8>( "set_reset", qos_profile, std::bind(&WaitForSet::set_reset_subscriber_callback,this,std::placeholders::_1));
+    auto cb_group = node_ptr_->create_callback_group(rclcpp::CallbackGroupType::Reentrant);
+    rclcpp::SubscriptionOptions options;
+    options.callback_group = cb_group;
+
+    set_reset = node_ptr_->create_subscription<std_msgs::msg::UInt8>( "set_reset", qos_profile, std::bind(&WaitForSet::set_reset_subscriber_callback,this,std::placeholders::_1), options);
     RCLCPP_INFO(node_ptr_->get_logger(),"WaitForSet Initialized");
     wait = true;
 }

@@ -13,8 +13,11 @@ void tree_ticker::setup()
     create_behavior_tree();
     timer_group = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
 
+    bool debug_mode = this->declare_parameter<bool>("debug", false);
+    int tick_ms = debug_mode ? 2000 : 10; //if debug == "true", 2000ms, else 10ms is the tick 
+
     timer_ = create_wall_timer(
-        10ms,
+        std::chrono::milliseconds(tick_ms),
         std::bind(&tree_ticker::update_behavior_tree, this),
         timer_group
     );
@@ -25,6 +28,13 @@ void tree_ticker::create_behavior_tree()
     register_custom_action_nodes();
 
     auto blackboard = BT::Blackboard::create();
+    
+    blackboard->set<int>("in_martial", 0);
+    blackboard->set<int>("in_forest", 0);
+    blackboard->set<int>("spear_assembled", 0);
+    blackboard->set<int>("scroll_picked_from_entrance", 0);
+    blackboard->set<int>("climbed_three_photos", 0);
+    blackboard->set<int>("photo_sequence", 0);
 
     const std::string pkg = ament_index_cpp::get_package_share_directory("martial_tree");
 
@@ -42,6 +52,9 @@ void tree_ticker::create_behavior_tree()
         RCLCPP_INFO(get_logger(), "tree created OK");
 
         logger_ = std::make_unique<BT::StdCoutLogger>(tree_);
+        groot_publisher_ = std::make_unique<BT::Groot2Publisher>(tree_, 1667); // default port is 1667
+        file_logger_ = std::make_unique<BT::FileLogger2>(tree_, "/home/maomao/ROBOCON_26/2026_ros2_ws/src/martial_tree/bt_xml/bt_trace.btlog");
+
     } catch (const std::exception &e) {
         RCLCPP_ERROR(get_logger(), "BT error: %s", e.what());
         throw;
@@ -182,8 +195,9 @@ void tree_ticker::register_custom_action_nodes()
 
 void tree_ticker::update_behavior_tree()
 {
-    auto status = tree_.tickWhileRunning();
 
+    bool debug_mode = this->get_parameter("debug").as_bool();
+    auto status = debug_mode ? tree_.tickOnce() : tree_.tickWhileRunning(); //if debug == "true" status = tickOnce, else its tickWhileRunning
     if(status != BT::NodeStatus::RUNNING)
     {
         RCLCPP_INFO(

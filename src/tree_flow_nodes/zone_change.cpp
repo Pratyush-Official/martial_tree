@@ -32,7 +32,7 @@ BT::PortsList ZoneChange::providedPorts(){
 
 void ZoneChange::set_reset_subscriber_callback(const std_msgs::msg::UInt8::SharedPtr msg){
     set_reset_val_ = msg->data;
-    RCLCPP_INFO(node_->get_logger(), "Button: %d", msg->data);
+    // RCLCPP_INFO(node_->get_logger(), "Button: %d", msg->data);
 }
 
 void ZoneChange::reset_to_martial_callback(const std_msgs::msg::UInt8::SharedPtr msg){
@@ -50,9 +50,9 @@ BT::NodeStatus ZoneChange::onRunning(){
 
     blackboard->get("in_arena", in_arena);
 
-    if(!in_arena){
-        return BT::NodeStatus::RUNNING;
-    }
+    // if(!in_arena){
+    //     return BT::NodeStatus::RUNNING;
+    // }
 
     if(set_reset_val_ == 0){
 

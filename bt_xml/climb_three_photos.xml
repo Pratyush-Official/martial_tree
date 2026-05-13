@@ -3,7 +3,7 @@
         <SequenceWithMemory>
 
             <Precondition if="climb_position_reached != 1" else="SUCCESS">
-                <SickPIDClient name="after_scroll_picking" 
+                <GoToEntrance name="after_scroll_picking" 
                     stage1="{stage1_detections}" 
                     current_yaw="{current_yaw}" 
                     turn="{turn}" 
