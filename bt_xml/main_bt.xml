@@ -15,33 +15,42 @@
 
                                 <WhileDoElse>
                                     <WaitForSet/>
-                                    <SequenceWithMemory>
+                                    <Sequence>
 
                                         <Precondition if="in_martial == 1 && (spear_assembled != 1 || photo_sequence == 1)" else="SUCCESS">
-                                            <SubTree ID="SpearAssembly"/>
+                                            <SubTree ID="SpearAssembly" _autoremap="true"/>
                                         </Precondition>
 
                                         <Precondition if="in_martial == 1 && spear_assembled == 1 && scroll_picked_from_entrance != 1" else="SUCCESS">
-                                            <SubTree ID="ScrollPickFromEntrance"/>
+                                            <SubTree ID="ScrollPickFromEntrance" _autoremap="true"/>
                                         </Precondition>
 
                                         <Precondition if="in_martial == 1 && spear_assembled == 1 && scroll_picked_from_entrance == 1 && climbed_three_photos != 1" else="SUCCESS">
-                                            <SubTree ID="ClimbThreePhotos"/>
+                                            <SubTree ID="ClimbThreePhotos" _autoremap="true"/> <!--autoremap = true shares the blackboard to sub trees, we need to add it to every subtree -->
                                         </Precondition>
 
                                         <Precondition if="in_forest == 1" else="SUCCESS">
                                             <!-- <SubTree ID="ForestTree"/> -->
-                                            <AlwaysSuccess/>
+                                            <KeepRunningUntilFailure>
+                                                <AlwaysFailure/>
+                                            </KeepRunningUntilFailure>
+
                                         </Precondition>
 
-                                    </SequenceWithMemory>
+                                        <KeepRunningUntilFailure>
+                                            <AlwaysFailure/>
+                                        </KeepRunningUntilFailure>
+
+                                    </Sequence>
+
                                     <Inverter>
                                         <AlwaysSuccess/>
                                     </Inverter>
+                                    
                                 </WhileDoElse>
 
                                 <!-- <SubTree ID="arena_reset_zone"/> -->
-                                <AlwaysSuccess/>
+                                <AlwaysFailure/>
                             </IfThenElse>
                         </Inverter>
                     </KeepRunningUntilFailure>

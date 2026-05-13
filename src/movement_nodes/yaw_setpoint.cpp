@@ -8,6 +8,8 @@ YawSetpoint::YawSetpoint(const std::string& name, const BT::NodeConfig& config, 
             setpoint_pub = node_->create_publisher<std_msgs::msg::Float32MultiArray>("setpoint_yaw",10);
             //slider_sub = node_->create_subscription<std_msgs::msg::Float32MultiArray>("/pid_gains", 10, std::bind(&YawSetpoint::slider_callback, this, std::placeholders::_1));
             RCLCPP_INFO(node_->get_logger(),"YawSetpoint initialized");
+
+            node_name = this->name();
         }
 
 BT::PortsList YawSetpoint::providedPorts() 
@@ -48,7 +50,6 @@ BT::NodeStatus YawSetpoint::onStart(){
     setpoint_.data.push_back(turn_);
     setpoint_.data.push_back(RESET_YAW_BYTE); 
     setpoint_pub->publish(setpoint_);
-
     
     // setpoint_.data.clear();
     // setpoint_.data.push_back(turn_);
@@ -102,6 +103,15 @@ BT::NodeStatus YawSetpoint::onRunning(){
         rclcpp::sleep_for(std::chrono::milliseconds(500));
 
         setOutput("current_yaw", current_yaw_);
+
+        // if(node_name == "face_spear"){
+        //     flag_alter(config().blackboard, FLAG_ALTER_CASE::SPEAR_ASSEMBLED); //This is how we set/reset flag values
+        // }
+
+        // if(node_name == "face_arena"){
+        //     flag_alter(config().blackboard, FLAG_ALTER_CASE::SCROLL_PICKED_FROM_ENTRANCE);
+        // }
+        
         return BT::NodeStatus::SUCCESS;
     }
     else{

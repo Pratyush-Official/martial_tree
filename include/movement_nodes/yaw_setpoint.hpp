@@ -15,6 +15,8 @@
 #include "std_msgs/msg/float32_multi_array.hpp"
 #include "std_msgs/msg/float32.hpp"
 #include "qos_profiles.hpp"
+
+#include "tree_flow_nodes/flag_alter.hpp"
 #include <cmath> 
 
 #include "ament_index_cpp/get_package_share_directory.hpp"
@@ -85,6 +87,7 @@ class YawSetpoint : public BT::StatefulActionNode
         float pi;
         const float TWO_PI = 2.0f * M_PI;
         const float PI = M_PI;
+        std::string node_name;
 };
 
 #endif

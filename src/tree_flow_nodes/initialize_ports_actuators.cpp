@@ -63,71 +63,7 @@ void InitializePortsActuators::onHalted()
     RCLCPP_INFO(node_ptr_->get_logger(), "InitializePortsActuators::Halted");
 }
 
-void InitializePortsActuators::reset_flags(BT::Blackboard::Ptr bb){
-    bb->set<int>("in_martial", 0);
-    bb->set<int>("climbed_three_photos", 0);
-    bb->set<int>("in_forest", 0);
-    bb->set<int>("photo_sequence", 0);
-    bb->set<int>("in_arena", 0);
-    bb->set<int>("reset_to_martial", 0);
-}
-
 void InitializePortsActuators::team_color_subscriber_callback(const std_msgs::msg::String::SharedPtr msg){
     color_ = msg->data;
 }
 
-void InitializePortsActuators::flag_alter(BT::Blackboard::Ptr bb, const FLAG_ALTER_CASE case_){
-
-    switch(case_){
-        case FLAG_ALTER_CASE::GAME_START:
-            reset_flags(bb);
-            bb->set<int>("in_martial", 1); 
-            break;
-
-        case FLAG_ALTER_CASE::SPEAR_ASSEMBLED:
-            reset_flags(bb);
-            bb->set<int>("in_martial", 1);
-            bb->set<int>("spear_assembled", 1);
-            break;
-
-        case FLAG_ALTER_CASE::SCROLL_PICKED_FROM_ENTRANCE:
-            reset_flags(bb);
-            bb->set<int>("in_martial", 1);
-            bb->set<int>("spear_assembled", 1);
-            bb->set<int>("scroll_picked_from_entrance", 1);
-            bb->set<int>("store", 1);
-            break;
-
-        case FLAG_ALTER_CASE::CLIMBED_THREE_PHOTOS:
-            reset_flags(bb);
-            bb->set<int>("spear_assembled", 1);
-            bb->set<int>("climbed_three_photos", 1);
-            bb->set<int>("in_forest", 1);
-            break;
-
-        case FLAG_ALTER_CASE::STORE:
-            bb->set<int>("store", 1);
-            break;
-        
-        case FLAG_ALTER_CASE::CARRY:
-            bb->set<int>("carry", 1);
-            break;
-        
-        case FLAG_ALTER_CASE::RESET_IN_FOREST:
-            reset_flags(bb);
-            bb->set<int>("in_martial", 1);
-            bb->set<int>("spear_assembled", 1);
-            bb->set<int>("photo_sequence", 1);
-            break;
-
-        case FLAG_ALTER_CASE::RESET_TO_MARTIAL_FROM_ARENA:
-            reset_flags(bb);
-            bb->set<int>("in_martial", 1);
-            bb->set<int>("spear_assembled", 1);
-            bb->set<int>("photo_sequence", 1);
-            break;   
-
-        default:
-            break;
-    }
-}
