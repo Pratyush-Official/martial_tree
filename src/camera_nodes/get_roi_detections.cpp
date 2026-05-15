@@ -15,9 +15,10 @@ GetROIDetections::GetROIDetections(
 BT::PortsList GetROIDetections::providedPorts()
 {
   return {
-    BT::InputPort<int>("stage", 1, "Detection stage (1-3, or 4+ for martial ROI mode)"),
+    BT::InputPort<int>("stage", 1, "Detection stage (1-4, or 4+ for martial ROI mode)"),
     BT::InputPort<int>("reset_delay_ms", 1200, "Delay after reset in ms"),
-    BT::InputPort<int>("type", 2, "For stage>=4: 1=check specific martial ROI, 2=standard logic"),
+    BT::InputPort<int>("type", 2, "For stage>4: 1=check specific martial ROI, 2=standard logic"),
+    BT::InputPort<std::string>("color", "red", "red=lower ROI, blue=higher ROI"), 
     BT::OutputPort<StageDetections>("detections")
   };
 }
@@ -27,6 +28,7 @@ BT::NodeStatus GetROIDetections::onStart()
   getInput("stage", stage_);
   getInput("reset_delay_ms", reset_delay_ms_);
   getInput("type", type_);
+  getInput("color", color_);  // added
 
   if (!client_->service_is_ready())
   {
@@ -42,7 +44,9 @@ BT::NodeStatus GetROIDetections::onStart()
   reset_time_ = steady_clock::now();
   phase_ = Phase::WAIT_AFTER_RESET;
 
-  RCLCPP_INFO(node_->get_logger(), "BT: Reset sent for stage=%d, type=%d", stage_, type_);
+  RCLCPP_INFO(node_->get_logger(),
+    "BT: Reset sent for stage=%d, type=%d, color=%s",
+    stage_, type_, color_.c_str());
   return BT::NodeStatus::RUNNING;
 }
 
@@ -80,26 +84,26 @@ BT::NodeStatus GetROIDetections::onRunning()
       auto res = future_.get();
 
       StageDetections detections;
-      detections.roi1        = res->roi1_class;
-      detections.roi2        = res->roi2_class;
-      detections.roi3        = res->roi3_class;
+      detections.roi1         = res->roi1_class;
+      detections.roi2         = res->roi2_class;
+      detections.roi3         = res->roi3_class;
       detections.roi1_martial = res->roi1_martial;
       detections.roi2_martial = res->roi2_martial;
       detections.roi3_martial = res->roi3_martial;
       detections.roi4_martial = res->roi4_martial;
       detections.roi5_martial = res->roi5_martial;
       detections.roi6_martial = res->roi6_martial;
-      detections.status      = res->status;
+      detections.status       = res->status;
       setOutput("detections", detections);
 
       RCLCPP_INFO(
         node_->get_logger(),
-        "BT Tick [stage %d, type %d]: "
+        "BT Tick [stage %d, type %d, color %s]: "
         "roi1='%s', roi2='%s', roi3='%s', "
         "roi1_martial='%s', roi2_martial='%s', roi3_martial='%s', "
         "roi4_martial='%s', roi5_martial='%s', roi6_martial='%s', "
         "status='%s'",
-        stage_, type_,
+        stage_, type_, color_.c_str(),
         detections.roi1.c_str(),
         detections.roi2.c_str(),
         detections.roi3.c_str(),
@@ -111,7 +115,7 @@ BT::NodeStatus GetROIDetections::onRunning()
         detections.roi6_martial.c_str(),
         detections.status.c_str());
 
-      if (stage_ >= 4 && type_ == 1)
+      if (stage_ > 4 && type_ == 1)
       {
         const std::vector<std::string> martial_rois = {
           res->roi1_martial,
@@ -122,7 +126,7 @@ BT::NodeStatus GetROIDetections::onRunning()
           res->roi6_martial
         };
 
-        int roi_index = stage_ - 4;  // stage 4 -> index 0, stage 5 -> index 1, ...
+        int roi_index = stage_ - 5;  // stage 5 -> index 0, stage 6 -> index 1, ...
 
         if (roi_index < static_cast<int>(martial_rois.size()) &&
             martial_rois[roi_index] == "yes")
@@ -132,10 +136,10 @@ BT::NodeStatus GetROIDetections::onRunning()
           return BT::NodeStatus::SUCCESS;
         }
 
-        return BT::NodeStatus::RUNNING;  // keep polling
+        return BT::NodeStatus::RUNNING;
       }
 
-      // stage 1/2/3, or stage 4+ with type 2 — original logic
+      // stage 1/2/3/4, or stage 5+ with type 2 — original logic
       if (res->success)
       {
         RCLCPP_INFO(node_->get_logger(), "BT: SUCCESS");

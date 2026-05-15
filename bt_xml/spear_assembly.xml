@@ -1,25 +1,204 @@
 <root BTCPP_format="4">
-    <BehaviorTree ID="SpearAssembly">
-        <SequenceWithMemory>
-            <!-- <Delay name="startup_delay" delay_msec="1000">
-                <RetryUntilSuccessful num_attempts="-1">
-                    <Sequence name="roi_detection_retry">
-                        <GetROIDetections
-                            name="get_roi_detections"
-                            stage="1"
-                            detections="{stage1_detections}"
-                        />
-                    </Sequence>
-                </RetryUntilSuccessful>
-            </Delay> -->
+  <BehaviorTree ID="SpearAssembly">
+    <SequenceWithMemory>
 
-            <Precondition if="photo_sequence != 1" else="SUCCESS">
-                <Sequence>
-                    <YawSetpoint name="face_spear" turn="{turn}" current_yaw="{current_yaw}"/>
-                    <!-- <SubTree ID="SpearPickingTree"/> -->
-                </Sequence>
-            </Precondition>
+      <SetBlackboard output_key="destination_stage" value="6"/>
+      <SetBlackboard output_key="items_picked" value="0"/>
+      <SetBlackboard output_key="color" value="red"/>
+
+      <RetryUntilSuccessful num_attempts="-1">
+        <SequenceWithMemory>
+
+          <!-- navigate to current destination -->
+          <GetLocationForStage
+            destination_stage="{destination_stage}"
+            setpoint_odom_1="{nav_x}"
+            setpoint_odom_2="{nav_y}"/>
+
+          <Delay name= 'odom_pid_delay' delay_msec= "5000">
+            <AlwaysSuccess/>
+          </Delay>
+          
+          <!-- <OdomPIDClient
+            setpoint_odom_1="{nav_x}"
+            setpoint_odom_2="{nav_y}"
+            tolerance="0.05"
+            timeout="30.0"/> -->
+
+          <UpdateCurrentStage
+            destination_stage="{destination_stage}"
+            current_stage="{current_stage}"/>
+
+          <!-- type I check + pick -->
+          <!-- ForceSuccess: if type I fails or pick fails, tree continues -->
+          <ForceSuccess>
+            <SequenceWithMemory>
+              <RetryUntilSuccessful num_attempts="-1">
+                <GetROIDetections
+                  stage="{current_stage}"
+                  type="1"
+                  color="{color}"
+                  reset_delay_ms="1200"
+                  detections="{detections}"/>
+              </RetryUntilSuccessful>
+              <Delay name= 'pick_and_assembly_tree_delay' delay_msec= "5000">
+                <AlwaysSuccess/>
+              </Delay>
+              <!-- <PickAndAssembly/> -->
+              <!-- only reaches here if PickAndAssembly succeeded -->
+              <Script code="items_picked := items_picked + 1"/>
+              <!-- immediately stop tree as SUCCESS if target reached -->
+              <Precondition if="items_picked >= 2" else="FAILURE">
+                <ForceFailure>
+                  <AlwaysSuccess/>
+                </ForceFailure>
+              </Precondition>
+            </SequenceWithMemory>
+          </ForceSuccess>
+
+          <!-- type II detection — always runs after type I regardless -->
+          <RetryUntilSuccessful num_attempts="-1">
+            <GetROIDetections
+              stage="{current_stage}"
+              type="2"
+              color="{color}"
+              reset_delay_ms="1200"
+              detections="{detections}"/>
+          </RetryUntilSuccessful>
+
+          <!-- evaluate results -->
+          <!-- "none"     FAILURE  SequenceWithMemory fails 
+                           RetryUntilSuccessful gets FAILURE 
+                           tree stops as FAILURE                -->
+          <!-- "outside"  SUCCESS, detection_status="outside" -->
+          <!-- "found"    SUCCESS, destination_stage updated  -->
+          <SetDestinationFromPriority
+            detections="{detections}"
+            color="{color}"
+            destination_stage="{destination_stage}"
+            detection_status="{detection_status}"/>
+
+          <!-- recovery flow: only runs if detection_status == outside -->
+          <!-- if found: else=SUCCESS passes through, loop continues   -->
+          <Precondition if="detection_status == 'outside'" else="SUCCESS">
+            <SequenceWithMemory>
+
+              <SetBlackboard output_key="destination_stage" value="5"/>
+
+              <GetLocationForStage
+                destination_stage="{destination_stage}"
+                setpoint_odom_1="{nav_x}"
+                setpoint_odom_2="{nav_y}"/>
+
+              
+              <Delay name= 'odom_pid_delay' delay_msec= "5000">
+                <AlwaysSuccess/>
+              </Delay>
+
+              <!-- <OdomPIDClient
+                setpoint_odom_1="{nav_x}"
+                setpoint_odom_2="{nav_y}"
+                tolerance="0.05"
+                timeout="30.0"/> -->
+              <UpdateCurrentStage
+                destination_stage="{destination_stage}"
+                current_stage="{current_stage}"/>
+
+              <!-- lucky type I from stage 5 -->
+              <ForceSuccess>
+                <SequenceWithMemory>
+                  <RetryUntilSuccessful num_attempts="-1">
+                    <GetROIDetections
+                      stage="{current_stage}"
+                      type="1"
+                      color="{color}"
+                      reset_delay_ms="1200"
+                      detections="{detections}"/>
+                  </RetryUntilSuccessful>
+                  
+                  <Delay name= 'pick_and_assembly_tree_delay' delay_msec= "5000">
+                    <AlwaysSuccess/>
+                  </Delay>
+                  <!-- <PickAndAssembly/> -->
+                  <Script code="items_picked := items_picked + 1"/>
+                  <!-- stop as SUCCESS if target reached during recovery too -->
+                  <Precondition if="items_picked >= 2" else="FAILURE">
+                    <ForceFailure>
+                      <AlwaysSuccess/>
+                    </ForceFailure>
+                  </Precondition>
+                </SequenceWithMemory>
+              </ForceSuccess>
+
+              <!-- type II from stage 5 -->
+              <RetryUntilSuccessful num_attempts="-1">
+                <GetROIDetections
+                  stage="{current_stage}"
+                  type="2"
+                  color="{color}"
+                  reset_delay_ms="1200"
+                  detections="{detections}"/>
+              </RetryUntilSuccessful>
+
+              <!-- outside not expected here: none  FAILURE, found  SUCCESS -->
+              <SetDestinationFromPriority
+                detections="{detections}"
+                color="{color}"
+                destination_stage="{destination_stage}"
+                detection_status="{detection_status}"/>
+
+            </SequenceWithMemory>
+          </Precondition>
 
         </SequenceWithMemory>
-    </BehaviorTree>
+      </RetryUntilSuccessful>
+
+    </SequenceWithMemory>
+  </BehaviorTree>
 </root>
+
+<!--
+EXISTING COMMENTS / OLD TREE
+
+<BehaviorTree ID="SpearAssembly">
+
+    <SequenceWithMemory>
+
+        <Delay name="startup_delay" delay_msec="1000">
+
+            <RetryUntilSuccessful num_attempts="-1">
+
+                <Sequence name="roi_detection_retry">
+
+                    <GetROIDetections
+                        name="get_roi_detections"
+                        stage="1"
+                        detections="{stage1_detections}"
+                    />
+
+                </Sequence>
+
+            </RetryUntilSuccessful>
+
+        </Delay>
+
+        <Precondition if="photo_sequence != 1" else="SUCCESS">
+
+            <Sequence>
+
+                <YawSetpoint
+                    name="face_spear"
+                    turn="{turn}"
+                    current_yaw="{current_yaw}"/>
+
+                <SubTree ID="SpearPickingTree"/>
+
+            </Sequence>
+
+        </Precondition>
+
+    </SequenceWithMemory>
+
+</BehaviorTree>
+
+-->

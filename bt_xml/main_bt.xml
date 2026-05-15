@@ -1,72 +1,67 @@
 <root BTCPP_format="4">
     <BehaviorTree ID="MainTree">
+
+        <SubTree ID="SpearAssembly" _autoremap="true"/>
+
+    </BehaviorTree>
+</root>
+    <!-- move this whole comment block up inside Behaviour tree block >
+    <!--
+    <SequenceWithMemory>
+        <Delay name="startup_delay" delay_msec="1000">
+            <AlwaysSuccess/>
+        </Delay>
         <SequenceWithMemory>
-            <Delay name="startup_delay" delay_msec="1000">
-                <AlwaysSuccess/>
-            </Delay>
-
-            <SequenceWithMemory>
-                <InitializePortsActuators/>
-                <Inverter>
-                    <KeepRunningUntilFailure>
-                        <Inverter>
-                            <IfThenElse>
-                                <ZoneChange/>
-
-                                <WhileDoElse>
-                                    <WaitForSet/>
-                                    <Sequence>
-
-                                        <Precondition if="in_martial == 1 && (spear_assembled != 1 || photo_sequence == 1)" else="SUCCESS">
-                                            <SubTree ID="SpearAssembly" _autoremap="true"/>
-                                        </Precondition>
-
-                                        <Precondition if="in_martial == 1 && spear_assembled == 1 && scroll_picked_from_entrance != 1" else="SUCCESS">
-                                            <SubTree ID="ScrollPickFromEntrance" _autoremap="true"/>
-                                        </Precondition>
-
-                                        <Precondition if="in_martial == 1 && spear_assembled == 1 && scroll_picked_from_entrance == 1 && climbed_three_photos != 1" else="SUCCESS">
-                                            <SubTree ID="ClimbThreePhotos" _autoremap="true"/> <!--autoremap = true shares the blackboard to sub trees, we need to add it to every subtree -->
-                                        </Precondition>
-
-                                        <Precondition if="in_forest == 1" else="SUCCESS">
-                                            <!-- <SubTree ID="ForestTree"/> -->
-                                            <KeepRunningUntilFailure>
-                                                <AlwaysFailure/>
-                                            </KeepRunningUntilFailure>
-
-                                        </Precondition>
-
+            <InitializePortsActuators/>
+            <Inverter>
+                <KeepRunningUntilFailure>
+                    <Inverter>
+                        <IfThenElse>
+                            <ZoneChange/>
+                            <WhileDoElse>
+                                <WaitForSet/>
+                                <Sequence>
+                                    <Precondition if="in_martial == 1 && (spear_assembled != 1 || photo_sequence == 1)" else="SUCCESS">
+                                        <SubTree ID="SpearAssembly" _autoremap="true"/>
+                                    </Precondition>
+                                    <Precondition if="in_martial == 1 && spear_assembled == 1 && scroll_picked_from_entrance != 1" else="SUCCESS">
+                                        <SubTree ID="ScrollPickFromEntrance" _autoremap="true"/>
+                                    </Precondition>
+                                    <Precondition if="in_martial == 1 && spear_assembled == 1 && scroll_picked_from_entrance == 1 && climbed_three_photos != 1" else="SUCCESS">
+                                        <SubTree ID="ClimbThreePhotos" _autoremap="true"/>
+                                    </Precondition>
+                                    <Precondition if="in_forest == 1" else="SUCCESS">
+                                        <SubTree ID="ForestTree"/>
                                         <KeepRunningUntilFailure>
                                             <AlwaysFailure/>
                                         </KeepRunningUntilFailure>
-
-                                    </Sequence>
-
-                                    <Inverter>
-                                        <AlwaysSuccess/>
-                                    </Inverter>
-                                    
-                                </WhileDoElse>
-
-                                <!-- <SubTree ID="arena_reset_zone"/> -->
-                                <AlwaysFailure/>
-                            </IfThenElse>
-                        </Inverter>
-                    </KeepRunningUntilFailure>
-                </Inverter>
-            </SequenceWithMemory>
-
+                                    </Precondition>
+                                    <KeepRunningUntilFailure>
+                                        <AlwaysFailure/>
+                                    </KeepRunningUntilFailure>
+                                </Sequence>
+                                <Inverter>
+                                    <AlwaysSuccess/>
+                                </Inverter>
+                            </WhileDoElse>
+                            <SubTree ID="arena_reset_zone"/>
+                            <AlwaysFailure/>
+                        </IfThenElse>
+                    </Inverter>
+                </KeepRunningUntilFailure>
+            </Inverter>
         </SequenceWithMemory>
-    </BehaviorTree>
-</root>
+    </SequenceWithMemory>
+</root> -->
 
-<!-- 
+<!--
+OLD TREE COMMENTS / BACKUP
+
 <root BTCPP_format="4">
     <BehaviorTree ID="MainTree">
         <SequenceWithMemory>
-            <OdomPIDClient name="odom_client" setpoint_odom_1="-1.530" setpoint_odom_2="0.0" tolerance="0.05" /> -->
-            <!-- <AkClient name="ak_client" up="true" down="false"/>
+            <OdomPIDClient name="odom_client" setpoint_odom_1="-1.530" setpoint_odom_2="0.0" tolerance="0.05" />
+            <AkClient name="ak_client" up="true" down="false"/>
         </SequenceWithMemory>
     </BehaviorTree>
-</root>  -->
+</root> -->

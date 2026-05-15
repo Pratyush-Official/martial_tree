@@ -56,7 +56,7 @@ private:
   Phase phase_{Phase::RESET};
 
   std::chrono::steady_clock::time_point reset_time_;
-
+  std::string color_ = "red";
   int stage_{0};
   int type_ = 2;
   int reset_delay_ms_{1200};

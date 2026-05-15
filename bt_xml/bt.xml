@@ -1,137 +1,114 @@
 <root main_tree_to_execute="MainTree">
-    <BehaviorTree ID="MainTree">
-        <!-- <Repeat num_cycles = "7"> -->
-        <Sequence name="root_sequence">
-                        <!-- for delay  -->
 
+    <BehaviorTree ID="MainTree">
+
+        <Sequence name="root_sequence">
+
+            <!-- startup delay with ROI detection -->
             <Delay name="startup_delay" delay_msec="1000">
                 <RetryUntilSuccessful num_attempts="-1">
                     <Sequence name="roi_detection_retry">
-                            <GetROIDetections
-                                    name="get_roi_detections"
-                                    stage="1"
-                                    detections="{stage1_detections}"
-                            />
+                        <GetROIDetections
+                            name="get_roi_detections"
+                            stage="1"
+                            detections="{stage1_detections}"
+                        />
                     </Sequence>
                 </RetryUntilSuccessful>
             </Delay>
 
-             <YawSetpoint name="face_arena" turn="Right" current_yaw="{current_yaw}"/>
-<!--             
-                <SickPIDClient 
-                    name="go_to_forest_for_climb"
-                    SP1="5670.0"
-                    SP2="3470.0"
-                    SP3="0.0"
-                    SP4="0.0"/>
- -->
+            <YawSetpoint name="face_arena" turn="Right" current_yaw="{current_yaw}"/>
 
-    <SickPIDClient
-        name="sick1"
-        stage1="{stage1_detections}"
-        current_yaw="{current_yaw}"
-        turn="{turn}"
-        color="{color}"/>
+            <!-- SickPIDClient for stage1 detections -->
+            <SickPIDClient
+                name="sick1"
+                stage1="{stage1_detections}"
+                current_yaw="{current_yaw}"
+                turn="{turn}"
+                color="{color}"/>
 
             <YawSetpoint name="face_arena" turn="{turn}" current_yaw="{current_yaw}"/>
-            
+
             <SickPIDClient
                 name="sick1"
                 stage1="{stage1_detections}"
                 current_yaw="{current_yaw}"
                 turn="{turn}"/>
 
-                <!-- <SickPIDClient 
-                    name="go_to_forest_for_climb"
-                    SP1="2280.0"
-                    SP2="6360.0"
-                    SP3="0.0"
-                    SP4="0.0"/> -->
-            
-
-            <!-- <YawPIDClient
-                name="yaw_pid_client"
-                Angle = "1.5707"
-                Velocity-max = "0.2"/> -->
-
-            <!-- <YawSetpoint name="yaw_setpoint" pi="-3.14"/>  -->
-            
-            <!-- <OdomPIDClient name="odom_client" setpoint_odom_1="-1.530" setpoint_odom_2="0.0" tolerance="0.05" /> -->
-
-                        <!-- <Delay name="startup_delay" delay_msec="10000">
-                            <RetryUntilSuccessful num_attempts="-1">
-                                <Sequence name="roi_detection_retry">
-                                        <GetROIDetections
-                                                name="get_roi_detections"
-                                                stage="5"
-                                                detections="{stage2_detections}"
-                                        />
-                                </Sequence>
-                            </RetryUntilSuccessful>
-                        </Delay> -->
-
-<!-- 
-            <AkClient name="ak_client" up= "true" down= "false"/>
-            <AkClient name="ak_client" up= "true" down= "false"/>
-            <AkClient name="ak_client" up= "true" down= "false"/>
-
-            <AkClient name="ak_client" up= "false" down= "true"/>
-            <AkClient name="ak_client" up= "false" down= "true"/>
-            <AkClient name="ak_client" up= "false" down= "true"/>
-
-            <AkClient name="ak_client" up= "true" down= "false"/>
-            <AkClient name="ak_client" up= "true" down= "false"/>
-            <AkClient name="ak_client" up= "true" down= "false"/>
-
-            <AkClient name="ak_client" up= "false" down= "true"/>
-            <AkClient name="ak_client" up= "false" down= "true"/>
-            <AkClient name="ak_client" up= "false" down= "true"/>
-
-            <AkClient name="ak_client" up= "true" down= "false"/>
-            <AkClient name="ak_client" up= "true" down= "false"/>
-            <AkClient name="ak_client" up= "true" down= "false"/>
-
-            <AkClient name="ak_client" up= "false" down= "true"/>
-            <AkClient name="ak_client" up= "false" down= "true"/>
-            <AkClient name="ak_client" up= "false" down= "true"/> -->
-
-
-                        <!-- <Delay name="startup_delay" delay_msec="10000">
-                            <RetryUntilSuccessful num_attempts="-1">
-                                <Sequence name="roi_detection_retry">
-                                        <GetROIDetections
-                                                name="get_roi_detections"
-                                                stage="3"
-                                                detections="{stage3_detections}"
-                                        />
-                                </Sequence>
-                            </RetryUntilSuccessful>
-                        </Delay>                         -->
-                        
-            <!-- <Delay name="startup_delay" delay_msec="10000">
-                <RetryUntilSuccessful num_attempts="-1">
-                    <Sequence name="roi_detection_retry">
-                            <GetROIDetections
-                                    name="get_roi_detections"
-                                    stage="4"
-                                    detections="{stage4_detections}"
-                            />
-                    </Sequence>
-                </RetryUntilSuccessful>
-            </Delay> -->
-
-<!-- 
-                        <FindHiddenScroll
-                            stage1="{stage1_detections}"
-                            stage2="{stage2_detections}"
-                            stage3="{stage3_detections}"
-                            stage4="{stage4_detections}" /> -->
-
-
-            <!-- <OpenGripper name="open_gripper"/>
-            <ApproachObject name="approach_object"/>
-            <CloseGripper name="close_gripper"/> -->
         </Sequence>
-        <!-- </Repeat> -->
+
     </BehaviorTree>
+
 </root>
+
+<!--
+COMMENTED BLOCKS / OLD NODES / BACKUP
+
+<SickPIDClient name="go_to_forest_for_climb"
+    SP1="5670.0" SP2="3470.0" SP3="0.0" SP4="0.0"/>
+
+<SickPIDClient name="go_to_forest_for_climb"
+    SP1="2280.0" SP2="6360.0" SP3="0.0" SP4="0.0"/>
+
+<YawPIDClient name="yaw_pid_client"
+    Angle="1.5707" Velocity-max="0.2"/>
+
+<YawSetpoint name="yaw_setpoint" pi="-3.14"/>
+
+<OdomPIDClient name="odom_client" setpoint_odom_1="-1.530" setpoint_odom_2="0.0" tolerance="0.05"/>
+
+Delays for ROI stages 2, 3, 4, 5:
+<Delay name="startup_delay" delay_msec="10000">
+    <RetryUntilSuccessful num_attempts="-1">
+        <Sequence name="roi_detection_retry">
+            <GetROIDetections
+                name="get_roi_detections"
+                stage="2"
+                detections="{stage2_detections}"/>
+        </Sequence>
+    </RetryUntilSuccessful>
+</Delay>
+<Delay name="startup_delay" delay_msec="10000">
+    <RetryUntilSuccessful num_attempts="-1">
+        <Sequence name="roi_detection_retry">
+            <GetROIDetections
+                name="get_roi_detections"
+                stage="3"
+                detections="{stage3_detections}"/>
+        </Sequence>
+    </RetryUntilSuccessful>
+</Delay>
+<Delay name="startup_delay" delay_msec="10000">
+    <RetryUntilSuccessful num_attempts="-1">
+        <Sequence name="roi_detection_retry">
+            <GetROIDetections
+                name="get_roi_detections"
+                stage="4"
+                detections="{stage4_detections}"/>
+        </Sequence>
+    </RetryUntilSuccessful>
+</Delay>
+<Delay name="startup_delay" delay_msec="10000">
+    <RetryUntilSuccessful num_attempts="-1">
+        <Sequence name="roi_detection_retry">
+            <GetROIDetections
+                name="get_roi_detections"
+                stage="5"
+                detections="{stage2_detections}"/>
+        </Sequence>
+    </RetryUntilSuccessful>
+</Delay>
+
+<FindHiddenScroll
+    stage1="{stage1_detections}"
+    stage2="{stage2_detections}"
+    stage3="{stage3_detections}"
+    stage4="{stage4_detections}"/>
+
+<OpenGripper name="open_gripper"/>
+<ApproachObject name="approach_object"/>
+<CloseGripper name="close_gripper"/>
+
+<AkClient name="ak_client" up="true" down="false"/>
+<AkClient name="ak_client" up="false" down="true"/>
+-->

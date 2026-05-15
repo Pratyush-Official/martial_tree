@@ -10,8 +10,13 @@ BT::PortsList SetDestinationFromPriority::providedPorts()
 {
   return {
     BT::InputPort<StageDetections>("detections"),
-    BT::InputPort<std::string>("color"),       // "red" or "blue"
-    BT::OutputPort<int>("destination_stage")
+    BT::InputPort<std::string>("color"),
+    BT::OutputPort<int>("destination_stage"),
+    BT::OutputPort<std::string>("detection_status")
+    // detection_status values:
+    // "found"   — at least one "yes", destination updated
+    // "outside" — at least one "outside", zero "yes"
+    // "none"    — all "no", tree should stop
   };
 }
 
@@ -22,59 +27,78 @@ BT::NodeStatus SetDestinationFromPriority::tick()
   getInput("detections", det);
   getInput("color", color);
 
-  // Priority tiers: {lower_roi_stage, higher_roi_stage}
+  // collect all 6 martial ROI values with their stage numbers
   // stage 4=roi1, 5=roi2, 6=roi3, 7=roi4, 8=roi5, 9=roi6
-  // Tier1: roi3(stage6), roi4(stage7)
-  // Tier2: roi2(stage5), roi5(stage8)
-  // Tier3: roi1(stage4), roi6(stage9)
+  struct ROIEntry {
+    std::string value;
+    int stage;
+  };
 
+  // priority tiers: {low_roi(red), high_roi(blue)}
+  // tier 1: roi3(6), roi4(7)
+  // tier 2: roi2(5), roi5(8)
+  // tier 3: roi1(4), roi6(9)
   struct Tier {
-    int low_stage;   // color=red picks this
-    int high_stage;  // color=blue picks this
-    std::string low_val;
-    std::string high_val;
+    ROIEntry low;   // color=red prefers this
+    ROIEntry high;  // color=blue prefers this
   };
 
   std::vector<Tier> priority_table = {
-    {6, 7, det.roi3_martial, det.roi4_martial},  // tier 1
-    {5, 8, det.roi2_martial, det.roi5_martial},  // tier 2
-    {4, 9, det.roi1_martial, det.roi6_martial},  // tier 3
+    { {det.roi3_martial, 6}, {det.roi4_martial, 7} },  // tier 1
+    { {det.roi2_martial, 5}, {det.roi5_martial, 8} },  // tier 2
+    { {det.roi1_martial, 4}, {det.roi6_martial, 9} },  // tier 3
   };
 
   bool red = (color == "red");
 
+  // first pass: look for "yes"
   for (auto & tier : priority_table)
   {
-    bool low_yes  = (tier.low_val  == "yes");
-    bool high_yes = (tier.high_val == "yes");
+    bool low_yes  = (tier.low.value  == "yes");
+    bool high_yes = (tier.high.value == "yes");
 
-    if (!low_yes && !high_yes) continue;  // nothing in this tier
+    if (!low_yes && !high_yes) continue;
 
     int destination = -1;
-
     if (low_yes && high_yes)
-    {
-      // both yes — color decides
-      destination = red ? tier.low_stage : tier.high_stage;
-    }
+      destination = red ? tier.low.stage : tier.high.stage;
     else if (low_yes)
-    {
-      destination = tier.low_stage;
-    }
+      destination = tier.low.stage;
     else
-    {
-      destination = tier.high_stage;
-    }
+      destination = tier.high.stage;
 
     setOutput("destination_stage", destination);
+    setOutput("detection_status", std::string("found"));
     RCLCPP_INFO(node_->get_logger(),
-      "SetDestination: destination_stage=%d (color=%s)",
+      "SetDestination: found — destination_stage=%d (color=%s)",
       destination, color.c_str());
     return BT::NodeStatus::SUCCESS;
   }
 
+  // second pass: check for "outside" (no "yes" found above)
+  bool any_outside = false;
+  for (auto & tier : priority_table)
+  {
+    if (tier.low.value  == "outside" ||
+        tier.high.value == "outside")
+    {
+      any_outside = true;
+      break;
+    }
+  }
+
+  if (any_outside)
+  {
+    setOutput("detection_status", std::string("outside"));
+    // destination_stage will be overridden to 5 by the tree
+    RCLCPP_WARN(node_->get_logger(),
+      "SetDestination: outside detections found — recovery to stage 5");
+    return BT::NodeStatus::SUCCESS;
+  }
+
   // all "no"
+  setOutput("detection_status", std::string("none"));
   RCLCPP_WARN(node_->get_logger(),
-    "SetDestination: all ROIs are 'no' — returning FAILURE");
+    "SetDestination: all none — tree should stop");
   return BT::NodeStatus::FAILURE;
 }
