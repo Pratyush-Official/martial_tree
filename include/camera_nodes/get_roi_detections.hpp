@@ -41,14 +41,14 @@ public:
   void onHalted() override;
 
 private:
-  enum class Phase
-  {
+
+  enum class Phase {
     RESET,
+    WAIT_SERVICE,      // add this
     WAIT_AFTER_RESET,
     REQUEST,
     WAIT_RESPONSE
   };
-
   rclcpp::Node::SharedPtr node_;
   rclcpp::Client<GetDetections>::SharedPtr client_;
   rclcpp::Client<GetDetections>::SharedFuture future_;
@@ -60,6 +60,9 @@ private:
   int stage_{0};
   int type_ = 2;
   int reset_delay_ms_{1200};
+
+
+  void sendReset();
 };
 
 #endif  // GET_ROI_DETECTIONS_HPP_

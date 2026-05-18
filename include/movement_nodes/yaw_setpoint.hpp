@@ -21,13 +21,6 @@
 
 #include "ament_index_cpp/get_package_share_directory.hpp"
 
-enum CurrentYaw{
-    FRONT = 0,
-    RIGHT = 1,
-    BACK = 2,
-    LEFT = 3,
-};
-
 namespace BT {
     template <>
     inline CurrentYaw convertFromString(StringView str) {

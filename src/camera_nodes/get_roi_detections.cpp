@@ -15,10 +15,10 @@ GetROIDetections::GetROIDetections(
 BT::PortsList GetROIDetections::providedPorts()
 {
   return {
-    BT::InputPort<int>("stage", 1, "Detection stage (1-4, or 4+ for martial ROI mode)"),
+    BT::InputPort<int>("stage", 1, "Detection stage"),
     BT::InputPort<int>("reset_delay_ms", 1200, "Delay after reset in ms"),
-    BT::InputPort<int>("type", 2, "For stage>4: 1=check specific martial ROI, 2=standard logic"),
-    BT::InputPort<std::string>("color", "red", "red=lower ROI, blue=higher ROI"), 
+    BT::InputPort<int>("type", 2, "1=check specific martial ROI, 2=standard logic"),
+    BT::InputPort<std::string>("color", "red", "red=lower ROI, blue=higher ROI"),
     BT::OutputPort<StageDetections>("detections")
   };
 }
@@ -28,25 +28,18 @@ BT::NodeStatus GetROIDetections::onStart()
   getInput("stage", stage_);
   getInput("reset_delay_ms", reset_delay_ms_);
   getInput("type", type_);
-  getInput("color", color_);  // added
+  getInput("color", color_);
 
   if (!client_->service_is_ready())
   {
-    RCLCPP_WARN(node_->get_logger(), "Waiting for /get_detections service...");
-    return BT::NodeStatus::FAILURE;
+    RCLCPP_WARN(node_->get_logger(),
+      "Service not ready on start, waiting... [stage=%d type=%d]",
+      stage_, type_);
+    phase_ = Phase::WAIT_SERVICE;
+    return BT::NodeStatus::RUNNING;
   }
 
-  auto reset_req = std::make_shared<GetDetections::Request>();
-  reset_req->reset = true;
-  reset_req->stage = stage_;
-  client_->async_send_request(reset_req);
-
-  reset_time_ = steady_clock::now();
-  phase_ = Phase::WAIT_AFTER_RESET;
-
-  RCLCPP_INFO(node_->get_logger(),
-    "BT: Reset sent for stage=%d, type=%d, color=%s",
-    stage_, type_, color_.c_str());
+  sendReset();
   return BT::NodeStatus::RUNNING;
 }
 
@@ -56,6 +49,24 @@ BT::NodeStatus GetROIDetections::onRunning()
 
   switch (phase_)
   {
+    case Phase::WAIT_SERVICE:
+    {
+      if (!client_->service_is_ready())
+      {
+        RCLCPP_WARN_THROTTLE(node_->get_logger(),
+          *node_->get_clock(), 2000,
+          "Still waiting for /get_detections service... [stage=%d type=%d]",
+          stage_, type_);
+        return BT::NodeStatus::RUNNING;
+      }
+      // service appeared
+      RCLCPP_INFO(node_->get_logger(),
+        "Service detected, proceeding [stage=%d type=%d]",
+        stage_, type_);
+      sendReset();
+      return BT::NodeStatus::RUNNING;
+    }
+
     case Phase::WAIT_AFTER_RESET:
     {
       auto elapsed = duration_cast<milliseconds>(now - reset_time_).count();
@@ -126,7 +137,7 @@ BT::NodeStatus GetROIDetections::onRunning()
           res->roi6_martial
         };
 
-        int roi_index = stage_ - 5;  // stage 5 -> index 0, stage 6 -> index 1, ...
+        int roi_index = stage_ - 5;
 
         if (roi_index < static_cast<int>(martial_rois.size()) &&
             martial_rois[roi_index] == "yes")
@@ -136,10 +147,14 @@ BT::NodeStatus GetROIDetections::onRunning()
           return BT::NodeStatus::SUCCESS;
         }
 
-        return BT::NodeStatus::RUNNING;
+        // service was available, result is genuinely not "yes"
+        RCLCPP_INFO(node_->get_logger(),
+          "BT: FAILURE — roi%d_martial is not 'yes' (genuine no)",
+          roi_index + 1);
+        return BT::NodeStatus::FAILURE;
       }
 
-      // stage 1/2/3/4, or stage 5+ with type 2 — original logic
+      // type 2 or stage <= 4 — original logic
       if (res->success)
       {
         RCLCPP_INFO(node_->get_logger(), "BT: SUCCESS");
@@ -159,4 +174,17 @@ void GetROIDetections::onHalted()
   future_ = rclcpp::Client<GetDetections>::SharedFuture();
   phase_  = Phase::RESET;
   RCLCPP_WARN(node_->get_logger(), "BT: GetROIDetections halted");
+}
+
+void GetROIDetections::sendReset()
+{
+  auto reset_req = std::make_shared<GetDetections::Request>();
+  reset_req->reset = true;
+  reset_req->stage = stage_;
+  client_->async_send_request(reset_req);
+  reset_time_ = steady_clock::now();
+  phase_ = Phase::WAIT_AFTER_RESET;
+  RCLCPP_INFO(node_->get_logger(),
+    "BT: Reset sent for stage=%d, type=%d, color=%s",
+    stage_, type_, color_.c_str());
 }

@@ -20,10 +20,10 @@
         </Action>
         <Action ID="GetROIDetections">
             <output_port name="detections" type="StageDetections"/>
-            <input_port name="type" type="int" default="2">For stage&gt;4: 1=check specific martial ROI, 2=standard logic</input_port>
+            <input_port name="type" type="int" default="2">1=check specific martial ROI, 2=standard logic</input_port>
             <input_port name="reset_delay_ms" type="int" default="1200">Delay after reset in ms</input_port>
             <input_port name="color" type="std::string" default="red">red=lower ROI, blue=higher ROI</input_port>
-            <input_port name="stage" type="int" default="1">Detection stage (1-4, or 4+ for martial ROI mode)</input_port>
+            <input_port name="stage" type="int" default="1">Detection stage</input_port>
         </Action>
         <Action ID="GoToEntrance">
             <inout_port name="first_stage_done" type="bool"/>

@@ -21,12 +21,6 @@ ZoneChange::ZoneChange(const string &name, const BT::NodeConfig &config, const r
 
 BT::PortsList ZoneChange::providedPorts(){
     return{
-        
-        BT::InputPort<int>("zone_enum"),
-        BT::BidirectionalPort<int>("in_arena"),
-        BT::BidirectionalPort<int>("in_martial"),
-        BT::BidirectionalPort<int>("photo_sequence_flag"),
-        BT::BidirectionalPort<int>("in_forest")
     };
 }
 
@@ -46,84 +40,91 @@ BT::NodeStatus ZoneChange::onStart(){
 BT::NodeStatus ZoneChange::onRunning(){
 
     auto blackboard = config().blackboard;
-    int in_arena;
 
-    blackboard->get("in_arena", in_arena);
+    (void)blackboard->get("in_martial", in_martial);
+    (void)blackboard->get("spear_assembled", spear_assembled);
+    (void)blackboard->get("scroll_picked_from_entrance", scroll_picked_from_entrance);
+    (void)blackboard->get("store", store);
+    (void)blackboard->get("carry", carry);
+    (void)blackboard->get("climbed_three_photos", climbed_three_photos);
 
-    // if(!in_arena){
-    //     return BT::NodeStatus::RUNNING;
-    // }
+    (void)blackboard->get("in_forest", in_forest);
+    (void)blackboard->get("photo_sequence", photo_sequence);
+
+    (void)blackboard->get("in_arena", in_arena);
+    (void)blackboard->get("nav_to_rack", nav_to_rack);
+    (void)blackboard->get("placed_1", placed_1);
+    (void)blackboard->get("placed_2", placed_2);
+
+    // Contradictory zone flags
+    if((in_martial + in_forest + in_arena) > 1){
+        RCLCPP_ERROR(node_->get_logger(), "ZoneChange: multiple zone flags set simultaneously");
+        state_ = "failure";
+        return BT::NodeStatus::FAILURE;
+    }
+
+    // Scroll picked but spear not assembled
+    if(scroll_picked_from_entrance == 1 && spear_assembled == 0){
+        RCLCPP_ERROR(node_->get_logger(), "ZoneChange: scroll picked but spear not assembled");
+        state_ = "failure";
+        return BT::NodeStatus::FAILURE;
+    }
+
+    // Climbed three photos but scroll not picked
+    if(climbed_three_photos == 1 && scroll_picked_from_entrance == 0){
+        RCLCPP_ERROR(node_->get_logger(), "ZoneChange: climbed photos but scroll not picked");
+        state_ = "failure";
+        return BT::NodeStatus::FAILURE;
+    }
+
+    // In arena but spear not assembled
+    if(in_arena == 1 && spear_assembled == 0){
+        RCLCPP_ERROR(node_->get_logger(), "ZoneChange: in arena but spear not assembled");
+        state_ = "failure";
+        return BT::NodeStatus::FAILURE;
+    }
 
     if(set_reset_val_ == 0){
 
-        if(in_arena == 1){
-            //     if(reset_to_martial_ == 0x01){
-            //     state_ = "success";
-            //     setOutput("in_arena", 0);
-            //     setOutput("photo_sequence_flag", 1);
-            //     setOutput("in_martial", 1);
-            //     setOutput("in_forest", 0);
-
-            //     return BT::NodeStatus::SUCCESS;
-            // }
-            // else{
-                state_ = "failure";
-                return BT::NodeStatus::FAILURE;
-            // }
-            // continue;
-
-        }
-        else{
+        if(in_martial == 1){
             state_ = "success";
             return BT::NodeStatus::SUCCESS;
+        }
+
+        else if(in_forest == 1){
+            flag_alter(config().blackboard, FLAG_ALTER_CASE::RESET_IN_FOREST);
+            state_ = "success";
+            return BT::NodeStatus::SUCCESS;         
+        }
+
+        else if(in_arena == 1){
+            // if(){
+            flag_alter(config().blackboard, FLAG_ALTER_CASE::RESET_IN_ARENA);
+            // }
+
+            // else if(){
+            //     flag_alter(config().blackboard, FLAG_ALTER_CASE::RESET_TO_MARTIAL_FROM_ARENA);
+            // }
+            state_ = "success";
+            return BT::NodeStatus::SUCCESS;          
         }
     }
 
     if(set_reset_val_ == 1){
+
+        // No zone flag set when SET is pressed
+        if(in_martial == 0 && in_forest == 0 && in_arena == 0){
+            RCLCPP_ERROR(node_->get_logger(), "ZoneChange: SET pressed but no zone flag set");
+            state_ = "failure";
+            return BT::NodeStatus::FAILURE;
+        }
+
         if(state_ == "success") return BT::NodeStatus::SUCCESS;
         if(state_ == "failure") return BT::NodeStatus::FAILURE;
     }
 
     return BT::NodeStatus::RUNNING; 
 }
-
-// BT::NodeStatus ZoneChange::onRunning(){s
-
-//     auto res = getInput<int>("in_arena");
-
-//     if(set_reset_val_ == 0){
-
-//         if(res.value() == 1){ //When the robot is in arena and reset is called, the "else" condition of the IF_THEN_ELSE node is run, 
-//              // but if the reset_to_martial button is pressed while in Arena, "then" code of the IF_THEN_ELSE code is run
-//             // if(reset_to_martial_ == 0x01){
-//             //     state_ = "success";
-//             //     setOutput("in_arena", 0);
-//             //     setOutput("photo_sequence_flag", 1);
-//             //     setOutput("in_martial", 1);
-//             //     setOutput("in_forest", 0);
-
-//             //     return BT::NodeStatus::SUCCESS;
-//             // }
-//             // else{
-//             //     state_ = "failure";
-//             //     return BT::NodeStatus::FAILURE;
-//             // }
-//             // continue;
-//         }
-
-//         else{
-//             state_ = "success";
-//             return BT::NodeStatus::SUCCESS;
-//         }
-//     }
-
-//     if(set_reset_val_ == 1){
-//         if(state_ == "success") return BT::NodeStatus::SUCCESS;
-//         if(state_ == "failure") return BT::NodeStatus::FAILURE;
-//     }
-
-//     return BT::NodeStatus::RUNNING; 
-// }
 
 void ZoneChange::onHalted(){
     RCLCPP_INFO(node_->get_logger(), "ZoneChange halted");

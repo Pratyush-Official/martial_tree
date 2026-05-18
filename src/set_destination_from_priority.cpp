@@ -44,9 +44,9 @@ BT::NodeStatus SetDestinationFromPriority::tick()
   };
 
   std::vector<Tier> priority_table = {
-    { {det.roi3_martial, 6}, {det.roi4_martial, 7} },  // tier 1
-    { {det.roi2_martial, 5}, {det.roi5_martial, 8} },  // tier 2
-    { {det.roi1_martial, 4}, {det.roi6_martial, 9} },  // tier 3
+    { {det.roi3_martial, 7}, {det.roi4_martial, 8} },  // tier 1
+    { {det.roi2_martial, 6}, {det.roi5_martial, 9} },  // tier 2
+    { {det.roi1_martial, 5}, {det.roi6_martial, 10} },  // tier 3
   };
 
   bool red = (color == "red");

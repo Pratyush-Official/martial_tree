@@ -30,11 +30,20 @@ void tree_ticker::create_behavior_tree()
     auto blackboard = BT::Blackboard::create();
     
     blackboard->set<int>("in_martial", 0);
-    blackboard->set<int>("in_forest", 0);
     blackboard->set<int>("spear_assembled", 0);
     blackboard->set<int>("scroll_picked_from_entrance", 0);
+    blackboard->set<int>("store",0);
+    blackboard->set<int>("carry",0);
     blackboard->set<int>("climbed_three_photos", 0);
+
+    blackboard->set<int>("in_forest", 0);
     blackboard->set<int>("photo_sequence", 0);
+
+    blackboard->set<int>("in_arena",0);
+    blackboard->set<int>("placed_1",0);
+    blackboard->set<int>("placed_2",0);
+
+    blackboard->set<CurrentYaw>("current_yaw", CurrentYaw::FRONT);
 
     const std::string pkg = ament_index_cpp::get_package_share_directory("martial_tree");
 

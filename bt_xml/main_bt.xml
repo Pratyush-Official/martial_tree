@@ -1,7 +1,9 @@
 <root BTCPP_format="4">
     <BehaviorTree ID="MainTree">
 
-        <SubTree ID="SpearAssembly" _autoremap="true"/>
+        <!-- <AkClient name="ak_client" up="true" down="false"/> -->
+        <!-- <SubTree ID="SpearAssembly" _autoremap="true"/> -->
+        <SickPIDClient SP1="1428.0" SP2="1167.0" SP3="8432.0" SP4="0.0"/>
 
     </BehaviorTree>
 </root>
@@ -24,18 +26,26 @@
                                     <Precondition if="in_martial == 1 && (spear_assembled != 1 || photo_sequence == 1)" else="SUCCESS">
                                         <SubTree ID="SpearAssembly" _autoremap="true"/>
                                     </Precondition>
+                                    <Precondition if="spear_assembled == 1" else="RUNNING"/>
+
                                     <Precondition if="in_martial == 1 && spear_assembled == 1 && scroll_picked_from_entrance != 1" else="SUCCESS">
                                         <SubTree ID="ScrollPickFromEntrance" _autoremap="true"/>
                                     </Precondition>
+                                    <Precondition if="scroll_picked_from_entrance == 1" else="RUNNING"/>
+                                    
                                     <Precondition if="in_martial == 1 && spear_assembled == 1 && scroll_picked_from_entrance == 1 && climbed_three_photos != 1" else="SUCCESS">
                                         <SubTree ID="ClimbThreePhotos" _autoremap="true"/>
                                     </Precondition>
+                                    <Precondition if="climbed_three_photos == 1" else="RUNNING"/>
+
                                     <Precondition if="in_forest == 1" else="SUCCESS">
                                         <SubTree ID="ForestTree"/>
                                         <KeepRunningUntilFailure>
                                             <AlwaysFailure/>
                                         </KeepRunningUntilFailure>
                                     </Precondition>
+                                    <Precondition if="in_forest == 0" else="RUNNING"/>
+
                                     <KeepRunningUntilFailure>
                                         <AlwaysFailure/>
                                     </KeepRunningUntilFailure>
