@@ -38,7 +38,8 @@ BT::PortsList AkClient::providedPorts()
 {
     return {
         BT::InputPort<bool>("up", "Send true to raise the mechanism"),
-        BT::InputPort<bool>("down", "Send true to lower the mechanism")
+        BT::InputPort<bool>("down", "Send true to lower the mechanism"),
+        BT::InputPort<std::string>("next", "Send the next actuation of the robot (climb up or down) or rear wheel priming")
     };
 }
 
@@ -46,20 +47,25 @@ BT::NodeStatus AkClient::onStart()
 {
     active_client_climb.reset();
     active_client_roll.reset();      
+    active_client_next.reset();
 
     request_sent_climb = false;
     request_sent_roll = false;
+    request_sent_next = false;
 
     service_done_climb = false;
     service_done_roll = false;  
+    service_done_next = false;
 
     service_success_climb = false;
     service_success_roll = false; 
+    service_success_next = false;
 
     rear_status_forward = false;     
-    rear_status_reverse = false;     
-
+    rear_status_reverse = false;  
+    
     ran = false;
+    node_status = "";
 
     movement_state = Movement::IDLE;
     actuation_state = Actuation::IDLE;
@@ -70,6 +76,8 @@ BT::NodeStatus AkClient::onRunning()
 {
     auto up_res = getInput<bool>("up");
     auto down_res = getInput<bool>("down");
+    next_ = getInput<std::string>("next").value_or("");
+
     bool up = up_res.value_or(false);
     bool down = down_res.value_or(false);
 
@@ -92,13 +100,13 @@ BT::NodeStatus AkClient::onRunning()
     {
         // Only trigger if we are in the starting state (0x09)
         if(!ran && actuation_state == Actuation::C_DOWN && movement_state == Movement::UP){ //If ak-60 hasnt been actuated, give +ve x vel
-            cmd.linear.x = 0.3f;
+            cmd.linear.x = 0.2f;
             cmd.linear.y = 0.0f;
             cmd_pub_->publish(cmd);
         }
 
         else if(!ran && actuation_state == Actuation::C_DOWN && movement_state == Movement::DOWN){ //If ak-60 hasnt been actuated, give -ve x vel
-            cmd.linear.x = -0.3f;
+            cmd.linear.x = -0.2f;
             cmd.linear.y = 0.0f;
             cmd_pub_->publish(cmd);
         }
@@ -146,7 +154,7 @@ BT::NodeStatus AkClient::onRunning()
 
     if (!active_client_climb->wait_for_service(std::chrono::milliseconds(100)))
     {
-        RCLCPP_WARN(node_->get_logger(), "Service not available...");
+        RCLCPP_WARN(node_->get_logger(), "Service not available for climb...");
         return BT::NodeStatus::RUNNING;
     }
 
@@ -184,125 +192,131 @@ BT::NodeStatus AkClient::onRunning()
     if(service_done_climb) {
 
         printf("Service done, prox_data: %d\n", prox_data);
+    
+        if (node_status != "success"){ //If node status is true, we dont want the prox check and roll assignment to run again
 
-        if(!active_client_roll || service_done_roll){
+            if(!active_client_roll || service_done_roll){
 
-            if (movement_state == Movement::UP) {
-            
-            switch(prox_data){
-                case 0x00: break;
+                if (movement_state == Movement::UP) {
+                
+                switch(prox_data){
+                    case 0x00: break;
 
-                case 0x03:  //When front 2 prox triggered
-                    if(actuation_state == Actuation::C_DOWN) {
-                        cmd.linear.x = 0.0f; //Resetting velocity when prox detects 0x01
-                        cmd.linear.y = 0.0f; 
+                    case 0x03:  //When front 2 prox triggered
+                        if(actuation_state == Actuation::C_DOWN) {
+                            cmd.linear.x = 0.0f; //Resetting velocity when prox detects 0x01
+                            cmd.linear.y = 0.0f; 
+                            cmd_pub_->publish(cmd);
+
+                            // rear.data = 0x69;
+                            if(!rear_status_forward){
+                                active_client_roll = client_roll_forward;
+                            }
+
+                            // rear_pub->publish(rear);
+                            // rear_status_forward = true; //This is set where the service is retrieved and checked
+                        }
+                        break;
+
+
+                    case 0x07: //All prox triggered
+                        cmd.linear.x = 0.0f; //Resetting velocity when prox detects 0x07
+                        cmd.linear.y = 0.0f;              
+                        cmd_pub_->publish(cmd);     
+
+                        if(rear_status_forward) { //If the rear wheel has ALREADY been driven (i.e, robot has climbed and driven), execute this if-command
+                            // rear.data = 0x00;
+                            // rear_pub->publish(rear);
+
+                            actuation_state = Actuation::C_UP;
+                            reset();
+
+                        }
+
+                        // if(!rear_status_forward){
+
+                        //     active_client_roll = client_roll_forward;
+                        //     // rear.data = 0x69;
+                        //     // rear_pub->publish(rear);                     
+                        // }
+
+                        break;
+
+                    case 0x04: //Rear prox triggered
+                        if(rear_status_forward) {
+                            // reset();
+                            // ran = false;
+                            node_status = "success";
+                            // return BT::NodeStatus::SUCCESS; //The robot has successfully climbed up, driven the rear wheel forward, and reached the 0x08 state, which means it can stop here and return success.
+                        }
+
+                        break;
+                    }
+            }
+
+            if (movement_state == Movement::DOWN) {
+                switch(prox_data){
+
+                    case 0x00: 
+                        printf("0x00 state reached for movement down\n"); 
+                        if(rear_status_reverse == false) { //By default actuation_status_ = C_DOWN, so if prox detects 0x00 and rear_status_reverse is false, it means the robot is climbing down and has not driven the rear wheel yet, but has actuated the ak-60
+                        //Hence, publish the rear command to drive the rear wheel in reverse.
+                            // rear.data = 0x76;
+                            active_client_roll = client_roll_backward;
+                            // rear_pub->publish(rear);
+                        }
+
+                        if(rear_status_reverse == true) {
+
+                            // rear.data = 0x00;
+                            // rear_pub->publish(rear);
+                            reset();
+                            actuation_state = Actuation::C_UP;
+
+                        }
+
+                        cmd.linear.x = 0.0f; //Resetting velocity when prox detects 0x00
+                        cmd.linear.y = 0.0f;
+                        cmd_pub_->publish(cmd);
+                        break;
+
+                    case 0x03:  //Front prox triggered
+                        printf("0x03 state reached for movement down\n"); 
+                        cmd.linear.x = 0.0f; //Resetting velocity when prox detects 0x03
+                        cmd.linear.y = 0.0f;
                         cmd_pub_->publish(cmd);
 
-                        // rear.data = 0x69;
-                        active_client_roll = client_roll_forward;
-
-                        // rear_pub->publish(rear);
-                        // rear_status_forward = true; //This is set where the service is retrieved and checked
-                    }
-                    break;
-
-                    
-                case 0x07: //All prox triggered
-                    cmd.linear.x = 0.0f; //Resetting velocity when prox detects 0x07
-                    cmd.linear.y = 0.0f;              
-                    cmd_pub_->publish(cmd);     
-
-                    if(rear_status_forward) { //If the rear wheel has ALREADY been driven (i.e, robot has climbed and driven), execute this if-command
-                        // rear.data = 0x00;
-                        // rear_pub->publish(rear);
-
-                        actuation_state = Actuation::C_UP;
-                        reset();
-
-                    }
-
-                    if(!rear_status_forward){
-
-                        active_client_roll = client_roll_forward;
-                        // rear.data = 0x69;
-                        // rear_pub->publish(rear);                     
-                    }
-                    
-                    break;
-
-                case 0x04: //Rear prox triggered
-                    if(rear_status_forward) {
-                        reset();
-                        ran = false;
-                        return BT::NodeStatus::SUCCESS; //The robot has successfully climbed up, driven the rear wheel forward, and reached the 0x08 state, which means it can stop here and return success.
-                    }
-
-                    break;
-            }
-        }
-
-        if (movement_state == Movement::DOWN) {
-            switch(prox_data){
-
-                case 0x00: 
-                    printf("0x00 state reached for movement down\n"); 
-                    if(rear_status_reverse == false) { //By default actuation_status_ = C_DOWN, so if prox detects 0x00 and rear_status_reverse is false, it means the robot is climbing down and has not driven the rear wheel yet, but has actuated the ak-60
-                    //Hence, publish the rear command to drive the rear wheel in reverse.
                         // rear.data = 0x76;
+                        // rear_pub->publish(rear);
+
                         active_client_roll = client_roll_backward;
-                        // rear_pub->publish(rear);
-                    }
+                        // rear_status_reverse = true; //This is set where server is requested and validity is checked for
+                        break;
 
-                    if(rear_status_reverse == true) {
+                    case 0x07: //All prox triggered
+                        printf("0x07 state reached for movement down\n"); 
+                        // if(actuation_state == Actuation::C_DOWN) {
+                        //     rear.data = 0x00;
+                        //     rear_pub->publish(rear);
+                        // }
+                        break;
 
-                        // rear.data = 0x00;
-                        // rear_pub->publish(rear);
-                        reset();
-                        actuation_state = Actuation::C_UP;
-                        
-                    }
+                    case 0x04: //Back prox triggered
+                        printf("0x04 state reached for movement down\n"); 
+                        if(rear_status_reverse){
+                            // reset();
+                            // ran = false;
+                            node_status = "success";
+                            // return BT::NodeStatus::SUCCESS; //The robot has successfully climbed down, driven the rear wheel in reverse, and reached the 0x08 
+                            // state, which means it can stop here and return success.
+                        }
 
-                    cmd.linear.x = 0.0f; //Resetting velocity when prox detects 0x00
-                    cmd.linear.y = 0.0f;
-                    cmd_pub_->publish(cmd);
-                    break;
-
-                case 0x03:  //Front prox triggered
-                    printf("0x03 state reached for movement down\n"); 
-                    cmd.linear.x = 0.0f; //Resetting velocity when prox detects 0x03
-                    cmd.linear.y = 0.0f;
-                    cmd_pub_->publish(cmd);
-
-                    // rear.data = 0x76;
-                    // rear_pub->publish(rear);
-
-                    active_client_roll = client_roll_backward;
-                    // rear_status_reverse = true; //This is set where server is requested and validity is checked for
-                    break;
-                    
-                case 0x07: //All prox triggered
-                    printf("0x07 state reached for movement down\n"); 
-                    // if(actuation_state == Actuation::C_DOWN) {
-                    //     rear.data = 0x00;
-                    //     rear_pub->publish(rear);
-                    // }
-                    break;
-
-                case 0x04: //Back prox triggered
-                    printf("0x04 state reached for movement down\n"); 
-                    if(rear_status_reverse){
-                        reset();
-                        ran = false;
-                        return BT::NodeStatus::SUCCESS; //The robot has successfully climbed down, driven the rear wheel in reverse, and reached the 0x08 
-                        // state, which means it can stop here and return success.
-                    }
-                    
-                    break;  
+                        break;  
+                }
             }
-        }
         // Still waiting for prox_data to change for success
-        return BT::NodeStatus::RUNNING;
         }
+    }
     }
 
     if(active_client_roll){
@@ -349,17 +363,76 @@ BT::NodeStatus AkClient::onRunning()
         }
 
         if(!service_done_roll) return BT::NodeStatus::RUNNING;
-
     }
 
+    //For the roll-back of the rear motors to "prep" for next step
+    if(node_status == "success" && service_success_climb == true){
+        if(!active_client_next)
+        {
+            if(next_ == "up"){
+                active_client_next = client_roll_backward;
+            }
+
+            else if(next_ == "down"){
+                active_client_next = client_roll_forward;
+            }
+        }
+
+        if (!active_client_next->wait_for_service(std::chrono::milliseconds(100)))
+        {
+            RCLCPP_WARN(node_->get_logger(), "Next service not available...");
+            return BT::NodeStatus::RUNNING;
+        }
+
+        if(!request_sent_next){
+            auto req = std::make_shared<std_srvs::srv::SetBool::Request>();
+            req->data = true;
+            auto result = active_client_next->async_send_request(req);
+            future_next = result.future.share();
+            request_sent_next = true;
+            return BT::NodeStatus::RUNNING;
+        }
+
+        if (request_sent_next && future_next.valid() && !service_done_next)
+        {
+            auto status = future_next.wait_for(std::chrono::seconds(0));
+            if (status == std::future_status::ready)
+            {
+                auto res = future_next.get();
+                service_done_next = true;
+                service_success_next = res->success;
+            }
+            else return BT::NodeStatus::RUNNING;
+        }
+
+        if (service_done_next)
+        {
+            if (node_status == "success" && service_success_next){
+                ran = false;
+                return BT::NodeStatus::SUCCESS;
+
+            }
+
+
+            if (node_status == "success" && !service_success_next){
+                ran = false;
+                return BT::NodeStatus::FAILURE;
+            }
+        }
+        
+        if(!service_done_next){
+            return BT::NodeStatus::RUNNING;
+        }
+    }
+    //Still waiting for prox data to change
     return BT::NodeStatus::RUNNING;
-    }
+}
     
 
 void AkClient::prox_callback(const std_msgs::msg::Byte::SharedPtr msg)
 {
     prox_data = msg->data;
-    printf("Prox data received: %d\n", prox_data);
+    // printf("Prox data received: %d\n", prox_data);
 
 }
 

@@ -3,8 +3,12 @@
 
         <!-- <AkClient name="ak_client" up="true" down="false"/> -->
         <!-- <SubTree ID="SpearAssembly" _autoremap="true"/> -->
-        <SickPIDClient SP1="1428.0" SP2="1167.0" SP3="8432.0" SP4="0.0"/>
-
+        <!-- <SickPIDClient SP1="1428.0" SP2="1167.0" SP3="8432.0" SP4="0.0"/> -->
+        <SequenceWithMemory>
+            <AkClient name="ak_client_1" up="true" down="false" next="up"/>
+            <AkClient name="ak_client_2" up="true" down="false" next="up"/>
+            <AkClient name="ak_client_3" up="true" down="false" next="up"/>
+        </SequenceWithMemory>
     </BehaviorTree>
 </root>
     <!-- move this whole comment block up inside Behaviour tree block >

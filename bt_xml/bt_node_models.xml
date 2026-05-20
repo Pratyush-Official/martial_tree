@@ -1,6 +1,7 @@
 <root BTCPP_format="4">
     <TreeNodesModel>
         <Action ID="AkClient">
+            <input_port name="next" type="std::string">Send the next actuation of the robot (climb up or down) or rear wheel priming</input_port>
             <input_port name="down" type="bool">Send true to lower the mechanism</input_port>
             <input_port name="up" type="bool">Send true to raise the mechanism</input_port>
         </Action>
@@ -66,12 +67,6 @@
             <inout_port name="current_yaw" type="CurrentYaw" default="json:0">Current facing direction</inout_port>
             <input_port name="turn" type="std::string">Direction: Right, Left, Back, Front or raw float</input_port>
         </Action>
-        <Action ID="ZoneChange">
-            <inout_port name="in_forest" type="int"/>
-            <inout_port name="photo_sequence_flag" type="int"/>
-            <inout_port name="in_martial" type="int"/>
-            <inout_port name="in_arena" type="int"/>
-            <input_port name="zone_enum" type="int"/>
-        </Action>
+        <Action ID="ZoneChange"/>
     </TreeNodesModel>
 </root>
