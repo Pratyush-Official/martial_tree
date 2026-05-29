@@ -4,8 +4,8 @@ YawSetpoint::YawSetpoint(const std::string& name, const BT::NodeConfig& config, 
         : BT::StatefulActionNode(name, config), node_(node){
 
             rclcpp::QoS qos_profile(10);
-            bno_sub = node_->create_subscription<std_msgs::msg::Float32>("/imu_data", sensor_qos(), std::bind(&YawSetpoint::yaw_callback, this, std::placeholders::_1));
-            setpoint_pub = node_->create_publisher<std_msgs::msg::Float32MultiArray>("setpoint_yaw",10);
+            bno_sub = node_->create_subscription<std_msgs::msg::Float32>("/imu_data_received", sensor_qos(), std::bind(&YawSetpoint::yaw_callback, this, std::placeholders::_1));
+            setpoint_pub = node_->create_publisher<std_msgs::msg::Float32MultiArray>("/setpoint_yaw",cmd_vel_qos());
             //slider_sub = node_->create_subscription<std_msgs::msg::Float32MultiArray>("/pid_gains", 10, std::bind(&YawSetpoint::slider_callback, this, std::placeholders::_1));
             RCLCPP_INFO(node_->get_logger(),"YawSetpoint initialized");
 

@@ -1,0 +1,157 @@
+<root BTCPP_format="4" main_tree_to_execute="MainTree1">
+  <BehaviorTree ID="MainTree1">
+    <Sequence name="RootSequence">
+
+      <!-- <PlanPath name="PlanPathToForest"
+        detection_s1="{detection_s1}"
+        detection_s2="{detection_s2}"
+        detection_s3="{detection_s3}"
+        detection_s4="{detection_s4}"
+        path="{path}"
+        ar_nodes="{ar_nodes}"
+      /> -->
+
+      <NodeAnalysis name="NodeAnalysis"
+        path="{path}"
+        ar_nodes="{ar_nodes}"
+        merged_path="{merged_path}"
+        node_state="{node_state}"
+      />
+      <Inverter>
+        <KeepRunningUntilFailure name="MainLoop">
+          <!-- <Inverter> -->
+            <Sequence name="MainSequence">
+
+              <IsInsideForest/>
+
+              <DecisionNode name="DecisionNode"
+                merged_path="{merged_path}"
+                node_state="{node_state}"
+                curr_node="{curr_node}"
+                next_node="{next_node}"
+                prev_node="{prev_node}"
+                climb_state="{climb_state}"
+                next_climb_state="{next_climb_state}"
+                rotate_state="{rotate_state}"
+                move_x="{move_x}"
+                move_y="{move_y}"
+                curr_node_state="{curr_node_state}"
+                next_node_state="{next_node_state}"
+              />
+            
+
+              <IfThenElse>
+
+                <CheckforC name="CheckforC" next_node_state="{next_node_state}"/>
+
+            
+                <Sequence name="Sequence1">
+                  <RetryUntilSuccessful num_attempts="-1">
+                    <OdomPIDClient name="Move" move_x="{move_x}" move_y="{move_y}"/>
+                  </RetryUntilSuccessful>
+                  <RetryUntilSuccessful num_attempts="-1">
+                    <YawPIDClient name="Rotate" rotate_state="{rotate_state}" final_yaw="{final_yaw}"/>
+                  </RetryUntilSuccessful>
+                  <Inverter>
+                  <KeepRunningUntilFailure name = "small_movement">
+                    <Sequence name="Sequence4">
+                        <VelPublish name = "VelPublish"  climb_state="{climb_state}"/>
+                        <Inverter>
+                          <Checkforprox name = "Checkforprox" climb_state="{climb_state}"/>
+                        </Inverter>
+                    </Sequence>  
+                  </KeepRunningUntilFailure>
+                  </Inverter>
+                  <RetryUntilSuccessful num_attempts="-1">
+                    <Climb name="Climb" up_down="1"/>
+                  </RetryUntilSuccessful>
+                  <RetryUntilSuccessful num_attempts="-1">
+                    <Roll name="Roll" climb_state="{climb_state}" />
+                  </RetryUntilSuccessful>
+                  <RetryUntilSuccessful num_attempts = "-1">
+                    <Climb name="Retract" up_down="-1"  next_climb_state="{next_climb_state}"/>
+                  </RetryUntilSuccessful>
+                </Sequence>
+
+                <IfThenElse>
+
+                  <CheckforS name="CheckforS" next_node_state="{next_node_state}"/>
+  <!-- 
+                  <KeepRunningUntilFailure>
+                      <Inverter> -->
+                  <Sequence name="Sequence2">
+                    <Parallel name="Parallel1" >
+                      <SubTree ID="scrollready" />
+                      <RetryUntilSuccessful num_attempts="-1">
+                      <OdomPIDClient name="Move" move_x="{move_x}" move_y="{move_y}"/>
+                      </RetryUntilSuccessful>
+                    </Parallel>
+                    <RetryUntilSuccessful num_attempts="-1">
+                      <YawPIDClient name="Rotate" rotate_state="{rotate_state}" final_yaw="{final_yaw}"/>
+                    </RetryUntilSuccessful>
+                    <Inverter>
+                    <KeepRunningUntilFailure name = "small_movement">
+                      <Sequence name="Sequence4">
+                        <VelPublish name = "VelPublish"  climb_state="{climb_state}"/>
+                        <Inverter>
+                          <Checkforprox name = "Checkforprox" climb_state="{climb_state}"/>
+                        </Inverter>
+                      </Sequence>  
+                    </KeepRunningUntilFailure>
+                    </Inverter>
+                    <!-- <SubTree ID="GripperPickAction"/>
+                    <SubTree ID = "ScrollStore"/>  -->
+                    
+                  </Sequence>
+                      <!-- </Inverter>
+                    </KeepRunningUntilFailure>
+
+                  <KeepRunningUntilFailure>
+                      <Inverter> -->
+                  <Sequence name="Sequence3">
+                    <Parallel name="Parallel2" >
+                      <SubTree ID="ScrollReady" />
+                    <RetryUntilSuccessful num_attempts="-1">
+                      <OdomPIDClient name="Move" move_x="{move_x}" move_y="{move_y}"/>
+                    </RetryUntilSuccessful>
+                    </Parallel>
+                    
+                    <RetryUntilSuccessful num_attempts="-1">
+                      <YawPIDClient name="Rotate" rotate_state="{rotate_state}" final_yaw="{final_yaw}"/>
+                    </RetryUntilSuccessful>
+                    <Inverter>
+                    <KeepRunningUntilFailure name = "small_movement">
+                      <Sequence name="Sequence4">
+                        <VelPublish name = "VelPublish"  climb_state="{climb_state}"/>
+                        <Inverter>
+                          <Checkforprox name = "Checkforprox" climb_state="{climb_state}"/>
+                        </Inverter>
+                      </Sequence>  
+                    </KeepRunningUntilFailure>
+                    </Inverter>
+                    <!-- <SubTree ID="GripperPickAction"/>
+                    <SubTree ID = "ScrollStore"/>  -->
+                    <RetryUntilSuccessful num_attempts="-1">
+                      <Climb name="Climb" up_down="1"/>
+                    </RetryUntilSuccessful>
+                    <RetryUntilSuccessful num_attempts="-1">
+                      <Roll name="Roll" climb_state="{climb_state}" />
+                    </RetryUntilSuccessful>
+                    <RetryUntilSuccessful>
+                      <Climb name="Retract" up_down="-1"  next_climb_state="{next_climb_state}"/>
+                    </RetryUntilSuccessful>
+                  </Sequence>
+                <!-- </Inverter>
+              </KeepRunningUntilFailure> -->
+
+                </IfThenElse>
+
+              </IfThenElse>
+
+            </Sequence>
+          <!-- </Inverter> -->
+        </KeepRunningUntilFailure>
+      </Inverter>
+    </Sequence>
+  </BehaviorTree>
+</root>

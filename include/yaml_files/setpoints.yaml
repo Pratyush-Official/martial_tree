@@ -1,0 +1,31 @@
+red:
+  entrance:
+    closest_straight: null
+    middle_straight: null
+    furthest_straight: null
+    closest_rotate: null
+    middle_rotate: null
+    furthest_rotate: null
+  
+  arena:
+    lock_ramp: null
+    tictac_left: null
+    tictac_middle: null
+    ticktac_right: null
+    tictac_photo: null
+
+blue:
+  entrance:
+    closest_straight: null
+    middle_straight: null
+    furthest_straight: null
+    closest_rotate: null
+    middle_rotate: null
+    furthest_rotate: null
+  
+  arena:
+    lock_ramp: null
+    tictac_left: null
+    tictac_middle: null
+    ticktac_right: null
+    tictac_photo: null

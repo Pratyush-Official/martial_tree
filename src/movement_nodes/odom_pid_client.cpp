@@ -1,114 +1,125 @@
 #include "movement_nodes/odom_pid_client.hpp"
 
-using namespace std::placeholders;
-
-OdomPIDClient::OdomPIDClient(
-    const std::string &name,
-    const BT::NodeConfig &config,
-    rclcpp::Node::SharedPtr node)
-: BT::StatefulActionNode(name, config),
-  node_(node)
+OdomPIDClient::OdomPIDClient(const std::string & name,
+           const BT::NodeConfig & config,
+           rclcpp::Node::SharedPtr node)
+: BT::StatefulActionNode(name, config)
+, node_(node)
 {
-    odom_client_ =
-        rclcpp_action::create_client<Movement>(node_, "/movement_odom");
-
-    RCLCPP_INFO(node_->get_logger(), "OdomPIDClient initialized");
+    action_client_ = rclcpp_action::create_client<MoveTwist>(node_, "move_twist");
 }
 
 BT::PortsList OdomPIDClient::providedPorts()
 {
     return {
-        BT::InputPort<float>("setpoint_odom_1"),
-        BT::InputPort<float>("setpoint_odom_2"),
-        BT::InputPort<float>("tolerance"),
-        BT::InputPort<float>("timeout")
+        BT::InputPort<float>("move_x", "X displacement from DecisionNode in mm"),
+        BT::InputPort<float>("move_y", "Y displacement from DecisionNode in mm"),
     };
 }
 
 BT::NodeStatus OdomPIDClient::onStart()
 {
-    done_ = false;
-    success_ = false;
+    reset();
 
-    if (!odom_client_->wait_for_action_server(std::chrono::seconds(3))) {
-        RCLCPP_ERROR(node_->get_logger(), "Odom action server not available");
+    float move_x_mm{0.0f}, move_y_mm{0.0f};
+    getInput("move_x", move_x_mm);
+    getInput("move_y", move_y_mm);
+
+    if (!action_client_->wait_for_action_server(std::chrono::milliseconds(500)))
+    {
+        RCLCPP_WARN(node_->get_logger(),
+                    "Odom PID Server not available – retrying");
         return BT::NodeStatus::FAILURE;
     }
 
-    goal_msg_.setpoint_odom.resize(2);
+    MoveTwist::Goal goal;
+    goal.move_x = move_x_mm;
+    goal.move_y = move_y_mm;
 
-    getInput("setpoint_odom_1", goal_msg_.setpoint_odom[0]);
-    getInput("setpoint_odom_2", goal_msg_.setpoint_odom[1]);
+    auto options = rclcpp_action::Client<MoveTwist>::SendGoalOptions{};
 
-    getInput("tolerance", goal_msg_.tolerance_odom);
-    getInput("timeout", goal_msg_.timeout_odom);
-
-    rclcpp_action::Client<Movement>::SendGoalOptions options;
     options.goal_response_callback =
-        std::bind(&OdomPIDClient::goal_response_callback, this, _1);
+        [this](const GoalHandleMove::SharedPtr & handle)
+        {
+            if (!handle) {
+                RCLCPP_ERROR(node_->get_logger(), "Goal REJECTED");
+                goal_rejected_ = true;
+            } else {
+                RCLCPP_INFO(node_->get_logger(), "Goal ACCEPTED");
+                goal_handle_   = handle;
+                goal_accepted_ = true;
+            }
+        };
+
     options.feedback_callback =
-        std::bind(&OdomPIDClient::feedback_callback, this, _1, _2);
+        [this](GoalHandleMove::SharedPtr,
+               const std::shared_ptr<const MoveTwist::Feedback>)
+        {
+        };
+
     options.result_callback =
-        std::bind(&OdomPIDClient::result_callback, this, _1);
+        [this](const GoalHandleMove::WrappedResult & result)
+        {
+            goal_done_      = true;
+            goal_succeeded_ = result.result->success;
+            final_avg_dist_ = result.result->final_avg_dist_m;
+            RCLCPP_INFO(node_->get_logger(),
+                        "[Move] Result: success=%s  final_dist=%.4f m",
+                        goal_succeeded_ ? "true" : "false",
+                        final_avg_dist_);
+        };
 
-    odom_client_->async_send_goal(goal_msg_, options);
+    action_client_->async_send_goal(goal, options);
 
-    RCLCPP_INFO(node_->get_logger(), "OdomPIDClient goal sent");
+    RCLCPP_INFO(node_->get_logger(),
+                "Goal sent move_x=%.1f mm  move_y=%.1f mm",
+                move_x_mm, move_y_mm);
+
     return BT::NodeStatus::RUNNING;
 }
 
 BT::NodeStatus OdomPIDClient::onRunning()
 {
-    if (!done_) {
-        return BT::NodeStatus::RUNNING;
+    if (goal_rejected_)
+    {
+        RCLCPP_ERROR(node_->get_logger(), "Goal was rejected = FAILURE");
+        return BT::NodeStatus::FAILURE;
     }
 
-    return success_
-        ? BT::NodeStatus::SUCCESS
-        : BT::NodeStatus::FAILURE;
+    if (goal_done_)
+    {
+        if (goal_succeeded_)
+        {
+            RCLCPP_INFO(node_->get_logger(),
+                        "Succeeded avg_dist=%.4f m", final_avg_dist_);
+            return BT::NodeStatus::SUCCESS;
+        }
+        else
+        {
+            RCLCPP_WARN(node_->get_logger(), "[Move] Server returned failure");
+            return BT::NodeStatus::FAILURE;
+        }
+    }
+
+    return BT::NodeStatus::RUNNING;
 }
 
 void OdomPIDClient::onHalted()
 {
-    cancel_goal();
-}
-
-void OdomPIDClient::cancel_goal()
-{
-    if (goal_handle_) {
-        odom_client_->async_cancel_goal(goal_handle_);
-        RCLCPP_WARN(node_->get_logger(), "OdomPIDClient goal canceled");
+    if (goal_handle_)
+    {
+        action_client_->async_cancel_goal(goal_handle_);
+        RCLCPP_WARN(node_->get_logger(), "[Move] Halted – goal cancelled.");
     }
+    reset();
 }
 
-void OdomPIDClient::goal_response_callback(
-    const GoalHandleMovement::SharedPtr &handle)
+void OdomPIDClient::reset()
 {
-    if (!handle) {
-        RCLCPP_ERROR(node_->get_logger(), "OdomPIDClient goal rejected");
-        done_ = true;
-        success_ = false;
-        return;
-    }
-
-    goal_handle_ = handle;
-    RCLCPP_INFO(node_->get_logger(), "OdomPIDClient goal accepted");
-}
-
-void OdomPIDClient::result_callback(
-    const GoalHandleMovement::WrappedResult &result)
-{
-    success_ = (result.code == rclcpp_action::ResultCode::SUCCEEDED);
-    done_ = true;
-
-    RCLCPP_INFO(node_->get_logger(),
-        "OdomPIDClient result: %s",
-        success_ ? "SUCCESS" : "FAILURE");
-}
-
-void OdomPIDClient::feedback_callback(
-    GoalHandleMovement::SharedPtr,
-    const std::shared_ptr<const Movement::Feedback>)
-{
-    
+    goal_accepted_  = false;
+    goal_rejected_  = false;
+    goal_done_      = false;
+    goal_succeeded_ = false;
+    final_avg_dist_ = 0.0f;
+    goal_handle_.reset();
 }

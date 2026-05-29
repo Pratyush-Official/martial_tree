@@ -18,6 +18,7 @@ find_package(std_srvs REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(ament_index_cpp REQUIRED)
 find_package(oakd_roi_detector_interfaces REQUIRED)
+find_package(ar_interfaces REQUIRED)
 find_package(geometry_msgs REQUIRED)
 
 set(BEHAVIOUR_SOURCES
@@ -29,6 +30,14 @@ set(BEHAVIOUR_SOURCES
   src/movement_nodes/odom_pid_client.cpp
   src/movement_nodes/yaw_pid_client.cpp
   src/movement_nodes/go_to_entrance.cpp
+  src/movement_nodes/vel_publish.cpp
+  src/movement_nodes/roll.cpp
+  src/movement_nodes/climb.cpp
+
+  src/movement_nodes/scrollGripperSystem/setHeight.cpp
+  src/movement_nodes/scrollGripperSystem/gripperPose.cpp
+  src/movement_nodes/scrollGripperSystem/gripperAct.cpp
+  src/movement_nodes/scrollGripperSystem/setExtension.cpp
 
   src/camera_nodes/get_roi_detections.cpp
   src/camera_nodes/find_hidden_scroll.cpp
@@ -36,6 +45,15 @@ set(BEHAVIOUR_SOURCES
   src/tree_flow_nodes/zone_change.cpp
   src/tree_flow_nodes/wait_for_set.cpp
   src/tree_flow_nodes/initialize_ports_actuators.cpp
+
+  src/tree_flow_nodes/conditions/check_for_C.cpp
+  src/tree_flow_nodes/conditions/check_for_S.cpp
+  src/tree_flow_nodes/conditions/is_inside_forest.cpp
+  src/tree_flow_nodes/conditions/check_for_prox.cpp
+  src/tree_flow_nodes/conditions/always_node.cpp
+  src/tree_flow_nodes/decision_nodes/decision_node.cpp
+  src/tree_flow_nodes/decision_nodes/node_analysis.cpp
+  src/tree_flow_nodes/decision_nodes/path_planner.cpp
   
   src/set_destination_from_priority.cpp
   src/get_location_for_stage.cpp

@@ -1,12 +1,41 @@
 <root BTCPP_format="4">
     <TreeNodesModel>
         <Action ID="AkClient">
-            <input_port name="next" type="std::string">Send the next actuation of the robot (climb up or down) or rear wheel priming</input_port>
             <input_port name="down" type="bool">Send true to lower the mechanism</input_port>
             <input_port name="up" type="bool">Send true to raise the mechanism</input_port>
         </Action>
+        <Action ID="AlwaysNode">
+            <input_port name="state" type="int"/>
+        </Action>
         <Action ID="CheckItemsPicked">
             <input_port name="items_picked" type="int" default="0">Number of items picked so far</input_port>
+        </Action>
+        <Action ID="CheckforC">
+            <input_port name="next_node_state" type="int"/>
+        </Action>
+        <Action ID="CheckforS">
+            <input_port name="next_node_state" type="int"/>
+        </Action>
+        <Action ID="Checkforprox">
+            <input_port name="climb_state" type="int"/>
+        </Action>
+        <Action ID="Climb">
+            <input_port name="next_climb_state" type="int">Used for preset roll after retract</input_port>
+            <input_port name="up_down" type="int"/>
+        </Action>
+        <Action ID="DecisionNode">
+            <output_port name="next_node_state" type="int"/>
+            <output_port name="move_y" type="float"/>
+            <output_port name="move_x" type="float"/>
+            <output_port name="rotate_state" type="float"/>
+            <output_port name="climb_state" type="int"/>
+            <output_port name="prev_node" type="int"/>
+            <output_port name="next_node" type="int"/>
+            <input_port name="node_state" type="std::map&lt;int, int, std::less&lt;int&gt;, std::allocator&lt;std::pair&lt;int const, int&gt; &gt; &gt;"/>
+            <output_port name="curr_node_state" type="int"/>
+            <output_port name="next_climb_state" type="int"/>
+            <output_port name="curr_node" type="int"/>
+            <input_port name="merged_path" type="std::vector&lt;int, std::allocator&lt;int&gt; &gt;"/>
         </Action>
         <Action ID="FindHiddenScroll">
             <input_port name="stage4" type="StageDetections"/>
@@ -35,12 +64,34 @@
             <input_port name="current_yaw" type="CurrentYaw"/>
             <inout_port name="stage1" type="StageDetections"/>
         </Action>
+        <Action ID="GripperAct">
+            <input_port name="grip" type="bool"/>
+        </Action>
+        <Action ID="GripperPose">
+            <input_port name="yaw" type="int"/>
+        </Action>
         <Action ID="InitializePortsActuators"/>
+        <Action ID="IsInsideForest"/>
+        <Action ID="NodeAnalysis">
+            <output_port name="node_state" type="std::map&lt;int, int, std::less&lt;int&gt;, std::allocator&lt;std::pair&lt;int const, int&gt; &gt; &gt;"/>
+            <output_port name="merged_path" type="std::vector&lt;int, std::allocator&lt;int&gt; &gt;"/>
+            <input_port name="ar_nodes" type="std::vector&lt;int, std::allocator&lt;int&gt; &gt;"/>
+            <input_port name="path" type="std::vector&lt;int, std::allocator&lt;int&gt; &gt;"/>
+        </Action>
         <Action ID="OdomPIDClient">
-            <input_port name="timeout" type="float"/>
-            <input_port name="tolerance" type="float"/>
-            <input_port name="setpoint_odom_2" type="float"/>
-            <input_port name="setpoint_odom_1" type="float"/>
+            <input_port name="move_y" type="float">Y displacement from DecisionNode in mm</input_port>
+            <input_port name="move_x" type="float">X displacement from DecisionNode in mm</input_port>
+        </Action>
+        <Action ID="PlanPath">
+            <output_port name="ar_nodes" type="std::vector&lt;int, std::allocator&lt;int&gt; &gt;"/>
+            <output_port name="path" type="std::vector&lt;int, std::allocator&lt;int&gt; &gt;"/>
+            <input_port name="detection_s4" type="StageDetections"/>
+            <input_port name="detection_s3" type="StageDetections"/>
+            <input_port name="detection_s2" type="StageDetections"/>
+            <input_port name="detection_s1" type="StageDetections"/>
+        </Action>
+        <Action ID="Roll">
+            <input_port name="climb_state" type="int">Climb state: UP or DOWN</input_port>
         </Action>
         <Action ID="SetDestinationFromPriority">
             <output_port name="detection_status" type="std::string"/>
@@ -58,15 +109,25 @@
             <output_port name="current_stage" type="int"/>
             <input_port name="destination_stage" type="int"/>
         </Action>
+        <Action ID="VelPublish">
+            <input_port name="next_climb_state" type="int">Next node climb state, used for preset roll</input_port>
+            <input_port name="climb_state" type="int">Climb state: UP or DOWN</input_port>
+        </Action>
         <Action ID="WaitForSet"/>
         <Action ID="YawPIDClient">
-            <input_port name="Velocity-max" type="float">Velocity maximum</input_port>
-            <input_port name="Angle" type="float">Angle setpoint</input_port>
+            <output_port name="final_yaw" type="float">Actual yaw reading when rotation completed</output_port>
+            <input_port name="rotate_state" type="float">Target rotation in DEGREES from DecisionNode</input_port>
         </Action>
         <Action ID="YawSetpoint">
             <inout_port name="current_yaw" type="CurrentYaw" default="json:0">Current facing direction</inout_port>
             <input_port name="turn" type="std::string">Direction: Right, Left, Back, Front or raw float</input_port>
         </Action>
         <Action ID="ZoneChange"/>
+        <Action ID="setExtension">
+            <input_port name="length" type="float"/>
+        </Action>
+        <Action ID="setHeight">
+            <input_port name="height" type="float"/>
+        </Action>
     </TreeNodesModel>
 </root>

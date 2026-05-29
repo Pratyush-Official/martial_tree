@@ -21,6 +21,7 @@ BT::PortsList SickPIDClient::providedPorts()
         BT::InputPort<float>("SP2", "Setpoint 2"),
         BT::InputPort<float>("SP3", "Setpoint 3"),
         BT::InputPort<float>("SP4", "Setpoint 4")
+        // BT::OutputPort<>
     };
 }
 

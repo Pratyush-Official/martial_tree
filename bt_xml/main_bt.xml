@@ -1,14 +1,10 @@
 <root BTCPP_format="4">
     <BehaviorTree ID="MainTree">
 
-        <!-- <AkClient name="ak_client" up="true" down="false"/> -->
-        <!-- <SubTree ID="SpearAssembly" _autoremap="true"/> -->
-        <!-- <SickPIDClient SP1="1428.0" SP2="1167.0" SP3="8432.0" SP4="0.0"/> -->
-        <SequenceWithMemory>
-            <AkClient name="ak_client_1" up="true" down="false" next="up"/>
-            <AkClient name="ak_client_2" up="true" down="false" next="up"/>
-            <AkClient name="ak_client_3" up="true" down="false" next="up"/>
-        </SequenceWithMemory>
+        <SickPIDClient SP1="1190.36" SP2="1190.0" SP3="3395.4.0" SP4="0.0"/>
+        <!-- <OdomPIDClient name="Move" move_x= "160.0" move_y= "0.0"/> -->
+        <!-- <YawSetpoint name="face_arena" turn="Right" current_yaw="{current_yaw}"/> -->
+
     </BehaviorTree>
 </root>
     <!-- move this whole comment block up inside Behaviour tree block >

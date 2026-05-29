@@ -14,7 +14,7 @@ void tree_ticker::setup()
     timer_group = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
 
     bool debug_mode = this->declare_parameter<bool>("debug", false);
-    int tick_ms = debug_mode ? 2000 : 10; //if debug == "true", 2000ms, else 10ms is the tick 
+    int tick_ms = debug_mode ? 2000 : 10;
 
     timer_ = create_wall_timer(
         std::chrono::milliseconds(tick_ms),
@@ -26,6 +26,10 @@ void tree_ticker::setup()
 void tree_ticker::create_behavior_tree()
 {
     register_custom_action_nodes();
+    // --- merged from bt.cpp ---
+    register_condition_nodes();
+    register_decision_nodes();
+    register_actions_nodes();
 
     auto blackboard = BT::Blackboard::create();
     
@@ -61,7 +65,7 @@ void tree_ticker::create_behavior_tree()
         RCLCPP_INFO(get_logger(), "tree created OK");
 
         logger_ = std::make_unique<BT::StdCoutLogger>(tree_);
-        groot_publisher_ = std::make_unique<BT::Groot2Publisher>(tree_, 1667); // default port is 1667
+        groot_publisher_ = std::make_unique<BT::Groot2Publisher>(tree_, 1667);
         file_logger_ = std::make_unique<BT::FileLogger2>(tree_, "/home/maomao/ROBOCON_26/2026_ros2_ws/src/martial_tree/bt_xml/bt_trace.btlog");
 
     } catch (const std::exception &e) {
@@ -82,131 +86,204 @@ void tree_ticker::register_custom_action_nodes()
     factory.registerBuilder<SickPIDClient>(
         "SickPIDClient",
         [shared_self](const std::string &name, const BT::NodeConfig &config)
-        {
-            return std::make_unique<SickPIDClient>(name, config, shared_self);
-        }
+        { return std::make_unique<SickPIDClient>(name, config, shared_self); }
     );
 
     factory.registerBuilder<GoToEntrance>(
         "GoToEntrance",
         [shared_self](const std::string &name, const BT::NodeConfig &config)
-        {
-            return std::make_unique<GoToEntrance>(name, config, shared_self);
-        }
+        { return std::make_unique<GoToEntrance>(name, config, shared_self); }
     );
 
     factory.registerBuilder<YawPIDClient>(
         "YawPIDClient",
         [shared_self](const std::string &name, const BT::NodeConfig &config)
-        {
-            return std::make_unique<YawPIDClient>(name, config, shared_self);
-        }
+        { return std::make_unique<YawPIDClient>(name, config, shared_self); }
     );
 
     factory.registerBuilder<AkClient>(
         "AkClient",
         [shared_self](const std::string &name, const BT::NodeConfig &config)
-        {
-            return std::make_unique<AkClient>(name, config, shared_self);
-        }
+        { return std::make_unique<AkClient>(name, config, shared_self); }
     );
 
     factory.registerBuilder<YawSetpoint>(
         "YawSetpoint",
         [shared_self](const std::string &name, const BT::NodeConfig &config)
-        {
-            return std::make_unique<YawSetpoint>(name, config, shared_self);
-        }
+        { return std::make_unique<YawSetpoint>(name, config, shared_self); }
     );
 
     factory.registerBuilder<GetROIDetections>(
         "GetROIDetections",
         [shared_self](const std::string &name, const BT::NodeConfig &config)
-        {
-            return std::make_unique<GetROIDetections>(name, config, shared_self);
-        }
+        { return std::make_unique<GetROIDetections>(name, config, shared_self); }
     );
 
     factory.registerBuilder<FindHiddenScroll>(
         "FindHiddenScroll",
         [](const std::string &name, const BT::NodeConfig &config)
-        {
-            return std::make_unique<FindHiddenScroll>(name, config);
-        }
+        { return std::make_unique<FindHiddenScroll>(name, config); }
     );
 
     factory.registerBuilder<OdomPIDClient>(
         "OdomPIDClient",
         [shared_self](const std::string &name, const BT::NodeConfig &config)
-        {
-            return std::make_unique<OdomPIDClient>(name, config, shared_self);
-        }
+        { return std::make_unique<OdomPIDClient>(name, config, shared_self); }
     );
 
     factory.registerBuilder<InitializePortsActuators>(
         "InitializePortsActuators",
         [shared_self](const std::string &name, const BT::NodeConfig &config)
-        {
-            return std::make_unique<InitializePortsActuators>(name, config, shared_self);
-        }
+        { return std::make_unique<InitializePortsActuators>(name, config, shared_self); }
     );
 
     factory.registerBuilder<WaitForSet>(
         "WaitForSet",
         [shared_self](const std::string &name, const BT::NodeConfig &config)
-        {
-            return std::make_unique<WaitForSet>(name, config, shared_self);
-        }
+        { return std::make_unique<WaitForSet>(name, config, shared_self); }
     );
 
     factory.registerBuilder<ZoneChange>(
         "ZoneChange",
         [shared_self](const std::string &name, const BT::NodeConfig &config)
-        {
-            return std::make_unique<ZoneChange>(name, config, shared_self);
-        }
+        { return std::make_unique<ZoneChange>(name, config, shared_self); }
     );
-
-    // --- newly added nodes ---
 
     factory.registerBuilder<SetDestinationFromPriority>(
         "SetDestinationFromPriority",
         [shared_self](const std::string &name, const BT::NodeConfig &config)
-        {
-            return std::make_unique<SetDestinationFromPriority>(name, config, shared_self);
-        }
+        { return std::make_unique<SetDestinationFromPriority>(name, config, shared_self); }
     );
 
     factory.registerBuilder<GetLocationForStage>(
         "GetLocationForStage",
         [shared_self](const std::string &name, const BT::NodeConfig &config)
-        {
-            return std::make_unique<GetLocationForStage>(name, config, shared_self);
-        }
+        { return std::make_unique<GetLocationForStage>(name, config, shared_self); }
     );
 
     factory.registerBuilder<UpdateCurrentStage>(
         "UpdateCurrentStage",
         [shared_self](const std::string &name, const BT::NodeConfig &config)
-        {
-            return std::make_unique<UpdateCurrentStage>(name, config, shared_self);
-        }
+        { return std::make_unique<UpdateCurrentStage>(name, config, shared_self); }
     );
 
     factory.registerBuilder<CheckItemsPicked>(
         "CheckItemsPicked",
         [shared_self](const std::string &name, const BT::NodeConfig &config)
-        {
-            return std::make_unique<CheckItemsPicked>(name, config, shared_self);
-        }
+        { return std::make_unique<CheckItemsPicked>(name, config, shared_self); }
+    );
+}
+
+// --- merged from bt.cpp ---
+void tree_ticker::register_actions_nodes()
+{
+    auto shared_self = std::static_pointer_cast<tree_ticker>(this->shared_from_this());
+
+    factory.registerBuilder<Climb>(
+        "Climb",
+        [shared_self](const std::string &name, const BT::NodeConfig &config)
+        { return std::make_unique<Climb>(name, config, shared_self); }
+    );
+
+    factory.registerBuilder<Roll>(
+        "Roll",
+        [shared_self](const std::string &name, const BT::NodeConfig &config)
+        { return std::make_unique<Roll>(name, config, shared_self); }
+    );
+
+    factory.registerBuilder<GripperPose>(
+        "GripperPose",
+        [shared_self](const std::string &name, const BT::NodeConfig &config)
+        { return std::make_unique<GripperPose>(name, config, shared_self); }
+    );
+
+    factory.registerBuilder<SetExtension>(
+        "setExtension",
+        [shared_self](const std::string &name, const BT::NodeConfig &config)
+        { return std::make_unique<SetExtension>(name, config, shared_self); }
+    );
+
+    factory.registerBuilder<SetHeight>(
+        "setHeight",
+        [shared_self](const std::string &name, const BT::NodeConfig &config)
+        { return std::make_unique<SetHeight>(name, config, shared_self); }
+    );
+
+    factory.registerBuilder<GripperAct>(
+        "GripperAct",
+        [shared_self](const std::string &name, const BT::NodeConfig &config)
+        { return std::make_unique<GripperAct>(name, config, shared_self); }
+    );
+
+    factory.registerBuilder<VelPublish>(
+        "VelPublish",
+        [shared_self](const std::string &name, const BT::NodeConfig &config)
+        { return std::make_unique<VelPublish>(name, config, shared_self); }
+    );
+}
+
+void tree_ticker::register_decision_nodes()
+{
+    auto shared_self = std::static_pointer_cast<tree_ticker>(this->shared_from_this());
+
+    factory.registerBuilder<PlanPath>(
+        "PlanPath",
+        [shared_self](const std::string &name, const BT::NodeConfig &config)
+        { return std::make_unique<PlanPath>(name, config, shared_self); }
+    );
+
+    factory.registerBuilder<DecisionNode>(
+        "DecisionNode",
+        [shared_self](const std::string &name, const BT::NodeConfig &config)
+        { return std::make_unique<DecisionNode>(name, config, shared_self); }
+    );
+
+    factory.registerBuilder<NodeAnalysis>(
+        "NodeAnalysis",
+        [shared_self](const std::string &name, const BT::NodeConfig &config)
+        { return std::make_unique<NodeAnalysis>(name, config, shared_self); }
+    );
+}
+
+void tree_ticker::register_condition_nodes()
+{
+    auto shared_self = std::static_pointer_cast<tree_ticker>(this->shared_from_this());
+
+    factory.registerBuilder<isInsideForest>(
+        "IsInsideForest",
+        [shared_self](const std::string &name, const BT::NodeConfig &config)
+        { return std::make_unique<isInsideForest>(name, config, shared_self); }
+    );
+
+    factory.registerBuilder<CheckForC>(
+        "CheckforC",
+        [shared_self](const std::string &name, const BT::NodeConfig &config)
+        { return std::make_unique<CheckForC>(name, config, shared_self); }
+    );
+
+    factory.registerBuilder<CheckForS>(
+        "CheckforS",
+        [shared_self](const std::string &name, const BT::NodeConfig &config)
+        { return std::make_unique<CheckForS>(name, config, shared_self); }
+    );
+
+    factory.registerBuilder<CheckForProx>(
+        "Checkforprox",
+        [shared_self](const std::string &name, const BT::NodeConfig &config)
+        { return std::make_unique<CheckForProx>(name, config, shared_self); }
+    );
+
+    factory.registerBuilder<AlwaysNode>(
+        "AlwaysNode",
+        [shared_self](const std::string &name, const BT::NodeConfig &config)
+        { return std::make_unique<AlwaysNode>(name, config, shared_self); }
     );
 }
 
 void tree_ticker::update_behavior_tree()
 {
-
     bool debug_mode = this->get_parameter("debug").as_bool();
-    auto status = debug_mode ? tree_.tickOnce() : tree_.tickWhileRunning(); //if debug == "true" status = tickOnce, else its tickWhileRunning
+    auto status = debug_mode ? tree_.tickOnce() : tree_.tickWhileRunning();
     if(status != BT::NodeStatus::RUNNING)
     {
         RCLCPP_INFO(

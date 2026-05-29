@@ -43,8 +43,6 @@ private:
     
     bool request_sent_climb;
     bool request_sent_roll;
-    bool request_sent_next;
-
     bool rear_status_forward; 
     bool rear_status_reverse;
 
@@ -54,11 +52,6 @@ private:
 
     bool service_success_roll;
     bool service_done_roll;
-
-    std::string next_;
-    std::string node_status;
-    bool service_success_next;
-    bool service_done_next;
     
     uint8_t prox_data;
     std_msgs::msg::Byte rear;
@@ -72,7 +65,6 @@ private:
     rclcpp::Client<std_srvs::srv::SetBool>::SharedPtr client_roll_backward;
     rclcpp::Client<std_srvs::srv::SetBool>::SharedPtr active_client_roll;
 
-    rclcpp::Client<std_srvs::srv::SetBool>::SharedPtr active_client_next;
 
     rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr cmd_pub_; 
     rclcpp::Publisher<std_msgs::msg::Byte>::SharedPtr rear_pub;
@@ -82,7 +74,6 @@ private:
 
     std::shared_future<std::shared_ptr<std_srvs::srv::SetBool::Response>> future_roll;
     std::shared_future<std::shared_ptr<std_srvs::srv::SetBool::Response>> future_climb;
-    std::shared_future<std::shared_ptr<std_srvs::srv::SetBool::Response>> future_next;
     
     void prox_callback(const std_msgs::msg::Byte::SharedPtr msg);
 

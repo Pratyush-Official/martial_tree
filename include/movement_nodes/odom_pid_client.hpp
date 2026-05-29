@@ -1,46 +1,38 @@
-#pragma once
-
+#include <behaviortree_cpp/action_node.h>
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp_action/rclcpp_action.hpp>
+#include "ar_interfaces/action/move_twist.hpp"
 
-#include <std_msgs/msg/float32_multi_array.hpp>
-#include <nav_msgs/msg/odometry.hpp>
 
-#include <behaviortree_cpp/action_node.h>
-
-#include <ar_interfaces/action/movement.hpp>
+using MoveTwist      = ar_interfaces::action::MoveTwist;
+using GoalHandleMove = rclcpp_action::ClientGoalHandle<MoveTwist>;
 
 class OdomPIDClient : public BT::StatefulActionNode
 {
 public:
-    using Movement = ar_interfaces::action::Movement;
-    using GoalHandleMovement = rclcpp_action::ClientGoalHandle<Movement>;
-
     OdomPIDClient(const std::string & name,
                const BT::NodeConfig & config,
                rclcpp::Node::SharedPtr node);
 
+    BT::NodeStatus onStart()   override;
+    BT::NodeStatus onRunning() override;
+    void           onHalted()  override;
+
     static BT::PortsList providedPorts();
 
-    BT::NodeStatus onStart() override;
-    BT::NodeStatus onRunning() override;
-    void onHalted() override;
 
-private:
-    void cancel_goal();
+    rclcpp::Node::SharedPtr                     node_;
+    rclcpp_action::Client<MoveTwist>::SharedPtr action_client_;
+    GoalHandleMove::SharedPtr                   goal_handle_;
 
-    void goal_response_callback(const GoalHandleMovement::SharedPtr &);
-    void result_callback(const GoalHandleMovement::WrappedResult &);
-    void feedback_callback(
-        GoalHandleMovement::SharedPtr,
-        const std::shared_ptr<const Movement::Feedback>);
+   
+    bool goal_accepted_{false};
+    bool goal_rejected_{false};
+    bool goal_done_{false};
+    bool goal_succeeded_{false};
 
-    rclcpp::Node::SharedPtr node_;
-    rclcpp_action::Client<Movement>::SharedPtr odom_client_;
-    GoalHandleMovement::SharedPtr goal_handle_;
+    float final_avg_dist_{0.0f};
 
-    Movement::Goal goal_msg_;
-
-    std::atomic_bool done_{false};
-    std::atomic_bool success_{false};
+    void reset();
 };
+

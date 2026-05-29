@@ -1,74 +1,103 @@
 #include "movement_nodes/yaw_pid_client.hpp"
- 
-using namespace std::placeholders;
-YawPIDClient::YawPIDClient(const std::string &name, const BT::NodeConfig &config, rclcpp::Node::SharedPtr node) : 
-    BT::StatefulActionNode(name, config), node_(node)
+#include <cmath>
+
+namespace BT
 {
 
-        rclcpp::QoS qos_profile(10);
-        qos_profile.reliability(RMW_QOS_POLICY_RELIABILITY_RELIABLE); 
-
-        client_ptr = rclcpp_action::create_client<ar_interfaces::action::Movement>(node, "/yaw_pid"); //movement_pid is the service name
-        cmd_pub_ = node_->create_publisher<geometry_msgs::msg::Twist>("/cmd_vel", cmd_vel_qos());
-        RCLCPP_INFO(node_->get_logger(),"YawPIDClient initialized");
-        done_flag = false;
+YawPIDClient::YawPIDClient(const std::string &     name,
+               const BT::NodeConfig &  config,
+               rclcpp::Node::SharedPtr node)
+: BT::StatefulActionNode(name, config)
+, node_(node)
+{
+    action_client_ = rclcpp_action::create_client<RotateExec>(node_, "rotate_exec");
 }
 
 BT::PortsList YawPIDClient::providedPorts()
 {
     return {
-        BT::InputPort<float>("Angle", "Angle setpoint"),
-        BT::InputPort<float>("Velocity-max", "Velocity maximum"),
+        BT::InputPort<float>("rotate_state",
+            "Target rotation in DEGREES from DecisionNode"),
+        BT::OutputPort<float>("final_yaw",
+            "Actual yaw reading when rotation completed"),
     };
 }
 
 BT::NodeStatus YawPIDClient::onStart()
 {
-    
-    float angle = getInput<float>("Angle").value();
-    float vel_max = getInput<float>("Velocity-max").value();
+    reset();
 
-    done_flag = false;
-    success = false;
-    auto goal_options = rclcpp_action::Client<ar_interfaces::action::Movement>::SendGoalOptions();
-    goal_options.goal_response_callback = std::bind(&YawPIDClient::goal_response_callback, this, _1); //When server sends a response to a goal request, run this callback
-    goal_options.feedback_callback = std::bind(&YawPIDClient::feedback_callback, this, _1, _2);
-    goal_options.result_callback = std::bind(&YawPIDClient::result_callback, this, _1);
-
-    goal_msg.setpoint_yaw = angle;
-    goal_msg.tolerance_yaw = 0.0;
-    goal_msg.timeout_yaw = 0.0;
-    goal_msg.vel_w = vel_max;
-
-    start_time = std::chrono::duration_cast<std::chrono::milliseconds>(
-                 std::chrono::steady_clock::now().time_since_epoch())
-                 .count();
-    
-    if (!client_ptr->wait_for_action_server(std::chrono::seconds(5))) {
-        RCLCPP_ERROR(node_->get_logger(), "Action server not available after waiting");
-        done_flag = true;
-        success = false;
+    float target_degrees{0.0f};
+    if (!getInput("rotate_state", target_degrees))
+    {
+        RCLCPP_ERROR(node_->get_logger(),
+                     "[YawPIDClient] Missing required port 'rotate_state'");
         return BT::NodeStatus::FAILURE;
     }
 
-    client_ptr->async_send_goal(goal_msg, goal_options);
-    RCLCPP_INFO(node_->get_logger(), "YawPIDClient::sent goal");
-    RCLCPP_INFO(node_->get_logger(), "setpoint_yaw: %f", goal_msg.setpoint_yaw);
-    
+    // convert degrees to radians
+    float target_angle = target_degrees * M_PI / 180.0f;
+
+    if (!action_client_->wait_for_action_server(std::chrono::milliseconds(500)))
+    {
+        RCLCPP_WARN(node_->get_logger(),
+                    "[YawPIDClient] rotate_exec server not available – retrying");
+        return BT::NodeStatus::FAILURE;
+    }
+
+    RotateExec::Goal goal;
+    goal.target_angle = target_angle;
+
+    auto options = rclcpp_action::Client<RotateExec>::SendGoalOptions{};
+
+    options.goal_response_callback =
+        [this](const GoalHandleRotate::SharedPtr & handle) {
+            if (!handle) {
+                RCLCPP_ERROR(node_->get_logger(), "[YawPIDClient] Goal REJECTED");
+                goal_rejected_ = true;
+            } else {
+                RCLCPP_INFO(node_->get_logger(), "[YawPIDClient] Goal ACCEPTED");
+                goal_handle_   = handle;
+                goal_accepted_ = true;
+            }
+        };
+
+    options.feedback_callback =
+        [this](GoalHandleRotate::SharedPtr,
+               const std::shared_ptr<const RotateExec::Feedback> fb) {
+            RCLCPP_DEBUG(node_->get_logger(),
+                         "[YawPIDClient] yaw_error=%.4f rad  current_yaw=%.4f rad",
+                         fb->current_yaw_error, fb->current_yaw);
+        };
+
+    options.result_callback =
+        [this](const GoalHandleRotate::WrappedResult & result) {
+            goal_done_      = true;
+            goal_succeeded_ = result.result->success;
+            final_yaw_      = result.result->final_yaw;
+            RCLCPP_INFO(node_->get_logger(),
+                        "[YawPIDClient] Result: success=%s  final_yaw=%.4f rad",
+                        goal_succeeded_ ? "true" : "false", final_yaw_);
+        };
+
+    action_client_->async_send_goal(goal, options);
+    RCLCPP_INFO(node_->get_logger(),
+                "[YawPIDClient] Goal sent – target_degrees=%.1f  target_rad=%.4f",
+                target_degrees, target_angle);
+
     return BT::NodeStatus::RUNNING;
 }
 
 BT::NodeStatus YawPIDClient::onRunning()
-    {
-
-    if (done_flag && success)
-    {
-        return BT::NodeStatus::SUCCESS; 
-    }
-    
-    if (done_flag && !success)
-    {
+{
+    if (goal_rejected_)
         return BT::NodeStatus::FAILURE;
+
+    if (goal_done_)
+    {
+        setOutput("final_yaw", final_yaw_);
+        return goal_succeeded_ ? BT::NodeStatus::SUCCESS
+                               : BT::NodeStatus::FAILURE;
     }
 
     return BT::NodeStatus::RUNNING;
@@ -76,76 +105,22 @@ BT::NodeStatus YawPIDClient::onRunning()
 
 void YawPIDClient::onHalted()
 {
-    cancel_goal();  
-}
-
-void YawPIDClient::cancel_goal()
-{
-    if (goal_handle)
+    if (goal_handle_)
     {
-        client_ptr->async_cancel_goal(goal_handle);
-        RCLCPP_INFO(node_->get_logger(), "YawPIDClient::Goal canceled");
+        action_client_->async_cancel_goal(goal_handle_);
+        goal_handle_.reset();
     }
+    RCLCPP_WARN(node_->get_logger(), "[Rotate] Halted – goal cancelled.");
 }
 
-void YawPIDClient::goal_response_callback(const GoalHandleMovement::SharedPtr &goal_handle_)
+void YawPIDClient::reset()
 {
-
-    if (!goal_handle_)
-    {
-        RCLCPP_ERROR(node_->get_logger(),
-                     "YawPIDClient::Goal rejected by server");
-        done_flag = true;
-        success = false;
-    }
-    else
-    {
-        RCLCPP_INFO(node_->get_logger(),
-                    "YawPIDClient::Goal accepted");
-        goal_handle = goal_handle_;
-    }
-    // if (!goal_handle_)
-    // {
-    //     RCLCPP_ERROR(node_->get_logger(), "GoToSpear::Navigate to spear %i goal rejected by server", this->silo_numbers.data[0]);
-    //     setOutput<uint8_t>("Op_SiloNumber", 0);
-    // }
-    // else
-    // {
-    //     RCLCPP_INFO(node_->get_logger(), "GoToSpear::Navigating to spear %i ", this->silo_numbers.data[0]);
-    //     this->goal_handle = goal_handle_;
-
-    // }
-
+    goal_accepted_  = false;
+    goal_rejected_  = false;
+    goal_done_      = false;
+    goal_succeeded_ = false;
+    final_yaw_      = 0.0f;
+    goal_handle_.reset();
 }
 
-void YawPIDClient::result_callback(const GoalHandleMovement::WrappedResult &result)
-{
-    if (result.code == rclcpp_action::ResultCode::SUCCEEDED)
-    {
-        RCLCPP_INFO(node_->get_logger(),
-                    "YawPIDClient::Goal succeeded");
-        success = true;
-    }
-    else
-    {
-        RCLCPP_WARN(node_->get_logger(),
-                    "YawPIDClient::Goal failed or canceled");
-        success = false;
-    }
-    done_flag = true;
-}
-
-void YawPIDClient::feedback_callback(
-    GoalHandleMovement::SharedPtr,
-    const std::shared_ptr<const ar_interfaces::action::Movement::Feedback> feedback)
-{
-    (void)feedback;
-
-}
-
-void YawPIDClient::resetVel()
-{
-    geometry_msgs::msg::Twist cmd;
-    cmd.angular.z= 0.0f;
-    cmd_pub_->publish(cmd);
-}
+} // namespace BT
