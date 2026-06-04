@@ -9,6 +9,8 @@
 #include "movement_nodes/climb.hpp"
 #include "movement_nodes/roll.hpp"
 #include "movement_nodes/vel_publish.hpp"
+#include "movement_nodes/brake_test_node.hpp"
+#include "movement_nodes/stall_detection.hpp"
 
 #include "movement_nodes/scrollGripperSystem/setHeight.hpp"
 #include "movement_nodes/scrollGripperSystem/gripperPose.hpp"
@@ -18,9 +20,15 @@
 #include "camera_nodes/get_roi_detections.hpp"  
 #include "camera_nodes/find_hidden_scroll.hpp"
 
+#include "actions/vel_until_limit.hpp"
+#include "actions/gripper_close.hpp"
+#include "actions/gripper_open.hpp"
+#include "actions/motor_actuate.hpp"
+
 #include "tree_flow_nodes/initialize_ports_actuators.hpp"
 #include "tree_flow_nodes/wait_for_set.hpp"
 #include "tree_flow_nodes/zone_change.hpp"
+#include "tree_flow_nodes/setpoint_loader.hpp"
 
 #include "tree_flow_nodes/conditions/check_for_C.hpp"
 #include "tree_flow_nodes/conditions/check_for_S.hpp"
@@ -31,6 +39,7 @@
 #include "tree_flow_nodes/decision_nodes/decision_node.hpp"
 #include "tree_flow_nodes/decision_nodes/node_analysis.hpp"
 #include "tree_flow_nodes/decision_nodes/path_planner.hpp"
+#include "tree_flow_nodes/decision_nodes/entrance_zone_decision.hpp"
 
 #include "set_destination_from_priority.hpp"
 #include "get_location_for_stage.hpp"

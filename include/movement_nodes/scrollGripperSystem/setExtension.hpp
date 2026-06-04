@@ -1,40 +1,36 @@
+#pragma once
+
 #include <behaviortree_cpp/action_node.h>
 #include <rclcpp/rclcpp.hpp>
+#include "motor_interfaces/srv/motor_state.hpp"
 
-#include "ar_interfaces/msg/gripper_command.hpp"
-#include "ar_interfaces/msg/gripper_status.hpp"
+
 
 using namespace BT;
 
-class SetExtension : public StatefulActionNode
+using MotorState = motor_interfaces::srv::MotorState;
+
+
+class SetExtension : public BT::StatefulActionNode
 {
 public:
+        
+    SetExtension(const std::string & name,
+          const BT::NodeConfig & config,
+          rclcpp::Node::SharedPtr node);
 
-    SetExtension(const std::string& name,const NodeConfiguration& config, rclcpp::Node::SharedPtr node);
-       
+    static BT::PortsList providedPorts();
 
-    static PortsList providedPorts();
-
-    BT::NodeStatus onStart() override;
+    BT::NodeStatus onStart()   override;
     BT::NodeStatus onRunning() override;
-    void onHalted() override;
-
-    void statusCallback(
-        const ar_interfaces::msg::GripperStatus::SharedPtr msg);
+    void           onHalted()  override;
 
 private:
-
     rclcpp::Node::SharedPtr node_;
 
-    rclcpp::Publisher<
-        ar_interfaces::msg::GripperCommand>::SharedPtr pub_;
-
-    rclcpp::Subscription<
-        ar_interfaces::msg::GripperStatus>::SharedPtr sub_;
-
-    ar_interfaces::msg::GripperStatus status_;
-
-    float target_length_;
-
-    rclcpp::Time start_time_;
+    rclcpp::Client<MotorState>::SharedPtr client_;
+    
+    int length_state_ {100}; // mm
+    bool response_received_ {false};
+    bool call_succeeded_    {false};
 };

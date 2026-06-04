@@ -1,20 +1,19 @@
 <root BTCPP_format="4">
     <BehaviorTree ID="MainTree">
 
-        <SickPIDClient SP1="1190.36" SP2="1190.0" SP3="3395.4.0" SP4="0.0"/>
-        <!-- <OdomPIDClient name="Move" move_x= "160.0" move_y= "0.0"/> -->
+        <!--<SickPIDClient SP1="1190.36" SP2="1190.0" SP3="3395.4.0" SP4="0.0"/>-->
+        <!-- <OdomPIDClient name="Move" move_x= "600.0" move_y= "0.0"/> -->
         <!-- <YawSetpoint name="face_arena" turn="Right" current_yaw="{current_yaw}"/> -->
+        <!-- <YawPIDClient name="Rotate" rotate_state="90.0" final_yaw="{final_yaw}"/> -->
 
-    </BehaviorTree>
-</root>
-    <!-- move this whole comment block up inside Behaviour tree block >
-    <!--
+    <!-- move this whole comment block up inside Behaviour tree block -->
     <SequenceWithMemory>
         <Delay name="startup_delay" delay_msec="1000">
             <AlwaysSuccess/>
         </Delay>
         <SequenceWithMemory>
             <InitializePortsActuators/>
+            <SetpointLoader color="{color}"/>
             <Inverter>
                 <KeepRunningUntilFailure>
                     <Inverter>
@@ -62,16 +61,5 @@
             </Inverter>
         </SequenceWithMemory>
     </SequenceWithMemory>
-</root> -->
-
-<!--
-OLD TREE COMMENTS / BACKUP
-
-<root BTCPP_format="4">
-    <BehaviorTree ID="MainTree">
-        <SequenceWithMemory>
-            <OdomPIDClient name="odom_client" setpoint_odom_1="-1.530" setpoint_odom_2="0.0" tolerance="0.05" />
-            <AkClient name="ak_client" up="true" down="false"/>
-        </SequenceWithMemory>
     </BehaviorTree>
-</root> -->
+</root> 

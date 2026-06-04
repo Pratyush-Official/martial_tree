@@ -48,10 +48,13 @@ public:
 
 private:
     rclcpp::Node::SharedPtr node_;
+    std_msgs::msg::Float32MultiArray setpoint_;
+    rclcpp::Publisher<std_msgs::msg::Float32MultiArray>::SharedPtr setpoint_pub;
+    int RESET_BYTE = 0x42;
+
     rclcpp::Subscription<std_msgs::msg::Float32MultiArray>::SharedPtr sick_subscriber;
     rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_subscriber;
     rclcpp_action::Client<ar_interfaces::action::Movement>::SharedPtr client_ptr_forest;
-    rclcpp::Publisher<std_msgs::msg::Float32MultiArray>::SharedPtr setpoint_pub;
     rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr cmd_pub_;
 
     ar_interfaces::action::Movement::Goal goal_msg;

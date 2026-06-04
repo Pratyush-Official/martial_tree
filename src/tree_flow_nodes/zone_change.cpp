@@ -44,6 +44,8 @@ BT::NodeStatus ZoneChange::onRunning(){
     (void)blackboard->get("in_martial", in_martial);
     (void)blackboard->get("spear_assembled", spear_assembled);
     (void)blackboard->get("scroll_picked_from_entrance", scroll_picked_from_entrance);
+    (void)blackboard->get("climb_position_reached", climb_position_reached);
+    (void)blackboard->get("pick_from_entrance", pick_from_entrance);
     (void)blackboard->get("store", store);
     (void)blackboard->get("carry", carry);
     (void)blackboard->get("climbed_three_photos", climbed_three_photos);

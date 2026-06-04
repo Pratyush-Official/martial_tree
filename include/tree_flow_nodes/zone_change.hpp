@@ -45,6 +45,8 @@ private:
     int in_martial = 0;
     int spear_assembled = 0;
     int scroll_picked_from_entrance = 0;
+    int climb_position_reached = 0;
+    int pick_from_entrance = 0;
     int store = 0;
     int carry = 0;
     int climbed_three_photos = 0;

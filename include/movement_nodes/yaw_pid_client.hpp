@@ -35,8 +35,9 @@ public:
     bool  goal_rejected_{false};
     bool  goal_done_{false};
     bool  goal_succeeded_{false};
+    float target_angle_{0.0f};
+    bool  goal_sent_{false};
 
-    
     float final_yaw_{0.0f};
 
     void reset();

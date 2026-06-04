@@ -1,7 +1,18 @@
 <root BTCPP_format="4" main_tree_to_execute="MainTree">
   <BehaviorTree ID="MainTree">
     <Sequence name="RootSequence">
-        <OdomPIDClient name="Move" move_x="150" move_y="0"/>
+      <!-- <BrakeTest name="BrakeTest"
+      move_vx="1.5"
+      move_vy="0.0"
+      move_duration_ms="2000"
+      brake_gain_x="20.0"
+      brake_gain_y="-5.0"
+      max_brake_vel="1.5"
+      brake_duration_ms="700"
+      y_direction_flip="true"
+      />     -->
+      
     </Sequence>
+
   </BehaviorTree>
 </root>

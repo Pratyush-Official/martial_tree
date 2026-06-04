@@ -2,23 +2,28 @@
 
 GripperOpen::GripperOpen(
     const std::string &name,
-    const BT::NodeConfig &config)
-    : BT::SyncActionNode(name,config)
+    const BT::NodeConfig &config,
+    rclcpp::Node::SharedPtr node)
+    : BT::SyncActionNode(name, config), node_(node)
 {
-    // Gripper is open initially
-    setOutput<bool>("Op_GripperStatus", false);
-    RCLCPP_INFO(rclcpp::get_logger("GripperOpen"),"GripperOpen::Ready..");
+    RCLCPP_INFO(rclcpp::get_logger("GripperOpen"), "GripperOpen::Ready..");
+    byte_pub_ = node_->create_publisher<Byte>("/gripper/command", 10);
 }
 
 BT::PortsList GripperOpen::providedPorts()
 {
-return {
-    BT::OutputPort<bool>("Op_GripperStatus")
-};   
+    return {
+        BT::OutputPort<bool>("Op_GripperStatus")
+    };
 }
-BT::NodeStatus GripperOpen::tick() 
+
+BT::NodeStatus GripperOpen::tick()
 {
-    setOutput<bool>("Op_GripperStatus", false); //False = open
-    RCLCPP_INFO(rclcpp::get_logger("GripperOpen"),"Gripper Opened");
+    Byte msg;
+    msg.data = static_cast<uint8_t>(GripperCommand::OPEN);
+    byte_pub_->publish(msg);
+
+    setOutput<bool>("Op_GripperStatus", true);
+    RCLCPP_INFO(rclcpp::get_logger("GripperOpen"), "Gripper Closed");
     return BT::NodeStatus::SUCCESS;
 }

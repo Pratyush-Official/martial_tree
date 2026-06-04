@@ -1,46 +1,33 @@
-// #ifndef SET_HEIGHT_HPP
-// #define SET_HEIGHT_HPP
+#pragma once
 
 #include <behaviortree_cpp/action_node.h>
 #include <rclcpp/rclcpp.hpp>
 
-#include "ar_interfaces/msg/gripper_command.hpp"
-#include "ar_interfaces/msg/gripper_status.hpp"
+#include "motor_interfaces/srv/motor_state.hpp"
 
+using MotorState = motor_interfaces::srv::MotorState;
 
-
-using namespace BT;
-
-class SetHeight : public StatefulActionNode
+class SetHeight : public BT::StatefulActionNode
 {
 public:
+    SetHeight(
+        const std::string& name,
+        const BT::NodeConfig& config,
+        rclcpp::Node::SharedPtr node);
 
-    SetHeight(const std::string& name, const NodeConfiguration& config, rclcpp::Node::SharedPtr node);
-        
-    
+    static BT::PortsList providedPorts();
 
-    static PortsList providedPorts();
-
-    BT::NodeStatus onStart();
-    BT::NodeStatus onRunning();
+    BT::NodeStatus onStart() override;
+    BT::NodeStatus onRunning() override;
     void onHalted() override;
 
-    void statusCallback(const ar_interfaces::msg::GripperStatus::SharedPtr msg);
-
 private:
-
     rclcpp::Node::SharedPtr node_;
 
-    rclcpp::Publisher<
-        ar_interfaces::msg::GripperCommand>::SharedPtr pub_;
+    rclcpp::Client<MotorState>::SharedPtr client_;
 
-    rclcpp::Subscription<
-        ar_interfaces::msg::GripperStatus>::SharedPtr sub_;
+    float height_state_{0.0f};
 
-    ar_interfaces::msg::GripperStatus status_;
-
-    float target_height_;
-
-    rclcpp::Time start_time_;
+    bool response_received_{false};
+    bool call_succeeded_{false};
 };
-

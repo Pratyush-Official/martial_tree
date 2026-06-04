@@ -1,35 +1,34 @@
-#include <string>
-#include <chrono>
+#pragma once
+
 #include <behaviortree_cpp/action_node.h>
 #include <rclcpp/rclcpp.hpp>
-#include "ar_interfaces/msg/gripper_command.hpp" //custom msg type
-#include "ar_interfaces/msg/gripper_status.hpp"
+#include "motor_interfaces/srv/motor_state.hpp"
+
+
+using namespace BT;
+using MotorState = motor_interfaces::srv::MotorState;
 
 class GripperAct : public BT::StatefulActionNode
 {
 public:
-    GripperAct(const std::string& name, const BT::NodeConfiguration& config,
-    rclcpp::Node::SharedPtr node);
-
+        
+    GripperAct(const std::string &name,
+          const BT::NodeConfig &config,
+          rclcpp::Node::SharedPtr node);
 
     static BT::PortsList providedPorts();
 
-    BT::NodeStatus onStart() override;
+    BT::NodeStatus onStart()   override;
     BT::NodeStatus onRunning() override;
-    void onHalted() override;
+    void           onHalted()  override;
 
 private:
-    bool g_;
-
-    std::chrono::steady_clock::time_point start_time_;
-
-    bool timeout();
-
     rclcpp::Node::SharedPtr node_;
-    rclcpp::Publisher<ar_interfaces::msg::GripperCommand>::SharedPtr pub_;
-    rclcpp::Subscription<ar_interfaces::msg::GripperStatus>::SharedPtr sub_;
-    ar_interfaces::msg::GripperStatus status_;
+    rclcpp::Client<MotorState>::SharedPtr client_;
 
-    void statusCallback(const ar_interfaces::msg::GripperStatus::SharedPtr msg);
-
+    int state;
+    bool state_ {false}; // mm
+    bool response_received_ {false};
+    bool call_succeeded_    {false};
 };
+

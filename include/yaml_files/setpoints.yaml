@@ -1,12 +1,7 @@
 red:
-  entrance:
-    closest_straight: null
-    middle_straight: null
-    furthest_straight: null
-    closest_rotate: null
-    middle_rotate: null
-    furthest_rotate: null
-  
+  martial:
+    sprear_head: [600.0, 700.0]
+
   arena:
     lock_ramp: null
     tictac_left: null
@@ -15,13 +10,8 @@ red:
     tictac_photo: null
 
 blue:
-  entrance:
-    closest_straight: null
-    middle_straight: null
-    furthest_straight: null
-    closest_rotate: null
-    middle_rotate: null
-    furthest_rotate: null
+  martial:
+    sprear_head: [600.0, 700.0]
   
   arena:
     lock_ramp: null
@@ -29,3 +19,9 @@ blue:
     tictac_middle: null
     ticktac_right: null
     tictac_photo: null
+
+common:
+  martial:
+    closest_entrance: [575, 300]
+    middle_entrance: [300, 200]
+    furthest_entrance: []

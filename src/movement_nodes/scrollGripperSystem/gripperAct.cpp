@@ -1,75 +1,60 @@
 #include "movement_nodes/scrollGripperSystem/gripperAct.hpp"
-
 using namespace BT;
 
-GripperAct::GripperAct(const std::string& name, const BT::NodeConfiguration& config,
-                        rclcpp::Node::SharedPtr node)
-      : BT::StatefulActionNode(name, config),
-  node_(node)
+GripperAct::GripperAct(const std::string& name, 
+    const NodeConfiguration& config,
+    rclcpp::Node::SharedPtr node)
+: BT::StatefulActionNode(name, config), node_(node)
+{
+    client_ = node_->create_client<MotorState>("gripper_catch_set");
+}
+
+BT::PortsList GripperAct::providedPorts()
+{
+    return { InputPort<int>("state") };
+}
+
+BT::NodeStatus GripperAct::onStart()
+{
+    auto state = getInput<int>("state");
+    if (!state)
     {
-        node_ = rclcpp::Node::make_shared("gripperAct");
-
-        pub_ = node_->create_publisher<ar_interfaces::msg::GripperCommand>("/gripper_act", 10);
-
-        sub_ = node_->create_subscription<ar_interfaces::msg::GripperStatus>(
-            "/gripper_status_act", 10,
-            std::bind(&GripperAct::statusCallback, this, std::placeholders::_1));
+        RCLCPP_ERROR(node_->get_logger(), "[GripperAct] Missing required port 'state'");
+        return BT::NodeStatus::FAILURE;
     }
+    state_ = state.value();
 
+    RCLCPP_INFO(node_->get_logger(), "[GripperAct] :: Actuating to state %d", state_);
 
-    BT::PortsList GripperAct::providedPorts()
-    {
-        return {
-            BT::InputPort<bool>("grip"),
-           
-        };
-    }
+    auto request = std::make_shared<MotorState::Request>();
+    request->data  = true;
+    request->state = state_;
 
-    BT::NodeStatus GripperAct::onStart() 
-    {
-      
-        getInput("grip", g_);
-
-        ar_interfaces::msg::GripperCommand msg;
-        msg.height = 0;
-        msg.extension = 0;  
-        msg.yaw = 0;
-        msg.grip_closed = g_;
-
-        pub_->publish(msg);
-      
-        RCLCPP_INFO(node_->get_logger(),"[GripperAct] :: acting");
-
-
-        start_time_ = std::chrono::steady_clock::now();
-        return BT::NodeStatus::RUNNING;
-    }
-
-    BT::NodeStatus GripperAct::onRunning()
-    {
-        
-      
-        if (status_.object_grasped)
+    client_->async_send_request(
+        request,
+        [this](rclcpp::Client<MotorState>::SharedFuture future)
         {
-            return BT::NodeStatus::SUCCESS;
-        }
+            auto response      = future.get();
+            call_succeeded_    = response->success;
+            response_received_ = true;
+            if (response->success)
+                RCLCPP_INFO(node_->get_logger(), "[GripperAct] Succeeded: state %d", state_);
+            else
+                RCLCPP_WARN(node_->get_logger(), "[GripperAct] Failed: %s", response->message.c_str());
+        });
 
-        if (timeout())
-        {
-            return BT::NodeStatus::FAILURE;
-        }
+    return BT::NodeStatus::RUNNING;
+}
 
-        return BT::NodeStatus::RUNNING;
-            }
+BT::NodeStatus GripperAct::onRunning()
+{
+    if (!response_received_) return BT::NodeStatus::RUNNING;
+    if (!call_succeeded_)    return BT::NodeStatus::FAILURE;
+    RCLCPP_INFO(node_->get_logger(), "[GripperAct] :: Success");
+    return BT::NodeStatus::SUCCESS;
+}
 
-    void GripperAct::onHalted() {}
-
-    void GripperAct::statusCallback(const ar_interfaces::msg::GripperStatus::SharedPtr msg)
-    {
-        status_ = *msg;
-    }
-    bool GripperAct::timeout()
-    {
-        auto elapsed = std::chrono::steady_clock::now() - start_time_;
-        return std::chrono::duration_cast<std::chrono::seconds>(elapsed).count() > 3;
-    }
+void GripperAct::onHalted()
+{
+    RCLCPP_INFO(node_->get_logger(), "[GripperAct] :: Halted");
+}

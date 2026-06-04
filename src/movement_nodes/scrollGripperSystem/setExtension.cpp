@@ -1,71 +1,60 @@
 #include "movement_nodes/scrollGripperSystem/setExtension.hpp"
-
 using namespace BT;
 
+SetExtension::SetExtension(const std::string& name, 
+    const NodeConfiguration& config,
+    rclcpp::Node::SharedPtr node)
+: BT::StatefulActionNode(name, config), node_(node)
+{
+    client_ = node_->create_client<MotorState>("/elev_horiz_move");
+}
 
-SetExtension::SetExtension(const std::string& name, const NodeConfiguration& config,
-                            rclcpp::Node::SharedPtr node)
-        : BT::StatefulActionNode(name, config),
-  node_(node)
+BT::PortsList SetExtension::providedPorts()
+{
+    return { InputPort<float>("length") };
+}
+
+BT::NodeStatus SetExtension::onStart()
+{
+    auto length = getInput<float>("length");
+    if (!length)
     {
-        node_ = rclcpp::Node::make_shared("setExtension");
-
-        pub_ = node_->create_publisher<ar_interfaces::msg::GripperCommand>("/gripper_length", 10);
-
-        sub_ = node_->create_subscription<ar_interfaces::msg::GripperStatus>(
-            "/gripper_status_extension", 10,
-            std::bind(&SetExtension::statusCallback, this, std::placeholders::_1));
+        RCLCPP_ERROR(node_->get_logger(), "[SetExtension] Missing required port 'length'");
+        return BT::NodeStatus::FAILURE;
     }
+    length_state_ = length.value();
 
-    BT::PortsList SetExtension::providedPorts()
-    {
-        return { InputPort<float>("length") };
-    }
+    RCLCPP_INFO(node_->get_logger(), "[SetExtension] :: Setting length to %.2f", length_state_);
 
-  
-    BT::NodeStatus SetExtension::onStart()
-    {
-        getInput("length", target_length_);
+    auto request   = std::make_shared<MotorState::Request>();
+    request->data  = true;
+    request->state = length_state_;
 
-        ar_interfaces::msg::GripperCommand msg;
-        msg.height = 0;
-        msg.extension = target_length_;  
-        msg.yaw = 0;
-        msg.grip_closed = false;
-
-        pub_->publish(msg);
-        RCLCPP_INFO(node_->get_logger(),"[SetExtension] :: setting extension");
-
-
-        start_time_ = node_->now();
-        return NodeStatus::RUNNING;
-    }
-
-   
-    BT::NodeStatus SetExtension::onRunning() 
-    {
-      
-        if (status_.length_reached)
+    client_->async_send_request(
+        request,
+        [this](rclcpp::Client<MotorState>::SharedFuture future)
         {
-            return NodeStatus::SUCCESS;
-        }
+            auto response      = future.get();
+            call_succeeded_    = response->success;
+            response_received_ = true;
+            if (response->success)
+                RCLCPP_INFO(node_->get_logger(), "[SetExtension] Succeeded: %.2f", length_state_);
+            else
+                RCLCPP_WARN(node_->get_logger(), "[SetExtension] Failed: %s", response->message.c_str());
+        });
 
-        if ((node_->now() - start_time_).seconds() > 10.0)
-        {
-            return NodeStatus::FAILURE;
-        }
+    return BT::NodeStatus::RUNNING;
+}
 
-        return NodeStatus::RUNNING;
-    }
+BT::NodeStatus SetExtension::onRunning()
+{
+    if (!response_received_) return BT::NodeStatus::RUNNING;
+    if (!call_succeeded_)    return BT::NodeStatus::FAILURE;
+    RCLCPP_INFO(node_->get_logger(), "[SetExtension] :: Success");
+    return BT::NodeStatus::SUCCESS;
+}
 
-    void SetExtension::onHalted()
-    {
-        
-    }
-
-
-    void SetExtension::statusCallback(const ar_interfaces::msg::GripperStatus::SharedPtr msg)
-    {
-        status_ = *msg;
-    }
-
+void SetExtension::onHalted()
+{
+    RCLCPP_INFO(node_->get_logger(), "[SetExtension] :: Halted");
+}

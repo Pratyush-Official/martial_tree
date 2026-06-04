@@ -12,18 +12,18 @@ Climb::Climb(const std::string & name,
 : BT::StatefulActionNode(name, config)
 , node_(node)
 {
-    ak_up_client_     = node_->create_client<std_srvs::srv::SetBool>("ak_motor_up_execute");
-    ak_down_client_   = node_->create_client<std_srvs::srv::SetBool>("ak_motor_down_exec");
-    ak_stop_client_   = node_->create_client<std_srvs::srv::SetBool>("ak_motor_stop_execute");
-    roll_up_client_   = node_->create_client<std_srvs::srv::SetBool>("ak_motor_roll_up");
-    roll_down_client_ = node_->create_client<std_srvs::srv::SetBool>("ak_motor_roll_down");
+    ak_up_client_   = node_->create_client<std_srvs::srv::SetBool>("ak_motor_up_execute");
+    ak_down_client_ = node_->create_client<std_srvs::srv::SetBool>("ak_motor_down_exec");
+    ak_stop_client_ = node_->create_client<std_srvs::srv::SetBool>("ak_motor_stop_execute");
+    roll_up_client_ = node_->create_client<motor_interfaces::srv::MotorState>("ak_motor_roll_up");
 }
 
 BT::PortsList Climb::providedPorts()
 {
     return {
         BT::InputPort<int>("up_down"),
-        BT::InputPort<int>("next_climb_state", "Used for preset roll after retract")
+        BT::InputPort<int>("next_climb_state", "Used for preset roll after retract"),
+        BT::InputPort<int>("climb_state", "Current climb direction: UP or DOWN")
     };
 }
 
@@ -92,22 +92,37 @@ BT::NodeStatus Climb::onRunning()
     if (!call_succeeded_)
         return BT::NodeStatus::FAILURE;
 
-    // if (climb_state_ == -1 && !preset_sent_)
-    // {
-    //     sendPreset();
-    //     preset_sent_ = true;
-    // }
-    // if(preset_sent_)
-    // {
-    //     if (!preset_succeded_)
-    //     {
-    //         RCLCPP_INFO(node_->get_logger(), "[Climb] waiting for preset:");
-    //         return BT::NodeStatus::RUNNING;
-    //     }
-    // }
-    
-    RCLCPP_INFO(node_->get_logger(), "[Climb] retracted and climbed:");
+    if (climb_state_ == -1 && !preset_sent_)
+    {
+        auto current = getInput<int>("climb_state");
+        auto next    = getInput<int>("next_climb_state");
 
+        if (current && next && current.value() == next.value())
+        {
+            sendPreset();
+            preset_sent_ = true;
+        }
+        else
+        {
+            
+            RCLCPP_INFO(node_->get_logger(),
+                        "[Climb] Skipping preset — direction change detected (current=%d next=%d)",
+                        current ? current.value() : -99,
+                        next    ? next.value()    : -99);
+            return BT::NodeStatus::SUCCESS;
+        }
+    }
+
+    if (preset_sent_)
+    {
+        if (!preset_succeded_)
+        {
+            RCLCPP_INFO(node_->get_logger(), "[Climb] Waiting for preset...");
+            return BT::NodeStatus::RUNNING;
+        }
+    }
+
+    RCLCPP_INFO(node_->get_logger(), "[Climb] Retracted and preset complete");
     return BT::NodeStatus::SUCCESS;
 }
 
@@ -131,46 +146,40 @@ void Climb::sendPreset()
     }
 
     int next_state = next.value();
-    rclcpp::Client<std_srvs::srv::SetBool>::SharedPtr client;
-    const char* svc_name;
+    float angle;
 
     if (next_state == static_cast<int>(ClimbState::UP))
-    {
-        client   = roll_up_client_;
-        svc_name = "ak_motor_roll_up";
-    }
+        angle = -6.0f;
     else if (next_state == static_cast<int>(ClimbState::DOWN))
-    {
-        client   = roll_down_client_;
-        svc_name = "ak_motor_roll_down";
-    }
+        angle = 6.0f;
     else
     {
         RCLCPP_WARN(node_->get_logger(), "[Climb] Unknown next_climb_state: %d — skipping preset", next_state);
         return;
     }
 
-    if (!client->wait_for_service(200ms))
+    if (!roll_up_client_->wait_for_service(200ms))
     {
-        RCLCPP_WARN(node_->get_logger(), "[Climb] Preset service '%s' not available — skipping", svc_name);
+        RCLCPP_WARN(node_->get_logger(), "[Climb] Preset service 'ak_motor_roll_up' not available — skipping");
         return;
     }
 
-    auto req  = std::make_shared<std_srvs::srv::SetBool::Request>();
-    req->data = true;
+    auto req   = std::make_shared<motor_interfaces::srv::MotorState::Request>();
+    req->data  = true;
+    req->state = angle;
 
-    RCLCPP_INFO(node_->get_logger(), "[Climb] Sending preset: %s", svc_name);
+    RCLCPP_INFO(node_->get_logger(), "[Climb] Sending preset: ak_motor_roll_up  angle=%.1f", angle);
 
-    client->async_send_request(
+    roll_up_client_->async_send_request(
         req,
-        [this, svc_name](rclcpp::Client<std_srvs::srv::SetBool>::SharedFuture future)
+        [this](rclcpp::Client<motor_interfaces::srv::MotorState>::SharedFuture future)
         {
             auto response = future.get();
             RCLCPP_INFO(node_->get_logger(),
-                        "[Climb] Preset '%s' response: %s",
-                        svc_name, response->message.c_str());
+                        "[Climb] Preset response: %s",
+                        response->message.c_str());
             std::lock_guard<std::mutex> lock(result_);
-            preset_succeded_    = response->success;
+            preset_succeded_ = response->success;
         });
 }
 
@@ -180,5 +189,5 @@ Climb::selectClient(int state)
     if (state ==  1) return ak_up_client_;
     if (state == -1) return ak_down_client_;
     if (state ==  0) return ak_stop_client_;
-    return 0;  
+    return nullptr;
 }

@@ -14,9 +14,8 @@ Roll::Roll(const std::string &     name,
 {
     rclcpp::QoS qos_profile(10);
     qos_profile.reliability(RMW_QOS_POLICY_RELIABILITY_BEST_EFFORT);
-    roll_up_client_   = node_->create_client<std_srvs::srv::SetBool>("ak_motor_roll_up");
-    roll_down_client_ = node_->create_client<std_srvs::srv::SetBool>("ak_motor_roll_down");
-    // roll_stop_client_ = node_->create_client<std_srvs::srv::SetBool>("ak_motor_roll_stop");
+
+    roll_up_client_ = node_->create_client<motor_interfaces::srv::MotorState>("ak_motor_roll_up");
 
     prox_front_sub_ = node_->create_subscription<std_msgs::msg::Byte>(
         "/prox_front_received", qos_profile,
@@ -36,8 +35,6 @@ BT::PortsList Roll::providedPorts()
     return {
         BT::InputPort<int>("climb_state",
             "Climb state: UP or DOWN"),
-       
-        
     };
 }
 
@@ -64,28 +61,23 @@ BT::NodeStatus Roll::onStart()
         return BT::NodeStatus::FAILURE;
     }
 
-   
-
-    auto client = selectClient();
-
-    if (!client->wait_for_service(500ms))
+    if (!roll_up_client_->wait_for_service(500ms))
     {
-        RCLCPP_ERROR(node_->get_logger(),
-                     "[Roll] Service '%s' not available",
-                     rolling_up_ ? "roll_up_exec" : "roll_down_exec");
+        RCLCPP_ERROR(node_->get_logger(), "[Roll] Service 'ak_motor_roll_up' not available");
         return BT::NodeStatus::FAILURE;
     }
 
-    auto request  = std::make_shared<std_srvs::srv::SetBool::Request>();
-    request->data = true;
+    auto request   = std::make_shared<motor_interfaces::srv::MotorState::Request>();
+    request->data  = true;
+    request->state = rolling_up_ ? 4.5f : -6.0f;   // up = negative, down = positive
 
     RCLCPP_INFO(node_->get_logger(),
-                "[Roll] Sending main command: %s",
-                rolling_up_ ? "roll_up_exec" : "roll_down_exec");
+                "[Roll] Sending command: ak_motor_roll_up  angle=%.1d",
+                request->state);
 
-    client->async_send_request(
+    roll_up_client_->async_send_request(
         request,
-        [this](rclcpp::Client<std_srvs::srv::SetBool>::SharedFuture future)
+        [this](rclcpp::Client<motor_interfaces::srv::MotorState>::SharedFuture future)
         {
             auto response = future.get();
             if (response->success)
@@ -105,16 +97,17 @@ BT::NodeStatus Roll::onStart()
     return BT::NodeStatus::RUNNING;
 }
 
+
 BT::NodeStatus Roll::onRunning()
+
 {
-   
     bool prox_stop = false;
 
-    if (rolling_up_ && !front_edge_)
+    if (rolling_up_)
     {
         RCLCPP_INFO(node_->get_logger(),
-                    "[Roll] Front edge cleared  stopping roll_up");
-        prox_stop = true;
+                    "  stopping roll_up");
+        return BT::NodeStatus::SUCCESS;
     }
     else if (!rolling_up_ && rear_edge_)
     {
@@ -127,9 +120,7 @@ BT::NodeStatus Roll::onRunning()
     {
         // if (roll_stop_client_->service_is_ready())
         // {
-        //     auto req  = std::make_shared<std_srvs::srv::SetBool::Request>();
-        //     req->data = true;
-        //     roll_stop_client_->async_send_request(req);
+        //     auto req  =   //     roll_stop_client_->async_send_request(req);
         // }
         // else
         // {
@@ -157,18 +148,11 @@ void Roll::onHalted()
     call_succeeded_    = false;
 }
 
-rclcpp::Client<std_srvs::srv::SetBool>::SharedPtr Roll::selectClient() const
-{
-    return rolling_up_ ? roll_up_client_ : roll_down_client_;
-}
-
-
-
 void Roll::reset()
 {
     rolling_up_        = false;
     response_received_ = false;
     call_succeeded_    = false;
 }
+}
 
-} 

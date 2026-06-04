@@ -20,6 +20,8 @@ find_package(ament_index_cpp REQUIRED)
 find_package(oakd_roi_detector_interfaces REQUIRED)
 find_package(ar_interfaces REQUIRED)
 find_package(geometry_msgs REQUIRED)
+find_package(yaml-cpp REQUIRED)
+find_package(motor_interfaces REQUIRED)
 
 set(BEHAVIOUR_SOURCES
   src/bt_main.cpp
@@ -33,6 +35,8 @@ set(BEHAVIOUR_SOURCES
   src/movement_nodes/vel_publish.cpp
   src/movement_nodes/roll.cpp
   src/movement_nodes/climb.cpp
+  src/movement_nodes/brake_test_node.cpp
+  src/movement_nodes/stall_detection.cpp
 
   src/movement_nodes/scrollGripperSystem/setHeight.cpp
   src/movement_nodes/scrollGripperSystem/gripperPose.cpp
@@ -45,6 +49,8 @@ set(BEHAVIOUR_SOURCES
   src/tree_flow_nodes/zone_change.cpp
   src/tree_flow_nodes/wait_for_set.cpp
   src/tree_flow_nodes/initialize_ports_actuators.cpp
+  src/tree_flow_nodes/setpoint_loader.cpp 
+  src/tree_flow_nodes/decision_nodes/entrance_zone_decision.cpp 
 
   src/tree_flow_nodes/conditions/check_for_C.cpp
   src/tree_flow_nodes/conditions/check_for_S.cpp
@@ -54,6 +60,11 @@ set(BEHAVIOUR_SOURCES
   src/tree_flow_nodes/decision_nodes/decision_node.cpp
   src/tree_flow_nodes/decision_nodes/node_analysis.cpp
   src/tree_flow_nodes/decision_nodes/path_planner.cpp
+
+  src/actions/vel_until_limit.cpp
+  src/actions/gripper_close.cpp
+  src/actions/gripper_open.cpp
+  src/actions/motor_actuate.cpp
   
   src/set_destination_from_priority.cpp
   src/get_location_for_stage.cpp
@@ -76,12 +87,15 @@ ament_target_dependencies(tree_ticker
   std_msgs
   std_srvs
   ar_interfaces
+  motor_interfaces
   oakd_roi_detector_interfaces
   geometry_msgs
+  yaml-cpp
   behaviortree_cpp
 )
 
 target_link_libraries(tree_ticker
+  yaml-cpp
 )
 
 install(TARGETS tree_ticker

@@ -7,6 +7,16 @@
         <Action ID="AlwaysNode">
             <input_port name="state" type="int"/>
         </Action>
+        <Action ID="BrakeTest">
+            <input_port name="y_direction_flip" type="bool"/>
+            <input_port name="brake_duration_ms" type="int"/>
+            <input_port name="max_brake_vel" type="double"/>
+            <input_port name="brake_gain_y" type="double"/>
+            <input_port name="brake_gain_x" type="double"/>
+            <input_port name="move_duration_ms" type="int"/>
+            <input_port name="move_vy" type="float"/>
+            <input_port name="move_vx" type="float"/>
+        </Action>
         <Action ID="CheckItemsPicked">
             <input_port name="items_picked" type="int" default="0">Number of items picked so far</input_port>
         </Action>

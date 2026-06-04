@@ -57,9 +57,7 @@ BT::NodeStatus VelPublish::tick()
     }
     
     return BT::NodeStatus::SUCCESS;
-  
-    
-   
+
 }
 void VelPublish::vel_publish(float vx, float vy)
 {

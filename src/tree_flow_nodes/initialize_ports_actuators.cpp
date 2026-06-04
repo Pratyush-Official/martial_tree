@@ -35,15 +35,14 @@ BT::NodeStatus InitializePortsActuators::onStart()
 BT::NodeStatus InitializePortsActuators::onRunning()
 {
 
+    if(color_.empty()){
+        return BT::NodeStatus::RUNNING;
+    }
 
-    // if(color_.empty()){
-    //     return BT::NodeStatus::RUNNING;
-    // }
+    setOutput("color", color_);
 
-    // setOutput("color", color_);
-
-    // if(color_ == "red") setOutput<std::string>("turn", "Right"); //Setting the yaw value for the initial turn after camera scan
-    // else if(color_ == "blue") setOutput<std::string>("turn", "Left");
+    if(color_ == "red") setOutput<std::string>("turn", "Right"); //Setting the yaw value for the initial turn after camera scan
+    else if(color_ == "blue") setOutput<std::string>("turn", "Left");
 
     flag_alter(config().blackboard, FLAG_ALTER_CASE::GAME_START);
 

@@ -47,6 +47,10 @@ void tree_ticker::create_behavior_tree()
     blackboard->set<int>("placed_1",0);
     blackboard->set<int>("placed_2",0);
 
+    std_msgs::msg::Float32MultiArray arr;
+    arr.data = {0.0f, 0.0f};
+    blackboard->set<std_msgs::msg::Float32MultiArray>("entrance_movement", arr); // The key that gets assigned to the actual client in xml
+
     blackboard->set<CurrentYaw>("current_yaw", CurrentYaw::FRONT);
 
     const std::string pkg = ament_index_cpp::get_package_share_directory("martial_tree");
@@ -172,6 +176,55 @@ void tree_ticker::register_custom_action_nodes()
         [shared_self](const std::string &name, const BT::NodeConfig &config)
         { return std::make_unique<CheckItemsPicked>(name, config, shared_self); }
     );
+
+    factory.registerBuilder<BrakeTest>(
+        "BrakeTest",
+        [shared_self](const std::string &name, const BT::NodeConfig &config)
+        { return std::make_unique<BrakeTest>(name, config, shared_self); }
+    );
+
+    factory.registerBuilder<SetpointLoader>(
+        "SetpointLoader",
+        [shared_self](const std::string &name, const BT::NodeConfig &config)
+        { return std::make_unique<SetpointLoader>(name, config); }
+    );
+
+    factory.registerBuilder<EntranceZoneDecision>(
+        "EntranceZoneDecision",
+        [shared_self](const std::string &name, const BT::NodeConfig &config)
+        { return std::make_unique<EntranceZoneDecision>(name, config, shared_self); }
+    );
+
+    factory.registerBuilder<VelUntilLimit>(
+        "VelUntilLimit",
+        [shared_self](const std::string &name, const BT::NodeConfig &config)
+        { return std::make_unique<VelUntilLimit>(name, config, shared_self); }
+    );
+
+    factory.registerBuilder<GripperClose>(
+        "GripperClose",
+        [shared_self](const std::string &name, const BT::NodeConfig &config)
+        { return std::make_unique<GripperClose>(name, config, shared_self); }
+    );
+
+    factory.registerBuilder<GripperOpen>(
+        "GripperOpen",
+        [shared_self](const std::string &name, const BT::NodeConfig &config)
+        { return std::make_unique<GripperClose>(name, config, shared_self); }
+    );
+
+    factory.registerBuilder<MotorActuate>(
+        "MotorActuate",
+        [shared_self](const std::string &name, const BT::NodeConfig &config)
+        { return std::make_unique<MotorActuate>(name, config, shared_self); }
+    );
+
+    factory.registerBuilder<StallDetection>(
+        "StallDetection",
+        [shared_self](const std::string &name, const BT::NodeConfig &config)
+        { return std::make_unique<StallDetection>(name, config, shared_self); }
+    );
+
 }
 
 // --- merged from bt.cpp ---

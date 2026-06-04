@@ -1,72 +1,67 @@
 #include "movement_nodes/scrollGripperSystem/setHeight.hpp"
 using namespace BT;
 
-SetHeight::SetHeight(const std::string& name, const NodeConfiguration& config,
-                        rclcpp::Node::SharedPtr node)
-        : BT::StatefulActionNode(name, config),
-  node_(node)
-    {
-        node_ = rclcpp::Node::make_shared("setHeight");
+SetHeight::SetHeight(const std::string& name, 
+    const NodeConfiguration& config,
+    rclcpp::Node::SharedPtr node)
+: BT::StatefulActionNode(name, config), node_(node)
+{
+    client_ = node->create_client<MotorState>("/elev_vert_move");
+}
 
-        pub_ = node_->create_publisher<ar_interfaces::msg::GripperCommand>("/gripper_height", 10);
-
-        sub_ = node_->create_subscription<ar_interfaces::msg::GripperStatus>(
-            "/gripper_status_height", 10,
-            std::bind(&SetHeight::statusCallback, this, std::placeholders::_1));
-    }
-
-    BT::PortsList SetHeight::providedPorts()
-    {
-        return { InputPort<float>("height") };
-    }
-
-  
-    BT::NodeStatus SetHeight::onStart()
-    {
-        getInput("height", target_height_);
-
-        ar_interfaces::msg::GripperCommand msg;
-        msg.height = target_height_;
-        msg.extension = 0;  
-        msg.yaw = 0;
-        msg.grip_closed = false;
-
-        pub_->publish(msg);
-        RCLCPP_INFO(node_->get_logger(),"[SetHeight] :: setting height");
-
-
-        start_time_ = node_->now();
-        return NodeStatus::RUNNING;
-    }
-
+BT::PortsList SetHeight::providedPorts()
+{
+    return { InputPort<float>("height") };
+}
+BT::NodeStatus SetHeight::onStart()
+{
    
-    BT::NodeStatus SetHeight::onRunning() 
-    {
+    response_received_ = false;
+    call_succeeded_     = false;
 
-      
-        
-        if (status_.height_reached)
-        {
-            return NodeStatus::SUCCESS;
-        }
+    auto height = getInput<float>("height");
+    if (!height) {
+        RCLCPP_ERROR(node_->get_logger(), "[SetHeight] Missing port 'height'");
+        return BT::NodeStatus::FAILURE;
+    }
+    height_state_ = height.value();
 
-        if ((node_->now() - start_time_).seconds() > 10.0)
-        {
-            return NodeStatus::FAILURE;
-        }
-
-        return NodeStatus::RUNNING;
+    if (!client_->service_is_ready()) {
+        RCLCPP_WARN(node_->get_logger(), "[SetHeight] Service not ready, retrying next tick");
+        return BT::NodeStatus::RUNNING; 
     }
 
-    void SetHeight::onHalted() 
-    {
-        
-    }
+    RCLCPP_INFO(node_->get_logger(), "[SetHeight] Sending request: %.2f", height_state_);
+
+    auto request   = std::make_shared<MotorState::Request>();
+    request->data  = true;
+    request->state = height_state_;
+
+    client_->async_send_request(
+        request,
+        [this](rclcpp::Client<MotorState>::SharedFuture future) {
+            auto response      = future.get();
+            call_succeeded_    = response->success;
+            response_received_ = true;
+            if (response->success)
+                RCLCPP_INFO(node_->get_logger(), "[SetHeight] Succeeded");
+            else
+                RCLCPP_WARN(node_->get_logger(), "[SetHeight] Failed: %s", response->message.c_str());
+        });
+
+    return BT::NodeStatus::RUNNING;
+}
 
 
-    void SetHeight::statusCallback(const ar_interfaces::msg::GripperStatus::SharedPtr msg)
-    {
-        status_ = *msg;
-    }
+BT::NodeStatus SetHeight::onRunning()
+{
+    if (!response_received_) return BT::NodeStatus::RUNNING;
+    if (!call_succeeded_)    return BT::NodeStatus::FAILURE;
+    RCLCPP_INFO(node_->get_logger(), "[SetHeight] :: Success");
+    return BT::NodeStatus::SUCCESS;
+}
 
-    
+void SetHeight::onHalted()
+{
+    RCLCPP_INFO(node_->get_logger(), "[SetHeight] :: Halted");
+}

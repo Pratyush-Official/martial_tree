@@ -63,6 +63,12 @@ BT::NodeStatus SickPIDClient::onStart()
 
 BT::NodeStatus SickPIDClient::onRunning()
     { 
+
+    setpoint_.data.clear(); //This is for resetting the yaw_setpoint byte
+    setpoint_.data.push_back(0.0);
+    setpoint_.data.push_back(RESET_BYTE); 
+    setpoint_pub->publish(setpoint_);
+    
     if (done_flag && success)
     {
         return BT::NodeStatus::SUCCESS; 
