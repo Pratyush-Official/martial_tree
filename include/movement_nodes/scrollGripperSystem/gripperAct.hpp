@@ -4,7 +4,6 @@
 #include <rclcpp/rclcpp.hpp>
 #include "motor_interfaces/srv/motor_state.hpp"
 
-
 using namespace BT;
 using MotorState = motor_interfaces::srv::MotorState;
 
