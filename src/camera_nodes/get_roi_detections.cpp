@@ -104,6 +104,10 @@ BT::NodeStatus GetROIDetections::onRunning()
       detections.roi4_martial = res->roi4_martial;
       detections.roi5_martial = res->roi5_martial;
       detections.roi6_martial = res->roi6_martial;
+      detections.stage11_result = res->stage11_result;
+      detections.stage12_roi1 = res->stage12_roi1;
+      detections.stage12_roi2 = res->stage12_roi2;
+      detections.stage12_roi3 = res->stage12_roi3;
       detections.status       = res->status;
       setOutput("detections", detections);
 
@@ -113,6 +117,7 @@ BT::NodeStatus GetROIDetections::onRunning()
         "roi1='%s', roi2='%s', roi3='%s', "
         "roi1_martial='%s', roi2_martial='%s', roi3_martial='%s', "
         "roi4_martial='%s', roi5_martial='%s', roi6_martial='%s', "
+        "stage11_result='%s', stage12_roi1='%s', stage12_roi2='%s', stage12_roi3='%s',"
         "status='%s'",
         stage_, type_, color_.c_str(),
         detections.roi1.c_str(),
@@ -124,9 +129,13 @@ BT::NodeStatus GetROIDetections::onRunning()
         detections.roi4_martial.c_str(),
         detections.roi5_martial.c_str(),
         detections.roi6_martial.c_str(),
+        deletections.stage11_result.c_str(),
+        detections.stage12_roi1.c_str(),
+        detections.stage12_roi2.c_str(),
+        detections.stage12_roi3.c_str(),
         detections.status.c_str());
 
-      if (stage_ > 4 && type_ == 1)
+      if (stage_ > 4 && stage_ <= 10 && type_ == 1)
       {
         const std::vector<std::string> martial_rois = {
           res->roi1_martial,
@@ -154,7 +163,26 @@ BT::NodeStatus GetROIDetections::onRunning()
         return BT::NodeStatus::FAILURE;
       }
 
-      // type 2 or stage <= 4 — original logic
+      if (stage_ == 11)
+      {
+        const std::vector<std::string> stage11_res = {
+          res->stage11_result,
+
+        };
+        if (stage11_res[0] == "yes")
+        {
+          RCLCPP_INFO(node_->get_logger(),
+            "BT: SUCCESS — stage11_result is 'yes'");
+          return BT::NodeStatus::SUCCESS;
+        }
+
+        // service was available, result is genuinely not "yes"
+        RCLCPP_INFO(node_->get_logger(),
+          "BT: FAILURE — stage11_result is not 'yes' (genuine no)");
+        return BT::NodeStatus::FAILURE;
+      }
+
+      // type 2 or stage outside 5 to 10— original logic
       if (res->success)
       {
         RCLCPP_INFO(node_->get_logger(), "BT: SUCCESS");

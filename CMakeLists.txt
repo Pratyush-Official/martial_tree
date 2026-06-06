@@ -43,7 +43,7 @@ set(BEHAVIOUR_SOURCES
   src/movement_nodes/scrollGripperSystem/gripperAct.cpp
   src/movement_nodes/scrollGripperSystem/setExtension.cpp
 
-  src/camera_nodes/get_roi_detections.cpp
+  # src/camera_nodes/get_roi_detections.cpp
   src/camera_nodes/find_hidden_scroll.cpp
 
   src/tree_flow_nodes/zone_change.cpp

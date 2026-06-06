@@ -16,6 +16,7 @@
 #include "ament_index_cpp/get_package_share_directory.hpp"
 #include "nav_msgs/msg/odometry.hpp"
 #include "qos_profiles.hpp"
+#include "geometry_msgs/msg/twist.hpp"
 
 class SickPIDClient : public BT::StatefulActionNode
 {

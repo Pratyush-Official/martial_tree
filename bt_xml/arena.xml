@@ -1,0 +1,9 @@
+<root BTCPP_format="4">
+    <BehaviorTree ID="Arena">
+        <SequenceWithMemory>
+                <StallDetection name="approach_ramp" direction="{direction}" threshold="0.2"/> <!--Robot moves left/right until stall detection-->
+                <OdomPIDClient name="move_up_ramp" setpoint="">
+                <>
+        </SequenceWithMemory>
+    </BehaviorTree>
+</root>

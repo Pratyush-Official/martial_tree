@@ -117,11 +117,11 @@ void tree_ticker::register_custom_action_nodes()
         { return std::make_unique<YawSetpoint>(name, config, shared_self); }
     );
 
-    factory.registerBuilder<GetROIDetections>(
-        "GetROIDetections",
-        [shared_self](const std::string &name, const BT::NodeConfig &config)
-        { return std::make_unique<GetROIDetections>(name, config, shared_self); }
-    );
+    // factory.registerBuilder<GetROIDetections>(
+    //     "GetROIDetections",
+    //     [shared_self](const std::string &name, const BT::NodeConfig &config)
+    //     { return std::make_unique<GetROIDetections>(name, config, shared_self); }
+    // );
 
     factory.registerBuilder<FindHiddenScroll>(
         "FindHiddenScroll",
@@ -296,6 +296,12 @@ void tree_ticker::register_decision_nodes()
         [shared_self](const std::string &name, const BT::NodeConfig &config)
         { return std::make_unique<NodeAnalysis>(name, config, shared_self); }
     );
+
+    // factory.registerBuilder<ArenaDecisionNode>(
+    //     "ArenaDecisionNode",
+    //     [shared_self](const std::string &name, const BT::NodeConfig &config)
+    //     { return std::make_unique<ArenaDecisionNode>(name, config, shared_self); }
+    // );
 }
 
 void tree_ticker::register_condition_nodes()

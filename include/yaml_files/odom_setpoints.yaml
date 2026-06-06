@@ -1,0 +1,70 @@
+#Setpoints for odom navigation
+odom:
+  red:
+    martial:
+      sprear_head: [600.0, 700.0]
+
+    arena:
+      lock_ramp: null
+      tictac_left: null
+      tictac_middle: null
+      ticktac_right: null
+      tictac_photo: null
+
+  blue:
+    martial:
+      sprear_head: [600.0, 700.0]
+
+    arena:
+      lock_ramp: null
+      tictac_left: null
+      tictac_middle: null
+      ticktac_right: null
+      tictac_photo: null
+
+  common:
+    martial:
+      closest_entrance: [575, 300]
+      middle_entrance: [300, 200]
+      furthest_entrance: []
+
+#Setpoints for sick navigation
+sick:
+  red:
+    martial:
+      closest_entrance: [575, 300, 500, 700]
+      middle_entrance: [300, 200, 300, 300]
+      furthest_entrance: [600.0, 700.0, 900.0, 600.0]
+
+      sensor_indices: [0, 2]
+  
+    arena:
+      lock_ramp: null
+      tictac_left: null
+      tictac_middle: null
+      ticktac_right: null
+      tictac_photo: null
+
+      sensor_align_indices: [0, 2]
+      sensor_tic_tac_indices: [0, 3]
+  
+  blue:
+    martial:
+      closest_entrance: [575, 300, 500, 700]
+      middle_entrance: [300, 200, 300, 300]
+      furthest_entrance: [600.0, 700.0, 900.0, 600.0]
+
+      sensor_indices: [0, 3]
+
+    arena:
+      lock_ramp: null
+      tictac_left: null
+      tictac_middle: null
+      ticktac_right: null
+      tictac_photo: null
+
+      sensor_align_indices: [0, 3]
+      sensor_tic_tac_indices: [0, 2]
+
+
+

@@ -40,6 +40,7 @@
 #include "tree_flow_nodes/decision_nodes/node_analysis.hpp"
 #include "tree_flow_nodes/decision_nodes/path_planner.hpp"
 #include "tree_flow_nodes/decision_nodes/entrance_zone_decision.hpp"
+#include "tree_flow_nodes/decision_nodes/arena_decision_node.hpp"
 
 #include "set_destination_from_priority.hpp"
 #include "get_location_for_stage.hpp"
