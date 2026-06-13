@@ -9,6 +9,8 @@ AkClient::AkClient(const std::string &name, const BT::NodeConfig &config, rclcpp
     client_roll_forward = node_->create_client<std_srvs::srv::SetBool>("/ak_motor_roll_down"); //rolls robot forwards
     client_roll_backward = node_->create_client<std_srvs::srv::SetBool>("/ak_motor_roll_up"); //rolls robot forwards
 
+    client_roll = node_->create_client<motor_interfaces::srv::MotorState>("ak_motor_roll_up");
+
     rear_pub = node_->create_publisher<std_msgs::msg::Byte>("/rear_drive", cmd_vel_qos());
     prox_sub = node_->create_subscription<std_msgs::msg::Byte>(
         "/prox_data", sensor_qos(), std::bind(&AkClient::prox_callback, this, std::placeholders::_1));

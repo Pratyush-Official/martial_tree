@@ -1,18 +1,18 @@
 <root BTCPP_format="4" main_tree_to_execute="MainTree">
   <BehaviorTree ID="MainTree">
-    <Sequence name="RootSequence">
-      <!-- <BrakeTest name="BrakeTest"
-      move_vx="1.5"
-      move_vy="0.0"
-      move_duration_ms="2000"
-      brake_gain_x="20.0"
-      brake_gain_y="-5.0"
-      max_brake_vel="1.5"
-      brake_duration_ms="700"
-      y_direction_flip="true"
-      />     -->
-      
-    </Sequence>
+    <SequenceWithMemory name="RootSequence">
+        <!-- <SickPIDClient SP1="79.0" SP2="378.0" SP3="300.0" SP4="400.0"/> -->
 
+        <GripperPose angle="0.0"/> <!--Set pitch to slightly above wire-->
+        <GripperAct state="0.0"/>  <!--Fully Open the gripper-->
+        <GripperPose angle="0.0"/> <!--Set pitch to horizontal-->
+        <setHeight height="0.0"/> <!--Raise the gripper to the height of the scroll-->
+        <setExtension length="0.0"/> <!--Extend the gripper to reach the scroll-->
+        <GripperAct state="0.0"/> <!--Close the gripper to grab the scroll-->
+        <GripperPose angle="0.0"/> <!--Raise the scroll after grabbing-->
+        <setExtension length="0.0"/> <!--Extend the elevator to make room for storing-->
+        <GripperPose angle="0.0"/> <!--Pitch the gripper to store the scroll in the robot-->
+        <GripperAct state="0.0"/> <!--Open the gripper to drop the scroll in the robot-->
+    </SequenceWithMemory>
   </BehaviorTree>
 </root>

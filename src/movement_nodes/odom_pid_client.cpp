@@ -8,6 +8,7 @@ OdomPIDClient::OdomPIDClient(const std::string & name,
 {
     action_client_ = rclcpp_action::create_client<MoveTwist>(node_, "move_twist");
     setpoint_pub = node_->create_publisher<std_msgs::msg::Float32MultiArray>("/setpoint_yaw",cmd_vel_qos());
+    cmd_vel_pub_ = node_->create_publisher<geometry_msgs::msg::Twist>("/cmd_vel", cmd_vel_qos());
 }
 
 BT::PortsList OdomPIDClient::providedPorts()
@@ -117,6 +118,10 @@ void OdomPIDClient::onHalted()
         action_client_->async_cancel_goal(goal_handle_);
         RCLCPP_WARN(node_->get_logger(), "[Move] Halted – goal cancelled.");
     }
+
+    geometry_msgs::msg::Twist stop;
+    cmd_vel_pub_->publish(stop);
+
     reset();
 }
 

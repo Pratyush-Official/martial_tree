@@ -7,6 +7,12 @@
         <Action ID="AlwaysNode">
             <input_port name="state" type="int"/>
         </Action>
+        <Action ID="ArenaDecisionNode">
+            <output_port name="dxn" type="std::string">Direction: L, R, or M</output_port>
+            <output_port name="move_y" type="double">Target Y movement</output_port>
+            <output_port name="move_x" type="double">Target X movement</output_port>
+            <input_port name="detections" type="StageDetections">StageDetections struct from GetROIDetections</input_port>
+        </Action>
         <Action ID="BrakeTest">
             <input_port name="y_direction_flip" type="bool"/>
             <input_port name="brake_duration_ms" type="int"/>
@@ -17,6 +23,14 @@
             <input_port name="move_vy" type="float"/>
             <input_port name="move_vx" type="float"/>
         </Action>
+        <Action ID="CheckForProx">
+            <input_port name="y_direction_flip" type="bool"/>
+            <input_port name="brake_duration_ms" type="int"/>
+            <input_port name="max_brake_vel" type="double"/>
+            <input_port name="brake_gain_y" type="double"/>
+            <input_port name="brake_gain_x" type="double"/>
+            <input_port name="climb_state" type="int"/>
+        </Action>
         <Action ID="CheckItemsPicked">
             <input_port name="items_picked" type="int" default="0">Number of items picked so far</input_port>
         </Action>
@@ -26,10 +40,8 @@
         <Action ID="CheckforS">
             <input_port name="next_node_state" type="int"/>
         </Action>
-        <Action ID="Checkforprox">
-            <input_port name="climb_state" type="int"/>
-        </Action>
         <Action ID="Climb">
+            <input_port name="climb_state" type="int">Current climb direction: UP or DOWN</input_port>
             <input_port name="next_climb_state" type="int">Used for preset roll after retract</input_port>
             <input_port name="up_down" type="int"/>
         </Action>
@@ -47,6 +59,25 @@
             <output_port name="curr_node" type="int"/>
             <input_port name="merged_path" type="std::vector&lt;int, std::allocator&lt;int&gt; &gt;"/>
         </Action>
+        <Action ID="DecisionOdom">
+            <inout_port name="ran_through" type="int">Used to decide wether the picking/navigation logic has been done before (for reset purposes</inout_port>
+            <output_port name="pick_from_entrance" type="int">Used to decide wether to pickup scroll from the climbing block or just climb</output_port>
+            <inout_port name="climb_position_reached" type="int">Used to decide wehter the robot as gone to the middle block or not</inout_port>
+            <input_port name="color" type="std::string">red or blue</input_port>
+            <output_port name="turn" type="std::string">Direction you wish the robot to rotate: Right, Left, Back, Front</output_port>
+            <output_port name="under_roi" type="std::string">The roi where the robot currently is</output_port>
+            <input_port name="current_yaw" type="CurrentYaw"/>
+            <inout_port name="stage1" type="StageDetections"/>
+        </Action>
+        <Action ID="DecisionSick">
+            <output_port name="turn" type="std::string">Direction you wish the robot to rotate: Right, Left, Back, Front</output_port>
+            <output_port name="pick_from_entrance" type="int">Used to decide wether to pickup scroll from the climbing block or just climb</output_port>
+            <input_port name="current_yaw" type="CurrentYaw"/>
+            <output_port name="under_roi" type="std::string"/>
+            <inout_port name="climb_position_reached" type="int">Used to decide wehter the robot as gone to the middle block or not</inout_port>
+            <inout_port name="ran_through" type="int"/>
+            <inout_port name="stage1" type="StageDetections"/>
+        </Action>
         <Action ID="FindHiddenScroll">
             <input_port name="stage4" type="StageDetections"/>
             <input_port name="stage3" type="StageDetections"/>
@@ -60,6 +91,7 @@
         </Action>
         <Action ID="GetROIDetections">
             <output_port name="detections" type="StageDetections"/>
+            <input_port name="trigger_roi" type="int" default="1">Stage11 trigger ROI</input_port>
             <input_port name="type" type="int" default="2">1=check specific martial ROI, 2=standard logic</input_port>
             <input_port name="reset_delay_ms" type="int" default="1200">Delay after reset in ms</input_port>
             <input_port name="color" type="std::string" default="red">red=lower ROI, blue=higher ROI</input_port>
@@ -68,20 +100,32 @@
         <Action ID="GoToEntrance">
             <inout_port name="first_stage_done" type="bool"/>
             <inout_port name="check" type="bool"/>
-            <inout_port name="climb_position_reached" type="bool"/>
+            <inout_port name="climb_position_reached" type="int"/>
             <input_port name="color" type="std::string">red or blue</input_port>
             <output_port name="turn" type="std::string">Direction: Right, Left, Back, Front or raw float</output_port>
             <input_port name="current_yaw" type="CurrentYaw"/>
             <inout_port name="stage1" type="StageDetections"/>
         </Action>
         <Action ID="GripperAct">
-            <input_port name="grip" type="bool"/>
+            <input_port name="state" type="int"/>
+        </Action>
+        <Action ID="GripperClose">
+            <output_port name="Op_GripperStatus" type="bool"/>
+        </Action>
+        <Action ID="GripperOpen">
+            <output_port name="Op_GripperStatus" type="bool"/>
         </Action>
         <Action ID="GripperPose">
-            <input_port name="yaw" type="int"/>
+            <input_port name="angle" type="float"/>
         </Action>
-        <Action ID="InitializePortsActuators"/>
+        <Action ID="InitializePortsActuators">
+            <output_port name="turn" type="std::string"/>
+            <output_port name="color" type="std::string"/>
+        </Action>
         <Action ID="IsInsideForest"/>
+        <Action ID="MotorActuate">
+            <input_port name="MotorActuateEnum" type="std::string">up or down</input_port>
+        </Action>
         <Action ID="NodeAnalysis">
             <output_port name="node_state" type="std::map&lt;int, int, std::less&lt;int&gt;, std::allocator&lt;std::pair&lt;int const, int&gt; &gt; &gt;"/>
             <output_port name="merged_path" type="std::vector&lt;int, std::allocator&lt;int&gt; &gt;"/>
@@ -89,8 +133,7 @@
             <input_port name="path" type="std::vector&lt;int, std::allocator&lt;int&gt; &gt;"/>
         </Action>
         <Action ID="OdomPIDClient">
-            <input_port name="move_y" type="float">Y displacement from DecisionNode in mm</input_port>
-            <input_port name="move_x" type="float">X displacement from DecisionNode in mm</input_port>
+            <input_port name="setpoint" type="std::vector&lt;float, std::allocator&lt;float&gt; &gt;">X and Y displacement in mm</input_port>
         </Action>
         <Action ID="PlanPath">
             <output_port name="ar_nodes" type="std::vector&lt;int, std::allocator&lt;int&gt; &gt;"/>
@@ -109,11 +152,18 @@
             <input_port name="color" type="std::string"/>
             <input_port name="detections" type="StageDetections"/>
         </Action>
+        <Action ID="SetpointLoader">
+            <input_port name="color" type="std::string"/>
+        </Action>
         <Action ID="SickPIDClient">
             <input_port name="SP4" type="float">Setpoint 4</input_port>
             <input_port name="SP3" type="float">Setpoint 3</input_port>
             <input_port name="SP2" type="float">Setpoint 2</input_port>
             <input_port name="SP1" type="float">Setpoint 1</input_port>
+        </Action>
+        <Action ID="StallDetection">
+            <input_port name="threshold" type="float">Delta threshold to count as stall</input_port>
+            <input_port name="direction" type="std::string">Left, Right, Front or Back</input_port>
         </Action>
         <Action ID="UpdateCurrentStage">
             <output_port name="current_stage" type="int"/>
@@ -122,6 +172,9 @@
         <Action ID="VelPublish">
             <input_port name="next_climb_state" type="int">Next node climb state, used for preset roll</input_port>
             <input_port name="climb_state" type="int">Climb state: UP or DOWN</input_port>
+        </Action>
+        <Action ID="VelUntilLimit">
+            <input_port name="color" type="std::string"/>
         </Action>
         <Action ID="WaitForSet"/>
         <Action ID="YawPIDClient">

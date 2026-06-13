@@ -1,5 +1,5 @@
-#ifndef MOVEMENT_NODES__GO_TO_ENTRANCE_HPP_
-#define MOVEMENT_NODES__GO_TO_ENTRANCE_HPP_
+#ifndef DECISION_ODOM_HPP_
+#define DECISION_ODOM_HPP_
 
 #include <string>
 #include <memory>
@@ -12,14 +12,14 @@
 #include "camera_nodes/get_roi_detections.hpp"
 #include "movement_nodes/yaw_setpoint.hpp"
 
-class EntranceZoneDecision : public BT::SyncActionNode
+class DecisionOdom : public BT::SyncActionNode
 {
 public:
-    EntranceZoneDecision(const std::string &name,
+    DecisionOdom(const std::string &name,
                          const BT::NodeConfig &config,
                          rclcpp::Node::SharedPtr node);
 
-    ~EntranceZoneDecision() override = default;
+    ~DecisionOdom() override = default;
 
     static BT::PortsList providedPorts();
 
@@ -43,4 +43,4 @@ private:
     std::vector<float> ODOM_SP_NEAR;
     std::vector<float> ODOM_SP_FAR;
 };
-#endif // MOVEMENT_NODES__GO_TO_ENTRANCE_HPP_
+#endif // DECISION_ODOM_HPP_

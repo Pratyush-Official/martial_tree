@@ -3,7 +3,7 @@
 SetpointLoader::SetpointLoader(const std::string &name,
                                const BT::NodeConfig &config)
     : BT::SyncActionNode(name, config),
-      yaml_path_("/yaml_files/setpoints.yaml") {}
+      yaml_path_(ament_index_cpp::get_package_share_directory("martial_tree") + "/yaml_files/setpoints.yaml") {}
 
 BT::PortsList SetpointLoader::providedPorts()
 {

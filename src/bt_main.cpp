@@ -46,24 +46,25 @@ void tree_ticker::create_behavior_tree()
     blackboard->set<int>("in_arena",0);
     blackboard->set<int>("placed_1",0);
     blackboard->set<int>("placed_2",0);
+    blackboard->set<int>("pick_from_entrance",1); //Remove this
 
     std_msgs::msg::Float32MultiArray arr;
     arr.data = {0.0f, 0.0f};
-    blackboard->set<std_msgs::msg::Float32MultiArray>("entrance_movement", arr); // The key that gets assigned to the actual client in xml
+    blackboard->set<std::vector<float>>("entrance_movement", std::vector<float>{140.0f, 1170.0f}); // The key that gets assigned to the actual client in xml
 
     blackboard->set<CurrentYaw>("current_yaw", CurrentYaw::FRONT);
 
     const std::string pkg = ament_index_cpp::get_package_share_directory("martial_tree");
 
     try {
-        factory.registerBehaviorTreeFromFile(pkg + "/bt_xml/climb_three_photos.xml");
+        factory.registerBehaviorTreeFromFile(pkg + "/bt_xml/main_trees/climb_three_photos.xml");
         RCLCPP_INFO(get_logger(), "climb_three_photos OK");
-        factory.registerBehaviorTreeFromFile(pkg + "/bt_xml/scroll_pick_from_entrance.xml");
+        factory.registerBehaviorTreeFromFile(pkg + "/bt_xml/main_trees/odom_pick_from_entrance.xml");
         RCLCPP_INFO(get_logger(), "scroll_pick_from_entrance OK");
-        factory.registerBehaviorTreeFromFile(pkg + "/bt_xml/spear_assembly.xml");
+        factory.registerBehaviorTreeFromFile(pkg + "/bt_xml/main_trees/spear_assembly.xml");
         RCLCPP_INFO(get_logger(), "spear_assembly OK");
-        factory.registerBehaviorTreeFromFile(pkg + "/bt_xml/main_bt.xml");
-        RCLCPP_INFO(get_logger(), "main_bt OK");
+        factory.registerBehaviorTreeFromFile(pkg + "/bt_xml/main_trees/main_bt.xml");
+        RCLCPP_INFO(get_logger(), "test OK");
 
         tree_ = factory.createTree("MainTree", blackboard);
         RCLCPP_INFO(get_logger(), "tree created OK");
@@ -117,15 +118,15 @@ void tree_ticker::register_custom_action_nodes()
         { return std::make_unique<YawSetpoint>(name, config, shared_self); }
     );
 
-    // factory.registerBuilder<GetROIDetections>(
-    //     "GetROIDetections",
-    //     [shared_self](const std::string &name, const BT::NodeConfig &config)
-    //     { return std::make_unique<GetROIDetections>(name, config, shared_self); }
-    // );
+    factory.registerBuilder<GetROIDetections>(
+        "GetROIDetections",
+        [shared_self](const std::string &name, const BT::NodeConfig &config)
+        { return std::make_unique<GetROIDetections>(name, config, shared_self); }
+    );
 
     factory.registerBuilder<FindHiddenScroll>(
         "FindHiddenScroll",
-        [](const std::string &name, const BT::NodeConfig &config)
+        [shared_self](const std::string &name, const BT::NodeConfig &config)
         { return std::make_unique<FindHiddenScroll>(name, config); }
     );
 
@@ -189,10 +190,16 @@ void tree_ticker::register_custom_action_nodes()
         { return std::make_unique<SetpointLoader>(name, config); }
     );
 
-    factory.registerBuilder<EntranceZoneDecision>(
-        "EntranceZoneDecision",
+    factory.registerBuilder<DecisionOdom>(
+        "DecisionOdom",
         [shared_self](const std::string &name, const BT::NodeConfig &config)
-        { return std::make_unique<EntranceZoneDecision>(name, config, shared_self); }
+        { return std::make_unique<DecisionOdom>(name, config, shared_self); }
+    );
+
+    factory.registerBuilder<DecisionSick>(
+        "DecisionSick",
+        [shared_self](const std::string &name, const BT::NodeConfig &config)
+        { return std::make_unique<DecisionSick>(name, config, shared_self); }
     );
 
     factory.registerBuilder<VelUntilLimit>(
@@ -297,11 +304,11 @@ void tree_ticker::register_decision_nodes()
         { return std::make_unique<NodeAnalysis>(name, config, shared_self); }
     );
 
-    // factory.registerBuilder<ArenaDecisionNode>(
-    //     "ArenaDecisionNode",
-    //     [shared_self](const std::string &name, const BT::NodeConfig &config)
-    //     { return std::make_unique<ArenaDecisionNode>(name, config, shared_self); }
-    // );
+    factory.registerBuilder<bt_nodes::ArenaDecisionNode>(
+        "ArenaDecisionNode",
+        [shared_self](const std::string &name, const BT::NodeConfig &config)
+        { return std::make_unique<bt_nodes::ArenaDecisionNode>(name, config, shared_self); }
+    );
 }
 
 void tree_ticker::register_condition_nodes()
@@ -327,7 +334,7 @@ void tree_ticker::register_condition_nodes()
     );
 
     factory.registerBuilder<CheckForProx>(
-        "Checkforprox",
+        "CheckForProx",
         [shared_self](const std::string &name, const BT::NodeConfig &config)
         { return std::make_unique<CheckForProx>(name, config, shared_self); }
     );

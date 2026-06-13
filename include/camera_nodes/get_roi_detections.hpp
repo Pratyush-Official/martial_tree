@@ -3,7 +3,6 @@
 
 #include <chrono>
 #include <string>
-
 #include "behaviortree_cpp/action_node.h"
 #include "rclcpp/rclcpp.hpp"
 #include "oakd_roi_detector_interfaces/srv/get_detections.hpp"
@@ -20,18 +19,21 @@ struct StageDetections
   std::string roi4_martial;
   std::string roi5_martial;
   std::string roi6_martial;
+  std::string stage11_result;   // ← added
+  std::string stage12_roi1;     // ← added
+  std::string stage12_roi2;     // ← added
+  std::string stage12_roi3;     // ← added
   std::string status;
 };
 
 class GetROIDetections : public BT::StatefulActionNode
 {
 public:
-  using GetDetections =
-    oakd_roi_detector_interfaces::srv::GetDetections;
+  using GetDetections = oakd_roi_detector_interfaces::srv::GetDetections;
 
   GetROIDetections(
-    const std::string &name,
-    const BT::NodeConfig &config,
+    const std::string & name,
+    const BT::NodeConfig & config,
     rclcpp::Node::SharedPtr node);
 
   static BT::PortsList providedPorts();
@@ -41,26 +43,24 @@ public:
   void onHalted() override;
 
 private:
-
   enum class Phase {
     RESET,
-    WAIT_SERVICE,      // add this
+    WAIT_SERVICE,
     WAIT_AFTER_RESET,
     REQUEST,
     WAIT_RESPONSE
   };
+
   rclcpp::Node::SharedPtr node_;
   rclcpp::Client<GetDetections>::SharedPtr client_;
   rclcpp::Client<GetDetections>::SharedFuture future_;
-
   Phase phase_{Phase::RESET};
-
   std::chrono::steady_clock::time_point reset_time_;
   std::string color_ = "red";
   int stage_{0};
   int type_ = 2;
   int reset_delay_ms_{1200};
-
+  int trigger_roi_;
 
   void sendReset();
 };

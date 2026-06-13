@@ -14,6 +14,19 @@
         <SequenceWithMemory>
             <InitializePortsActuators/>
             <SetpointLoader color="{color}"/>
+            
+            <Delay name="startup_delay" delay_msec="1000">
+                <RetryUntilSuccessful num_attempts="-1">
+                    <Sequence name="roi_detection_retry">
+                        <GetROIDetections
+                            name="get_roi_detections"
+                            stage="1"
+                            detections="{stage1_detections}"
+                        />
+                    </Sequence>
+                </RetryUntilSuccessful>
+            </Delay>
+
             <Inverter>
                 <KeepRunningUntilFailure>
                     <Inverter>
@@ -21,39 +34,47 @@
                             <ZoneChange/>
                             <WhileDoElse>
                                 <WaitForSet/>
-                                <Sequence>
-                                    <Precondition if="in_martial == 1 && (spear_assembled != 1 || photo_sequence == 1)" else="SUCCESS">
-                                        <SubTree ID="SpearAssembly" _autoremap="true"/>
-                                    </Precondition>
-                                    <Precondition if="spear_assembled == 1" else="RUNNING"/>
+                                <SequenceWithMemory> <!--Should be sequence only-->
+
+                                    <!-- <Precondition if="in_martial == 1 && (spear_assembled != 1 || photo_sequence == 1)" else="SUCCESS"> -->
+                                    <SubTree ID="SpearAssembly" _autoremap="true"/>
+                                    <!-- </Precondition> -->
+                                    <!-- <Precondition if="spear_assembled == 1" else="RUNNING">
+                                        <AlwaysSuccess/>
+                                    </Precondition> -->
 
                                     <Precondition if="in_martial == 1 && spear_assembled == 1 && scroll_picked_from_entrance != 1" else="SUCCESS">
-                                        <SubTree ID="ScrollPickFromEntrance" _autoremap="true"/>
+                                        <SubTree ID="OdomScrollPickFromEntrance" _autoremap="true"/>
                                     </Precondition>
-                                    <Precondition if="scroll_picked_from_entrance == 1" else="RUNNING"/>
+                                    
+                                    <Precondition if="scroll_picked_from_entrance == 1" else="RUNNING">
+                                        <AlwaysSuccess/>
+                                    </Precondition>
                                     
                                     <Precondition if="in_martial == 1 && spear_assembled == 1 && scroll_picked_from_entrance == 1 && climbed_three_photos != 1" else="SUCCESS">
                                         <SubTree ID="ClimbThreePhotos" _autoremap="true"/>
                                     </Precondition>
-                                    <Precondition if="climbed_three_photos == 1" else="RUNNING"/>
+                                    <Precondition if="climbed_three_photos == 1" else="RUNNING">
+                                         <AlwaysSuccess/>
+                                    </Precondition>
 
                                     <Precondition if="in_forest == 1" else="SUCCESS">
-                                        <SubTree ID="ForestTree"/>
+                                        <!-- <SubTree ID="ForestTree"/> -->
                                         <KeepRunningUntilFailure>
                                             <AlwaysFailure/>
                                         </KeepRunningUntilFailure>
                                     </Precondition>
-                                    <Precondition if="in_forest == 0" else="RUNNING"/>
+                                    <Precondition if="in_forest == 0" else="RUNNING">
+                                        <AlwaysSuccess/>
+                                    </Precondition>
 
                                     <KeepRunningUntilFailure>
                                         <AlwaysFailure/>
                                     </KeepRunningUntilFailure>
-                                </Sequence>
-                                <Inverter>
-                                    <AlwaysSuccess/>
-                                </Inverter>
+                                </SequenceWithMemory>
+                                <AlwaysFailure/>
                             </WhileDoElse>
-                            <SubTree ID="arena_reset_zone"/>
+                            <!-- <SubTree ID="arena_reset_zone"/> -->
                             <AlwaysFailure/>
                         </IfThenElse>
                     </Inverter>

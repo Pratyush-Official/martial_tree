@@ -2,7 +2,7 @@
 odom:
   red:
     martial:
-      sprear_head: [600.0, 700.0]
+      spear_head: [890.452 , 858.809]
 
     arena:
       lock_ramp: null
@@ -13,7 +13,7 @@ odom:
 
   blue:
     martial:
-      sprear_head: [600.0, 700.0]
+      spear_head: [600.0, 700.0]
 
     arena:
       lock_ramp: null
@@ -24,9 +24,9 @@ odom:
 
   common:
     martial:
-      closest_entrance: [575, 300]
-      middle_entrance: [300, 200]
-      furthest_entrance: []
+      closest_entrance: [-1282.08 , 830.0]
+      middle_entrance: [-2430.0, 830.0]
+      furthest_entrance: [-3755.0, 830.0]
 
 #Setpoints for sick navigation
 sick:

@@ -1,0 +1,110 @@
+<?xml version="1.0"?>
+<root BTCPP_format="4">
+
+  <BehaviorTree ID="MainTree">
+    <Fallback>
+
+      <!-- ── THEN branch: Stage 11 ROI 1 succeeds → move and place ── -->
+      <Sequence>
+        <GetROIDetections
+          stage="11"
+          trigger_roi="1"
+          type="2"
+          color="red"
+          reset_delay_ms="1200"
+          detections="{detections}" />
+        <AlwaysSuccess name="Move_Initial"/>
+        <AlwaysSuccess name="Place_Initial"/>
+      </Sequence>
+
+      <!-- ── ELSE branch: Stage 11 ROI 1 failed → Stage 12 → Arena → Switch ── -->
+      <Sequence>
+
+        <GetROIDetections
+          stage="12"
+          trigger_roi="1"
+          type="2"
+          color="red"
+          reset_delay_ms="1200"
+          detections="{detections}" />
+
+        <ArenaDecisionNode
+          detections="{detections}"
+          move_x="{move_x}"
+          move_y="{move_y}"
+          dxn="{dxn}" />
+
+        <Switch4
+          variable="{dxn}"
+          case_1="L"
+          case_2="R"
+          case_3="M"
+          case_4="F">
+
+          <!-- ── L branch ── -->
+          <Fallback>
+            <Sequence>
+              <GetROIDetections
+                stage="11"
+                trigger_roi="2"
+                type="2"
+                color="red"
+                reset_delay_ms="1200"
+                detections="{detections}" />
+              <AlwaysSuccess name="Move_L1"/>
+              <AlwaysSuccess name="Place_L1"/>
+            </Sequence>
+            <Sequence>
+              <GetROIDetections
+                stage="11"
+                trigger_roi="3"
+                type="2"
+                color="red"
+                reset_delay_ms="1200"
+                detections="{detections}" />
+              <AlwaysSuccess name="Move_L2"/>
+              <AlwaysSuccess name="Place_L2"/>
+            </Sequence>
+            <AlwaysFailure name="L_Exhausted"/>
+          </Fallback>
+
+          <!-- ── R branch ── -->
+          <Fallback>
+            <Sequence>
+              <GetROIDetections
+                stage="11"
+                trigger_roi="4"
+                type="2"
+                color="red"
+                reset_delay_ms="1200"
+                detections="{detections}" />
+              <AlwaysSuccess name="Move_R1"/>
+              <AlwaysSuccess name="Place_R1"/>
+            </Sequence>
+            <Sequence>
+              <GetROIDetections
+                stage="11"
+                trigger_roi="5"
+                type="2"
+                color="red"
+                reset_delay_ms="1200"
+                detections="{detections}" />
+              <AlwaysSuccess name="Move_R2"/>
+              <AlwaysSuccess name="Place_R2"/>
+            </Sequence>
+            <AlwaysFailure name="R_Exhausted"/>
+          </Fallback>
+
+          <!-- ── M branch ── -->
+          <AlwaysFailure name="M_Exit"/>
+
+          <!-- ── F branch ── -->
+          <AlwaysFailure name="F_Exit"/>
+
+        </Switch4>
+      </Sequence>
+
+    </Fallback>
+  </BehaviorTree>
+
+</root>

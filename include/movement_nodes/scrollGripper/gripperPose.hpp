@@ -10,10 +10,9 @@ using MotorState = motor_interfaces::srv::MotorState;
 class GripperPose : public BT::StatefulActionNode
 {
 public:
-        
-    GripperPose(const std::string & name,
-          const BT::NodeConfig & config,
-          rclcpp::Node::SharedPtr node);
+    GripperPose(const std::string& name,
+                const BT::NodeConfig& config,
+                rclcpp::Node::SharedPtr node);
 
     static BT::PortsList providedPorts();
 
@@ -24,9 +23,9 @@ public:
 private:
     rclcpp::Node::SharedPtr node_;
     rclcpp::Client<MotorState>::SharedPtr client_;
-    
-    int angle_state_ {0}; // degree
-    bool response_received_ {false};
-    bool call_succeeded_    {false};
-};
 
+    float angle_state_      {0.0f};
+    bool  request_sent_      {false};
+    bool  response_received_ {false};
+    bool  call_succeeded_    {false};
+};

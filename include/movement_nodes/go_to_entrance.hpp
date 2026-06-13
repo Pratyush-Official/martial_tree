@@ -79,7 +79,7 @@ private:
     bool success{false};
     bool check{false};
     bool first_stage_done{false};
-    bool climb_position_reached{false};
+    bool climb_position_reached{0};
 
     std::string under_roi;
     uint32_t start_time{0};

@@ -10,6 +10,7 @@
 #include "std_msgs/msg/byte.hpp"
 #include "qos_profiles.hpp"
 #include "geometry_msgs/msg/twist.hpp"
+#include "motor_interfaces/srv/motor_state.hpp"
 
 class AkClient : public BT::StatefulActionNode
 {

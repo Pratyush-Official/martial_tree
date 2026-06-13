@@ -26,6 +26,7 @@ inline void reset_flags(BT::Blackboard::Ptr bb){
     bb->set<int>("climb_position_reached", 0);
     bb->set<int>("in_forest", 0);
     bb->set<int>("in_arena", 0);
+    bb->set<CurrentYaw>("current_yaw", CurrentYaw::FRONT);
 }
 
 inline void flag_alter(BT::Blackboard::Ptr bb, const FLAG_ALTER_CASE case_){

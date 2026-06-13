@@ -38,19 +38,18 @@ set(BEHAVIOUR_SOURCES
   src/movement_nodes/brake_test_node.cpp
   src/movement_nodes/stall_detection.cpp
 
-  src/movement_nodes/scrollGripperSystem/setHeight.cpp
-  src/movement_nodes/scrollGripperSystem/gripperPose.cpp
-  src/movement_nodes/scrollGripperSystem/gripperAct.cpp
-  src/movement_nodes/scrollGripperSystem/setExtension.cpp
+  src/movement_nodes/scrollGripper/setHeight.cpp
+  src/movement_nodes/scrollGripper/gripperPose.cpp
+  src/movement_nodes/scrollGripper/gripperAct.cpp
+  src/movement_nodes/scrollGripper/setExtension.cpp
 
-  # src/camera_nodes/get_roi_detections.cpp
+  src/camera_nodes/get_roi_detections.cpp
   src/camera_nodes/find_hidden_scroll.cpp
 
   src/tree_flow_nodes/zone_change.cpp
   src/tree_flow_nodes/wait_for_set.cpp
   src/tree_flow_nodes/initialize_ports_actuators.cpp
   src/tree_flow_nodes/setpoint_loader.cpp 
-  src/tree_flow_nodes/decision_nodes/entrance_zone_decision.cpp 
 
   src/tree_flow_nodes/conditions/check_for_C.cpp
   src/tree_flow_nodes/conditions/check_for_S.cpp
@@ -58,8 +57,11 @@ set(BEHAVIOUR_SOURCES
   src/tree_flow_nodes/conditions/check_for_prox.cpp
   src/tree_flow_nodes/conditions/always_node.cpp
   src/tree_flow_nodes/decision_nodes/decision_node.cpp
+  src/tree_flow_nodes/decision_nodes/arena_decision_node.cpp
   src/tree_flow_nodes/decision_nodes/node_analysis.cpp
   src/tree_flow_nodes/decision_nodes/path_planner.cpp
+  src/tree_flow_nodes/decision_nodes/decision_sick.cpp
+  src/tree_flow_nodes/decision_nodes/decision_odom.cpp 
 
   src/actions/vel_until_limit.cpp
   src/actions/gripper_close.cpp
@@ -109,6 +111,10 @@ install(DIRECTORY include/
 install(
   DIRECTORY bt_xml/
   DESTINATION share/${PROJECT_NAME}/bt_xml
+)
+
+install(DIRECTORY yaml_files/
+    DESTINATION share/${PROJECT_NAME}/yaml_files
 )
 
 ament_package()

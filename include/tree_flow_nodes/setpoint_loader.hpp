@@ -6,6 +6,7 @@
 #include <yaml-cpp/yaml.h>
 #include <string>
 #include <memory>
+#include <ament_index_cpp/get_package_share_directory.hpp>
 
 // Forward declare tree_ticker
 class tree_ticker;

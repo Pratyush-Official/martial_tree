@@ -24,7 +24,7 @@ BT::PortsList GoToEntrance::providedPorts()
         // BT::OutputPort<std::string>("under_roi")
         BT::BidirectionalPort<bool>("check"),
         BT::BidirectionalPort<bool>("first_stage_done"),
-        BT::BidirectionalPort<bool>("climb_position_reached")
+        BT::BidirectionalPort<int>("climb_position_reached")
     };
 }
 
@@ -36,7 +36,7 @@ BT::NodeStatus GoToEntrance::onStart()
     auto color = getInput<std::string>("color");
     check = getInput<bool>("check").value_or(false);
     first_stage_done = getInput<bool>("first_stage_done").value_or(false);
-    climb_position_reached = getInput<bool>("climb_position_reached").value_or(false);
+    climb_position_reached = getInput<int>("climb_position_reached").value_or(0);
 
     if (!scroll_detections)
     {
@@ -213,7 +213,7 @@ void GoToEntrance::set_setpoints(const StageDetections &det, const int yaw_int_,
         }
 
         check = true;
-        climb_position_reached = true;
+        climb_position_reached = 1;
         return;
 
     }

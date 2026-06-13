@@ -9,7 +9,7 @@ SickPIDClient::SickPIDClient(const std::string &name, const BT::NodeConfiguratio
         qos_profile.reliability(RMW_QOS_POLICY_RELIABILITY_RELIABLE); 
 
         client_ptr_forest = rclcpp_action::create_client<ar_interfaces::action::Movement>(node, "/movement_sick"); //movement_pid is the service name
-        cmd_pub_ = node_->create_publisher<geometry_msgs::msg::Twist>("/cmd_vel", cmd_vel_qos());
+        cmd_vel_pub_ = node_->create_publisher<geometry_msgs::msg::Twist>("/cmd_vel", cmd_vel_qos());
         RCLCPP_INFO(node_->get_logger(),"SickPIDClient initialized");
         done_flag = false;
 }
@@ -17,32 +17,21 @@ SickPIDClient::SickPIDClient(const std::string &name, const BT::NodeConfiguratio
 BT::PortsList SickPIDClient::providedPorts()
 {
     return {
-        BT::InputPort<std::vector<float>>("setpoint", "all 4 sick setpoints"),
-        BT::InputPort<std::vector<float>>("sick_choose", "choosing which sicks to apply pid upon") //The yaml sets everything as float, i type cast it later, dont change this
+        BT::InputPort<float>("SP1", "Setpoint 1"),
+        BT::InputPort<float>("SP2", "Setpoint 2"),
+        BT::InputPort<float>("SP3", "Setpoint 3"),
+        BT::InputPort<float>("SP4", "Setpoint 4")
+        // BT::OutputPort<>
     };
 }
 
 BT::NodeStatus SickPIDClient::onStart()
 {
-
-    auto res = getInput<std::vector<float>>("setpoint");
-    auto sick_choose = getInput<std::vector<float>>("sick_choose");
-
-    if (!res || res.value().size() < 4)
-    {
-        RCLCPP_ERROR(node_->get_logger(), "[OdomPIDClient] Invalid setpoint port");
-        return BT::NodeStatus::FAILURE;
-    }
-
-    if(!sick_choose || sick_choose.value().size() < 2){
-        RCLCPP_ERROR(node_->get_logger(), "[OdomPIDClient] Invalid number of sick");
-        return BT::NodeStatus::FAILURE;   
-    }
-
-    float sp1 = res.value()[0];
-    float sp2 = res.value()[1];
-    float sp3 = res.value()[2];
-    float sp4 = res.value()[3];
+    
+    float sp1 = getInput<float>("SP1").value();
+    float sp2 = getInput<float>("SP2").value();
+    float sp3 = getInput<float>("SP3").value();
+    float sp4 = getInput<float>("SP4").value();
 
     done_flag = false;
     success = false;
@@ -52,7 +41,6 @@ BT::NodeStatus SickPIDClient::onStart()
     goal_options.result_callback = std::bind(&SickPIDClient::result_callback, this, _1);
 
     goal_msg.setpoint_sick = std::vector<float>{sp1, sp2, sp3, sp4};
-    goal_msg.sick_choose = std::vector<long int>(sick_choose.value().begin(), sick_choose.value().end());
     goal_msg.tolerance_sick = 0.0;
     goal_msg.timeout_sick = 0.0;
 
@@ -75,12 +63,6 @@ BT::NodeStatus SickPIDClient::onStart()
 
 BT::NodeStatus SickPIDClient::onRunning()
     { 
-
-    setpoint_.data.clear(); //This is for resetting the yaw_setpoint byte
-    setpoint_.data.push_back(0.0);
-    setpoint_.data.push_back(RESET_BYTE); 
-    setpoint_pub->publish(setpoint_);
-    
     if (done_flag && success)
     {
         return BT::NodeStatus::SUCCESS; 
@@ -106,6 +88,11 @@ void SickPIDClient::cancel_goal()
         client_ptr_forest->async_cancel_goal(goal_handle);
         RCLCPP_INFO(node_->get_logger(), "SickPIDClient::Goal canceled");
     }
+
+    geometry_msgs::msg::Twist stop;
+    cmd_vel_pub_->publish(stop);  // if you have a cmd_vel publisher here
+    
+    resetVel();
 }
 
 void SickPIDClient::goal_response_callback(const GoalHandleMovement::SharedPtr &goal_handle_)
@@ -166,5 +153,5 @@ void SickPIDClient::resetVel()
     geometry_msgs::msg::Twist cmd;
     cmd.linear.x = 0.0f;
     cmd.linear.y = 0.0f;
-    cmd_pub_->publish(cmd);
+    cmd_vel_pub_->publish(cmd);
 }

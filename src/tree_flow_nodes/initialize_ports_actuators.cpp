@@ -22,8 +22,8 @@ InitializePortsActuators::InitializePortsActuators(
 BT::PortsList InitializePortsActuators::providedPorts()
 {
     return {
-        // BT::OutputPort<std::string>("color"),
-        // BT::OutputPort<std::string>("turn"),
+        BT::OutputPort<std::string>("color"),
+        BT::OutputPort<std::string>("turn")
     };
 }
 
@@ -35,9 +35,9 @@ BT::NodeStatus InitializePortsActuators::onStart()
 BT::NodeStatus InitializePortsActuators::onRunning()
 {
 
-    if(color_.empty()){
-        return BT::NodeStatus::RUNNING;
-    }
+    // if(color_.empty()){
+    //     return BT::NodeStatus::RUNNING;
+    // }
 
     setOutput("color", color_);
 

@@ -1,17 +1,17 @@
-#include "tree_flow_nodes/decision_nodes/entrance_zone_decision.hpp"
+#include "tree_flow_nodes/decision_nodes/decision_odom.hpp"
 
 using namespace std::placeholders;
-EntranceZoneDecision::EntranceZoneDecision(const std::string &name, const BT::NodeConfig &config, rclcpp::Node::SharedPtr node) :                                               // name is passes automatically by the bt_xml, its the name = "" thing in the xml
+DecisionOdom::DecisionOdom(const std::string &name, const BT::NodeConfig &config, rclcpp::Node::SharedPtr node) :                                               // name is passes automatically by the bt_xml, its the name = "" thing in the xml
     BT::SyncActionNode(name, config), node_(node) // config is passed by the bt_xml too for things like ports and shi
 {                                                                                                                                                                               // bt nodes arent nodes by themselves, so we passa node to make subscribtions, clients etc accessible
 
     rclcpp::QoS qos_profile(10);
     qos_profile.reliability(RMW_QOS_POLICY_RELIABILITY_RELIABLE);
 
-    RCLCPP_INFO(node_->get_logger(), "EntranceZoneDecision initialized");
+    RCLCPP_INFO(node_->get_logger(), "DecisionOdom initialized");
 }
 
-BT::PortsList EntranceZoneDecision::providedPorts()
+BT::PortsList DecisionOdom::providedPorts()
 {
     return {
         BT::BidirectionalPort<StageDetections>("stage1"),
@@ -24,7 +24,7 @@ BT::PortsList EntranceZoneDecision::providedPorts()
         BT::BidirectionalPort<int>("ran_through", "Used to decide wether the picking/navigation logic has been done before (for reset purposes")
     };
 }
-BT::NodeStatus EntranceZoneDecision::tick()
+BT::NodeStatus DecisionOdom::tick()
 {
     under_roi = "roi2";
 
@@ -34,13 +34,13 @@ BT::NodeStatus EntranceZoneDecision::tick()
     auto color = getInput<std::string>("color");
     auto ran_through = getInput<int>("ran_through").value_or(0);
 
-    (void)blackboard->get("martial_closest_entrance", ODOM_SP_NEAR);
-    (void)blackboard->get("martial_middle_entrance", ODOM_SP_MIDDLE);
-    (void)blackboard->get("martial_furthest_entrance", ODOM_SP_FAR);
+    (void)blackboard->get("odom_martial_closest_entrance", ODOM_SP_NEAR);
+    (void)blackboard->get("odom_martial_middle_entrance", ODOM_SP_MIDDLE);
+    (void)blackboard->get("odom_martial_furthest_entrance", ODOM_SP_FAR);
 
-    if (!blackboard->get("martial_closest_entrance", ODOM_SP_NEAR)   ||
-    !blackboard->get("martial_middle_entrance",   ODOM_SP_MIDDLE)  ||
-    !blackboard->get("martial_furthest_entrance", ODOM_SP_FAR))
+    if (!blackboard->get("odom_martial_closest_entrance", ODOM_SP_NEAR)   ||
+    !blackboard->get("odom_martial_middle_entrance",   ODOM_SP_MIDDLE)  ||
+    !blackboard->get("odom_martial_furthest_entrance", ODOM_SP_FAR))
     {
         RCLCPP_WARN(node_->get_logger(), "Missing blackboard setpoints, returning FAILURE");
         return BT::NodeStatus::FAILURE;
@@ -52,7 +52,7 @@ BT::NodeStatus EntranceZoneDecision::tick()
         return BT::NodeStatus::FAILURE;
     }
 
-    climb_position_reached = getInput<bool>("climb_position_reached").value_or(0);
+    climb_position_reached = getInput<int>("climb_position_reached").value_or(0);
 
     if (!scroll_detections)
     {
@@ -83,7 +83,7 @@ BT::NodeStatus EntranceZoneDecision::tick()
     return BT::NodeStatus::SUCCESS;
 }
 
-void EntranceZoneDecision::set_setpoints(const StageDetections &det, const int yaw_int_,
+void DecisionOdom::set_setpoints(const StageDetections &det, const int yaw_int_,
                                          std::string &turn_output, int ran_through)
 {
     if (ran_through || det.roi2 == "real" || (det.roi1 != "real" && det.roi3 != "real"))
@@ -133,7 +133,6 @@ void EntranceZoneDecision::set_setpoints(const StageDetections &det, const int y
 
         ran_through = 1;
         return;
-
     }
 
     if (det.roi3 == "real")
@@ -160,7 +159,7 @@ void EntranceZoneDecision::set_setpoints(const StageDetections &det, const int y
 }
 
 // pass turn_output by reference instead of calling setOutput inside
-void EntranceZoneDecision::resetVel()
+void DecisionOdom::resetVel()
 {
     geometry_msgs::msg::Twist cmd;
     cmd.linear.x = 0.0f;

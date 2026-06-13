@@ -57,6 +57,7 @@ BT::NodeStatus ZoneChange::onRunning(){
     (void)blackboard->get("nav_to_rack", nav_to_rack);
     (void)blackboard->get("placed_1", placed_1);
     (void)blackboard->get("placed_2", placed_2);
+    (void)blackboard->get("color", color_);
 
     // Contradictory zone flags
     if((in_martial + in_forest + in_arena) > 1){
@@ -89,12 +90,31 @@ BT::NodeStatus ZoneChange::onRunning(){
     if(set_reset_val_ == 0){
 
         if(in_martial == 1){
+            flag_alter(config().blackboard, FLAG_ALTER_CASE::GAME_START);
+
+            if(color_ == "red"){
+                blackboard->set<std::string>("turn", "Right");
+            }
+
+            else if(color_ == "blue"){
+                blackboard->set<std::string>("turn", "Left");
+            }
+
             state_ = "success";
             return BT::NodeStatus::SUCCESS;
         }
 
         else if(in_forest == 1){
             flag_alter(config().blackboard, FLAG_ALTER_CASE::RESET_IN_FOREST);
+
+            if(color_ == "red"){
+                blackboard->set<std::string>("turn", "Right");
+            }
+
+            else if(color_ == "blue"){
+                blackboard->set<std::string>("turn", "Left");
+            }
+
             state_ = "success";
             return BT::NodeStatus::SUCCESS;         
         }

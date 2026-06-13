@@ -4,20 +4,14 @@
 #include <rclcpp/rclcpp.hpp>
 #include "motor_interfaces/srv/motor_state.hpp"
 
-
-
-using namespace BT;
-
 using MotorState = motor_interfaces::srv::MotorState;
 
-
-class SetExtension : public BT::StatefulActionNode
+class SetHeight : public BT::StatefulActionNode
 {
 public:
-        
-    SetExtension(const std::string & name,
-          const BT::NodeConfig & config,
-          rclcpp::Node::SharedPtr node);
+    SetHeight(const std::string& name,
+              const BT::NodeConfig& config,
+              rclcpp::Node::SharedPtr node);
 
     static BT::PortsList providedPorts();
 
@@ -27,10 +21,10 @@ public:
 
 private:
     rclcpp::Node::SharedPtr node_;
-
     rclcpp::Client<MotorState>::SharedPtr client_;
-    
-    int length_state_ {100}; // mm
-    bool response_received_ {false};
-    bool call_succeeded_    {false};
+
+    float height_state_     {0.0f};
+    bool  request_sent_      {false};
+    bool  response_received_ {false};
+    bool  call_succeeded_    {false};
 };

@@ -12,10 +12,10 @@
 #include "movement_nodes/brake_test_node.hpp"
 #include "movement_nodes/stall_detection.hpp"
 
-#include "movement_nodes/scrollGripperSystem/setHeight.hpp"
-#include "movement_nodes/scrollGripperSystem/gripperPose.hpp"
-#include "movement_nodes/scrollGripperSystem/gripperAct.hpp"
-#include "movement_nodes/scrollGripperSystem/setExtension.hpp"
+#include "movement_nodes/scrollGripper/setHeight.hpp"
+#include "movement_nodes/scrollGripper/gripperPose.hpp"
+#include "movement_nodes/scrollGripper/gripperAct.hpp"
+#include "movement_nodes/scrollGripper/setExtension.hpp"
 
 #include "camera_nodes/get_roi_detections.hpp"  
 #include "camera_nodes/find_hidden_scroll.hpp"
@@ -37,9 +37,10 @@
 #include "tree_flow_nodes/conditions/always_node.hpp"
 
 #include "tree_flow_nodes/decision_nodes/decision_node.hpp"
+#include "tree_flow_nodes/decision_nodes/decision_sick.hpp"
+#include "tree_flow_nodes/decision_nodes/decision_odom.hpp"
 #include "tree_flow_nodes/decision_nodes/node_analysis.hpp"
 #include "tree_flow_nodes/decision_nodes/path_planner.hpp"
-#include "tree_flow_nodes/decision_nodes/entrance_zone_decision.hpp"
 #include "tree_flow_nodes/decision_nodes/arena_decision_node.hpp"
 
 #include "set_destination_from_priority.hpp"

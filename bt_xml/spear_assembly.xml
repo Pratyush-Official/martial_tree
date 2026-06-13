@@ -1,81 +1,197 @@
 <root BTCPP_format="4">
-    <BehaviorTree ID="SpearAssembly">
+  <BehaviorTree ID="SpearAssembly_">
+    <SequenceWithMemory>
+
+      <Script code="items_picked := 0"/>
+      <SetBlackboard output_key="color" value="red"/>
+      <Script code="destination_stage := 10"/>
+
+
+      <RetryUntilSuccessful num_attempts="-1">
         <SequenceWithMemory>
-            <Delay name="startup_delay" delay_msec="1000">
-                <RetryUntilSuccessful num_attempts="-1">
-                    <Sequence name="roi_detection_retry">
-                        <GetROIDetections
-                            name="get_roi_detections"
-                            stage="1"
-                            detections="{stage1_detections}"
-                        />
-                    </Sequence>
-                </RetryUntilSuccessful>
-            </Delay>
 
-            <YawSetpoint name="face_spear_head" turn="{turn}" current_yaw="{current_yaw}"/>
+          <!-- navigate to current destination -->
+          <GetLocationForStage
+            destination_stage="{destination_stage}"
+            setpoint_odom_1="{nav_x}"
+            setpoint_odom_2="{nav_y}"/>
 
-            <OdomPIDClient name="entrance_odom_pid" setpoint="{martial_spear_head}"/> <!--Approach spear head rack, optimised for color-->
+          <Delay name= 'odom_pid_delay' delay_msec= "5000">
+            <AlwaysSuccess/>
+          </Delay>
+          
+          <!-- <OdomPIDClient
+            setpoint_odom_1="{nav_x}"
+            setpoint_odom_2="{nav_y}"
+            tolerance="0.05"
+            timeout="30.0"/> -->
 
-            <Precondition if="spear_assembled == 0" else="SUCCESS"> <!--Pickup and assemble spear if not done so, this works for reset too when spear was assembled-->
-                <Delay name = "gripper_simulate" delay_msec="2000">
-                    <AlwaysSuccess/>
-                </Delay>
-            </Precondition>
+          <UpdateCurrentStage
+            destination_stage="{destination_stage}"
+            current_stage="{current_stage}"/>
 
-            <EntranceZoneDecision 
-                stage1="{stage1}"
-                current_yaw="{current_yaw}"
-                turn="{turn}"
+          <!-- type I check + pick -->
+          <!-- ForceSuccess: if type I fails or pick fails, tree continues -->
+          <ForceSuccess>
+            <SequenceWithMemory>
+              <GetROIDetections
+                stage="{current_stage}"
+                type="1"
                 color="{color}"
-                climb_position_reached="{climb_position_reached}"
-                pick_from_entrance="{pick_from_entrance}"
-                ran_through="{ran_through}"/> <!--Decides between three setpoints on the x-axis based on camera or display input-->
+                reset_delay_ms="1200"
+                detections="{detections}"/>
+              <Delay name= 'pick_and_assembly_tree_delay' delay_msec= "5000">
+                <AlwaysSuccess/>
+              </Delay>
+              <!-- <PickAndAssembly/> -->
+              <!-- only reaches here if PickAndAssembly succeeded -->
+              <Script code="items_picked := items_picked + 1"/>
+              <!-- immediately stop tree as SUCCESS if target reached -->
+              <Precondition if="items_picked >= 2" else="FAILURE">
+                <ForceFailure>
+                  <AlwaysSuccess/>
+                </ForceFailure>
+              </Precondition>
+            </SequenceWithMemory>
+          </ForceSuccess>
 
-            <OdomPIDClient name="entrance_odom_pid" setpoint="{entrance_movement}"/> <!--Robot goes to the decided setpoint-->
+          <!-- type II detection — always runs after type I regardless -->
+          <GetROIDetections
+            stage="{current_stage}"
+            type="2"
+            color="{color}"
+            reset_delay_ms="1200"
+            detections="{detections}"/>
 
-            <YawSetpoint name="face_arena" turn="{turn}" current_yaw="{current_yaw}"/> <!--Robot turns to face the forest-->
+          <!-- evaluate results -->
+          <!-- "none"     FAILURE  SequenceWithMemory fails 
+                           RetryUntilSuccessful gets FAILURE 
+                           tree stops as FAILURE                -->
+          <!-- "outside"  SUCCESS, detection_status="outside" -->
+          <!-- "found"    SUCCESS, destination_stage updated  -->
+          <SetDestinationFromPriority
+            detections="{detections}"
+            color="{color}"
+            destination_stage="{destination_stage}"
+            detection_status="{detection_status}"/>
 
-            <Precondition if="climb_position_reached == 1" else="SUCCESS"> <!--If climbing block is where the entrance_zone_decision has taken the robot-->
+          <!-- recovery flow: only runs if detection_status == outside -->
+          <!-- if found: else=SUCCESS passes through, loop continues   -->
+          <Precondition if="detection_status == 'outside'" else="SUCCESS">
+            <SequenceWithMemory>
+
+
+              <Script code="destination_stage := 9"/>
+              <GetLocationForStage
+                destination_stage="{destination_stage}"
+                setpoint_odom_1="{nav_x}"
+                setpoint_odom_2="{nav_y}"/>
+
+              
+              <Delay name= 'odom_pid_delay' delay_msec= "5000">
+                <AlwaysSuccess/>
+              </Delay>
+
+              <!-- <OdomPIDClient
+                setpoint_odom_1="{nav_x}"
+                setpoint_odom_2="{nav_y}"
+                tolerance="0.05"
+                timeout="30.0"/> -->
+              <UpdateCurrentStage
+                destination_stage="{destination_stage}"
+                current_stage="{current_stage}"/>
+
+              <!-- lucky type I from stage 5 -->
+              <ForceSuccess>
                 <SequenceWithMemory>
-
-                    <ReactiveSequence>
-                        <VelPublish climb_state="0" next_climb_state="0"/> <!--Publish velocity until checkforprox returns success-->
-                        <CheckForProx climb_state="0"/>
-                    </ReactiveSequence>
-
-                    <Precondition if="pick_from_entrance == 1" else="SUCCESS"> <!--After prox is detected, check if we need to pick up scroll-->
-                        <GripperAc grip="true"/>
-                    </Precondition>
-
+                  <GetROIDetections
+                    stage="{current_stage}"
+                    type="1"
+                    color="{color}"
+                    reset_delay_ms="1200"
+                    detections="{detections}"/>
+                  
+                  <Delay name= 'pick_and_assembly_tree_delay' delay_msec= "5000">
+                    <AlwaysSuccess/>
+                  </Delay>
+                  <!-- <PickAndAssembly/> -->
+                  <Script code="items_picked := items_picked + 1"/>
+                  <!-- stop as SUCCESS if target reached during recovery too -->
+                  <Precondition if="items_picked >= 2" else="FAILURE">
+                    <ForceFailure>
+                      <AlwaysSuccess/>
+                    </ForceFailure>
+                  </Precondition>
                 </SequenceWithMemory>
-            </Precondition>
+              </ForceSuccess>
 
-            <Precondition if="climb_position_reached == 0" else="SUCCESS"> <!--If the robot didnt go to the climbing block, the robot MUST pickup the scroll-->
-                <SequenceWithMemory>
-                    <StallDetection name="approach_forest" direction="Front" threshold="0.2"/> <!--Robot moves forward until stall detection-->
-                    <GripperAc grip="true"/><!--After stall, gripper is actuated-->
+              <!-- type II from stage 5 -->
+              <GetROIDetections
+                stage="{current_stage}"
+                type="2"
+                color="{color}"
+                reset_delay_ms="1200"
+                detections="{detections}"/>
 
-                    <Precondition if="(under_roi == 'roi1' && color == 'red') || (under_roi == 'roi3' && color == 'blue')" else="SUCCESS"><!--If robot is at the "right" of climbing block, move to climbing block-->
-                        <SequenceWithMemory>
-                            <Script code="move_to_climbing_front := '[0.0, -700.0]'"/>
-                            <OdomPIDClient name="entrance_odom_pid" setpoint="{move_to_climbing_front}"/>
-                            <Script code="climb_position_reached:=1"/>
-                        </SequenceWithMemory>                
-                    </Precondition>
+              <!-- outside not expected here: none  FAILURE, found  SUCCESS -->
+              <SetDestinationFromPriority
+                detections="{detections}"
+                color="{color}"
+                destination_stage="{destination_stage}"
+                detection_status="{detection_status}"/>
 
-                    <Precondition if="(under_roi == 'roi3' && color == 'red') || (under_roi == 'roi1' && color == 'blue')" else="SUCCESS"><!--If robot is at the "left" of climbing block, move to climbing block-->
-                            <SequenceWithMemory>
-                                <Script code="move_to_climbing_front := '[0.0, 700.0]'"/>
-                                <OdomPIDClient name="entrance_odom_pid" setpoint="{move_to_climbing_front}"/>
-                                <Script code="climb_position_reached:=1"/>
-                            </SequenceWithMemory>
-                    </Precondition>
-                </SequenceWithMemory>
-            </Precondition>
+            </SequenceWithMemory>
+          </Precondition>
 
-            <AkClient up="true" down="false"/> <!--Perform Climb-->
-            <Roll climb_state="down"/><!--Roll back-->
         </SequenceWithMemory>
+      </RetryUntilSuccessful>
 
-    </BehaviorTree>
+    </SequenceWithMemory>
+  </BehaviorTree>
+</root>
+
+<!--
+EXISTING COMMENTS / OLD TREE
+
+<BehaviorTree ID="SpearAssembly">
+
+    <SequenceWithMemory>
+
+        <Delay name="startup_delay" delay_msec="1000">
+
+            <RetryUntilSuccessful num_attempts="-1">
+
+                <Sequence name="roi_detection_retry">
+
+                    <GetROIDetections
+                        name="get_roi_detections"
+                        stage="1"
+                        detections="{stage1_detections}"
+                    />
+
+                </Sequence>
+
+            </RetryUntilSuccessful>
+
+        </Delay>
+
+        <Precondition if="photo_sequence != 1" else="SUCCESS">
+
+            <Sequence>
+
+                <YawSetpoint
+                    name="face_spear"
+                    turn="{turn}"
+                    current_yaw="{current_yaw}"/>
+
+                <SubTree ID="SpearPickingTree"/>
+
+            </Sequence>
+
+        </Precondition>
+
+    </SequenceWithMemory>
+
+</BehaviorTree>
+
+-->

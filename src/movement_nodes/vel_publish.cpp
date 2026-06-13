@@ -10,12 +10,11 @@ VelPublish::VelPublish(const std::string &     name,
 :BT::SyncActionNode(name, config)
 , node_ptr_(node_ptr_)
 {
+    rclcpp::QoS qos_profile(10);
+    qos_profile.reliability(RMW_QOS_POLICY_RELIABILITY_BEST_EFFORT);
     cmd_vel_pub_ = node_ptr_->create_publisher<geometry_msgs::msg::Twist>(
-        "/vel_pub/cmd_vel", 10);
-    // front_subscription_ = node_ptr_->create_subscription<std_msgs::msg::Byte>( "/prox_front_received", 10,
-    //     std::bind(&VelPublish::front_subscriber_callback,this,std::placeholders::_1));
-    // rear_subscription_ = node_ptr_->create_subscription<std_msgs::msg::Byte>( "/prox_rear_received", 10,
-    //     std::bind(&VelPublish::rear_subscriber_callback,this,std::placeholders::_1));
+        "/cmd_vel", cmd_vel_qos());
+ 
 }
 
 BT::PortsList VelPublish::providedPorts()
@@ -35,7 +34,7 @@ BT::NodeStatus VelPublish::tick()
     {
         
         RCLCPP_INFO(node_ptr_->get_logger(), "[VelPublish] moving forward");
-        vx = 0.2;
+        vx = 0.4;
         vy = 0.0;
         vel_publish( vx, vy);
             
@@ -45,7 +44,7 @@ BT::NodeStatus VelPublish::tick()
     {
         RCLCPP_INFO(node_ptr_->get_logger(), "[VelPublish]::moving backward");
        
-        vx = -0.2;
+        vx = -0.4;
         vy = 0.0;
         vel_publish(vx, vy);
 
@@ -57,7 +56,9 @@ BT::NodeStatus VelPublish::tick()
     }
     
     return BT::NodeStatus::SUCCESS;
-
+  
+    
+   
 }
 void VelPublish::vel_publish(float vx, float vy)
 {
@@ -68,4 +69,18 @@ void VelPublish::vel_publish(float vx, float vy)
 
     cmd_vel_pub_->publish(twist);
 }
+// void VelPublish::front_subscriber_callback(const std_msgs::msg::Byte::SharedPtr msg)
+// {
+//     if(msg->data == 1)
+//         front_prox_ = true;
+//     else
+//         front_prox_ = false;
 
+// }
+// void VelPublish::rear_subscriber_callback(const std_msgs::msg::Byte::SharedPtr msg)
+// {
+//     if(msg->data == 1)
+//         rear_prox_ = true;
+//     else
+//         rear_prox_ = false;
+// }

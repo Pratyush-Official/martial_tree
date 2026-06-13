@@ -10,10 +10,9 @@ using MotorState = motor_interfaces::srv::MotorState;
 class GripperAct : public BT::StatefulActionNode
 {
 public:
-        
-    GripperAct(const std::string &name,
-          const BT::NodeConfig &config,
-          rclcpp::Node::SharedPtr node);
+    GripperAct(const std::string& name,
+               const BT::NodeConfig& config,
+               rclcpp::Node::SharedPtr node);
 
     static BT::PortsList providedPorts();
 
@@ -25,9 +24,8 @@ private:
     rclcpp::Node::SharedPtr node_;
     rclcpp::Client<MotorState>::SharedPtr client_;
 
-    int state;
-    bool state_ {false}; // mm
+    int  state_             {0};
+    bool request_sent_      {false};
     bool response_received_ {false};
     bool call_succeeded_    {false};
 };
-
