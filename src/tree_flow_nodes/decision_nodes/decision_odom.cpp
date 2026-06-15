@@ -18,10 +18,10 @@ BT::PortsList DecisionOdom::providedPorts()
         BT::InputPort<CurrentYaw>("current_yaw"),
         BT::OutputPort<std::string>("turn", "Direction you wish the robot to rotate: Right, Left, Back, Front"),
         BT::InputPort<std::string>("color", "red or blue"),
-        BT::BidirectionalPort<int>("climb_position_reached", "Used to decide wehter the robot as gone to the middle block or not"),
-        BT::OutputPort<std::string>("under_roi", "The roi where the robot currently is"),
-        BT::OutputPort<int>("pick_from_entrance", "Used to decide wether to pickup scroll from the climbing block or just climb"),
-        BT::BidirectionalPort<int>("ran_through", "Used to decide wether the picking/navigation logic has been done before (for reset purposes")
+        // BT::BidirectionalPort<int>("climb_position_reached", "Used to decide wehter the robot as gone to the middle block or not"),
+        // BT::OutputPort<std::string>("under_roi", "The roi where the robot currently is"),
+        // BT::OutputPort<int>("pick_from_entrance", "Used to decide wether to pickup scroll from the climbing block or just climb"),
+        // BT::BidirectionalPort<int>("ran_through", "Used to decide wether the picking/navigation logic has been done before (for reset purposes")
     };
 }
 BT::NodeStatus DecisionOdom::tick()
@@ -32,7 +32,7 @@ BT::NodeStatus DecisionOdom::tick()
     auto scroll_detections = getInput<StageDetections>("stage1");
     auto current_yaw_ = getInput<CurrentYaw>("current_yaw");
     auto color = getInput<std::string>("color");
-    auto ran_through = getInput<int>("ran_through").value_or(0);
+    // auto ran_through = getInput<int>("ran_through").value_or(0);
 
     (void)blackboard->get("odom_martial_closest_entrance", ODOM_SP_NEAR);
     (void)blackboard->get("odom_martial_middle_entrance", ODOM_SP_MIDDLE);
@@ -52,7 +52,7 @@ BT::NodeStatus DecisionOdom::tick()
         return BT::NodeStatus::FAILURE;
     }
 
-    climb_position_reached = getInput<int>("climb_position_reached").value_or(0);
+    // climb_position_reached = getInput<int>("climb_position_reached").value_or(0);
 
     if (!scroll_detections)
     {
@@ -68,25 +68,26 @@ BT::NodeStatus DecisionOdom::tick()
 
     const int yaw_int = static_cast<int>(current_yaw_.value());
     std::string turn_output;
-    set_setpoints(scroll_detections.value(), yaw_int, turn_output, ran_through);
+    // auto ran_through = getInput<int>("ran_through").value_or(0);
+    set_setpoints(scroll_detections.value(), yaw_int, turn_output);
 
     if (!turn_output.empty())
     {
         setOutput<std::string>("turn", turn_output);
     }
-    setOutput("climb_position_reached", climb_position_reached);
+    // setOutput("climb_position_reached", climb_position_reached);
     setOutput("under_roi", under_roi);
     setOutput("pick_from_entrance", pick_from_entrance);
 
-    blackboard->set("entrance_movement", true_setpoint_);
+    blackboard->set("entrance_movement_odom", true_setpoint_);
 
     return BT::NodeStatus::SUCCESS;
 }
 
 void DecisionOdom::set_setpoints(const StageDetections &det, const int yaw_int_,
-                                         std::string &turn_output, int ran_through)
+                                         std::string &turn_output)
 {
-    if (ran_through || det.roi2 == "real" || (det.roi1 != "real" && det.roi3 != "real"))
+    if (det.roi2 == "real" || (det.roi1 != "real" && det.roi3 != "real"))
     {
         under_roi = "roi2";
 
@@ -108,8 +109,8 @@ void DecisionOdom::set_setpoints(const StageDetections &det, const int yaw_int_,
             turn_output = "Right";
             break;
         }
-        climb_position_reached = 1;
-        ran_through = 1;
+        // climb_position_reached = 1;
+        // ran_through = 1;
         return;
     }
 
@@ -131,7 +132,7 @@ void DecisionOdom::set_setpoints(const StageDetections &det, const int yaw_int_,
             break;
         }
 
-        ran_through = 1;
+        // ran_through = 1;
         return;
     }
 
@@ -153,7 +154,7 @@ void DecisionOdom::set_setpoints(const StageDetections &det, const int yaw_int_,
             break;
         }
 
-        ran_through = 1;
+        // ran_through = 1;
         return;
     }
 }

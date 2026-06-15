@@ -38,6 +38,7 @@ namespace BT
         bool rolling_up_{false};
         bool response_received_{false};
         bool call_succeeded_{false};
+        bool request_sent_{false};
 
         std::mutex result_mutex_;
         std::mutex preset_mutex_;

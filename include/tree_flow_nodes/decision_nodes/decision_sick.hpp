@@ -26,7 +26,7 @@ public:
 private:
     rclcpp::Node::SharedPtr node_;
     void set_setpoints(const StageDetections &det, const int yaw_int_,
-                       std::string &turn_output, int ran_through);
+                       std::string &turn_output, int &ran_through, int &climb_position_reached, int &pick_from_entrance);
 
     std::string under_roi;
     int climb_position_reached{0};

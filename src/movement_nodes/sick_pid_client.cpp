@@ -17,10 +17,7 @@ SickPIDClient::SickPIDClient(const std::string &name, const BT::NodeConfiguratio
 BT::PortsList SickPIDClient::providedPorts()
 {
     return {
-        BT::InputPort<float>("SP1", "Setpoint 1"),
-        BT::InputPort<float>("SP2", "Setpoint 2"),
-        BT::InputPort<float>("SP3", "Setpoint 3"),
-        BT::InputPort<float>("SP4", "Setpoint 4")
+        BT::InputPort<std::vector<float>>("setpoint", "All 4 sick setpoints"),
         // BT::OutputPort<>
     };
 }
@@ -28,10 +25,11 @@ BT::PortsList SickPIDClient::providedPorts()
 BT::NodeStatus SickPIDClient::onStart()
 {
     
-    float sp1 = getInput<float>("SP1").value();
-    float sp2 = getInput<float>("SP2").value();
-    float sp3 = getInput<float>("SP3").value();
-    float sp4 = getInput<float>("SP4").value();
+    std::vector<float> setpoints = getInput<std::vector<float>>("setpoint").value();
+    float sp1 = setpoints[0];
+    float sp2 = setpoints[1];
+    float sp3 = setpoints[2];
+    float sp4 = setpoints[3];
 
     done_flag = false;
     success = false;

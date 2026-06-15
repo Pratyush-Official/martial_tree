@@ -32,9 +32,9 @@ odom:
 sick:
   red:
     martial:
-      closest_entrance: [575, 300, 500, 700]
-      middle_entrance: [300, 200, 300, 300]
-      furthest_entrance: [600.0, 700.0, 900.0, 600.0]
+      closest_entrance: [175, 646, 500, 700] #1st is front and 2nd is left
+      middle_entrance: [175, 1166, 300, 300]
+      furthest_entrance: [175.0, 1694.0, 900.0, 600.0]
 
       sensor_indices: [0, 2]
   

@@ -36,15 +36,16 @@
                                 <WaitForSet/>
                                 <SequenceWithMemory> <!--Should be sequence only-->
 
-                                    <!-- <Precondition if="in_martial == 1 && (spear_assembled != 1 || photo_sequence == 1)" else="SUCCESS"> -->
-                                    <SubTree ID="SpearAssembly" _autoremap="true"/>
-                                    <!-- </Precondition> -->
-                                    <!-- <Precondition if="spear_assembled == 1" else="RUNNING">
+                                    <Precondition if="in_martial == 1 && (spear_assembled != 1 || photo_sequence == 1)" else="SUCCESS">
+                                        <SubTree ID="SpearAssembly" _autoremap="true"/>
+                                    </Precondition>
+
+                                    <Precondition if="spear_assembled == 1" else="RUNNING">
                                         <AlwaysSuccess/>
-                                    </Precondition> -->
+                                    </Precondition>
 
                                     <Precondition if="in_martial == 1 && spear_assembled == 1 && scroll_picked_from_entrance != 1" else="SUCCESS">
-                                        <SubTree ID="OdomScrollPickFromEntrance" _autoremap="true"/>
+                                        <SubTree ID="SickScrollPickFromEntrance" _autoremap="true"/>
                                     </Precondition>
                                     
                                     <Precondition if="scroll_picked_from_entrance == 1" else="RUNNING">

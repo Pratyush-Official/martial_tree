@@ -30,14 +30,13 @@ BT::NodeStatus DecisionSick::tick()
     
     const int yaw_int = static_cast<int>(current_yaw_.value());
     std::string turn_output;
-
+    if (!scroll_detections)
     {
         RCLCPP_WARN(node_->get_logger(), "No detections on port: %s",
                     scroll_detections.error().c_str());
         return BT::NodeStatus::FAILURE;
     }
 
-    std::vector<float> SICK_SP_NEAR, SICK_SP_MIDDLE, SICK_SP_FAR;
     if (!blackboard->get("sick_martial_closest_entrance", SICK_SP_NEAR)   ||
         !blackboard->get("sick_martial_middle_entrance",   SICK_SP_MIDDLE)  ||
         !blackboard->get("sick_martial_furthest_entrance", SICK_SP_FAR))
@@ -52,24 +51,23 @@ BT::NodeStatus DecisionSick::tick()
         return BT::NodeStatus::FAILURE;
     }
 
-    std::string under_roi = "roi2"; //Default roi
-    std::vector<float> true_setpoint_;
+    true_setpoint_.clear(); 
 
-    set_setpoints(scroll_detections.value(), yaw_int, turn_output, ran_through);
+    set_setpoints(scroll_detections.value(), yaw_int, turn_output, ran_through, climb_position_reached, pick_from_entrance);
 
     setOutput("climb_position_reached", climb_position_reached);
     setOutput("under_roi", under_roi);
     setOutput("pick_from_entrance", pick_from_entrance);
     setOutput("ran_through", ran_through);
 
-    blackboard->set("entrance_movement", true_setpoint_);
+    blackboard->set("entrance_movement_sick", true_setpoint_);
 
     return BT::NodeStatus::SUCCESS;
 }
 
 
 void DecisionSick::set_setpoints(const StageDetections &det, const int yaw_int_,
-                                         std::string &turn_output, int ran_through)
+                                         std::string &turn_output, int &ran_through, int &climb_position_reached, int &pick_from_entrance)
 {
     if (ran_through || det.roi2 == "real" || (det.roi1 != "real" && det.roi3 != "real")) {
         under_roi = "roi2";

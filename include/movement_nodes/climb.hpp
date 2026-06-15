@@ -35,7 +35,7 @@ private:
     std::mutex result_;
     bool response_received_{false};
     bool call_succeeded_{false};
-    bool preset_sent_{false};
+    bool request_sent_{false};
     bool preset_succeded_{false};
 
     rclcpp::Client<std_srvs::srv::SetBool>::SharedPtr selectClient(int state);

@@ -92,12 +92,18 @@ BT::NodeStatus ZoneChange::onRunning(){
         if(in_martial == 1){
             flag_alter(config().blackboard, FLAG_ALTER_CASE::GAME_START);
 
-            if(color_ == "red"){
-                blackboard->set<std::string>("turn", "Right");
+            if(spear_assembled == 1){
+                blackboard->set<std::string>("turn", "Front");
             }
 
-            else if(color_ == "blue"){
-                blackboard->set<std::string>("turn", "Left");
+            if(spear_assembled != 1){
+                if(color_ == "red"){
+                    blackboard->set<std::string>("turn", "Right");
+                }
+
+                else if(color_ == "blue"){
+                    blackboard->set<std::string>("turn", "Left");
+                }
             }
 
             state_ = "success";

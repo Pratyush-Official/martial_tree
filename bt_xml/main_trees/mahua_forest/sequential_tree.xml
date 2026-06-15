@@ -1,0 +1,271 @@
+<root BTCPP_format="4" main_tree_to_execute="MainTree">
+
+  <BehaviorTree ID="MainTree">
+    <Sequence name="RootSequence">
+      <!-- <SubTree ID="forest_tree"/> -->
+      <SubTree ID="out_tree"/>
+      <SubTree ID="arena_tree"/>
+    </Sequence>
+  </BehaviorTree>
+
+  <BehaviorTree ID="ScrollReady">
+        <Sequence name="scrollready">
+          <Parallel>
+            <Sequence>
+              <setHeight height="15.0"/>
+              <!-- <setExtension length="1.0"/> -->
+            </Sequence>
+            <Sequence>
+              <GripperPose angle="1.5"/>
+            
+              <!-- <GripperAct state="-1"/> -->
+            </Sequence>
+          </Parallel>
+        </Sequence>
+  </BehaviorTree>
+
+  <BehaviorTree ID="ScrollArenaPlace">
+        <Sequence name="StoreScroll">
+            <setHeight height="22.0"/>
+            <!-- <setExtension length="1.0"/> -->
+            <GripperPose angle="2.5"/>
+            <!-- <GripperAct state="1"/> -->
+        </Sequence>
+  </BehaviorTree>
+
+  <BehaviorTree ID="forest_tree">
+    <Sequence name="RootSequence">
+
+      <PlanPath name="PlanPathToForest"
+        detection_s1="{detection_s1}"
+        detection_s2="{detection_s2}"
+        detection_s3="{detection_s3}"
+        detection_s4="{detection_s4}"
+        path="{path}"
+        ar_nodes="{ar_nodes}"
+      />
+
+      <NodeAnalysis name="NodeAnalysis"
+        path="{path}"
+        ar_nodes="{ar_nodes}"
+        merged_path="{merged_path}"
+        node_state="{node_state}"
+      />
+
+      <Inverter>
+        <KeepRunningUntilFailure name="MainLoop">
+          <Sequence name="MainSequence">
+
+            <IsInsideForest/>
+
+            <DecisionNode name="DecisionNode"
+              merged_path="{merged_path}"
+              node_state="{node_state}"
+              curr_node="{curr_node}"
+              next_node="{next_node}"
+              prev_node="{prev_node}"
+              climb_state="{climb_state}"
+              next_climb_state="{next_climb_state}"
+              rotate_state="{rotate_state}"
+              move_x="{move_x}"
+              move_y="{move_y}"
+              curr_node_state="{curr_node_state}"
+              next_node_state="{next_node_state}"
+            />
+
+            <IfThenElse>
+
+              <CheckforC name="CheckforC" next_node_state="{next_node_state}"/>
+
+              <Sequence name="Sequence1">
+                <RetryUntilSuccessful num_attempts="-1">
+                  <Move name="Move" move_x="{move_x}" move_y="{move_y}"/>
+                </RetryUntilSuccessful>
+                <RetryUntilSuccessful num_attempts="-1">
+                  <Rotate name="Rotate" rotate_state="{rotate_state}" final_yaw="{final_yaw}"/>
+                </RetryUntilSuccessful>
+                <Inverter>
+                  <KeepRunningUntilFailure name="small_movement">
+                    <Sequence name="Sequence4">
+                      <Inverter>
+                        <Checkforprox name="Checkforprox"
+                          climb_state="{climb_state}"
+                          brake_gain_x="10.0"
+                          brake_gain_y="-10.0"
+                          max_brake_vel="1.0"
+                          brake_duration_ms="500"
+                          y_direction_flip="false"
+                        />
+                      </Inverter>
+                      <VelPublish name="VelPublish" climb_state="{climb_state}"/>
+                    </Sequence>
+                  </KeepRunningUntilFailure>
+                </Inverter>
+                <RetryUntilSuccessful num_attempts="-1">
+                  <Climb name="Climb" up_down="1"/>
+                </RetryUntilSuccessful>
+                <RetryUntilSuccessful num_attempts="-1">
+                  <Roll name="Roll" climb_state="{climb_state}"/>
+                </RetryUntilSuccessful>
+                <RetryUntilSuccessful num_attempts="-1">
+                  <Climb name="Retract" up_down="-1"
+                    next_climb_state="{next_climb_state}"
+                    climb_state="{climb_state}"/>
+                </RetryUntilSuccessful>
+              </Sequence>
+
+              <IfThenElse>
+
+                <CheckforS name="CheckforS" next_node_state="{next_node_state}"/>
+
+                <Sequence name="Sequence2">
+                  <RetryUntilSuccessful num_attempts="-1">
+                    <Move name="Move" move_x="{move_x}" move_y="{move_y}"/>
+                  </RetryUntilSuccessful>
+                  <RetryUntilSuccessful num_attempts="-1">
+                    <Rotate name="Rotate" rotate_state="{rotate_state}" final_yaw="{final_yaw}"/>
+                  </RetryUntilSuccessful>
+                  <Inverter>
+                    <KeepRunningUntilFailure name="small_movement">
+                      <Sequence name="Sequence4">
+                        <Inverter>
+                          <Checkforprox name="Checkforprox"
+                            climb_state="{climb_state}"
+                            brake_gain_x="10.0"
+                            brake_gain_y="-10.0"
+                            max_brake_vel="1.0"
+                            brake_duration_ms="500"
+                            y_direction_flip="false"
+                          />
+                        </Inverter>
+                        <VelPublish name="VelPublish" climb_state="{climb_state}"/>
+                      </Sequence>
+                    </KeepRunningUntilFailure>
+                  </Inverter>
+                </Sequence>
+
+                <Sequence name="Sequence3">
+                  <RetryUntilSuccessful num_attempts="-1">
+                    <Move name="Move" move_x="{move_x}" move_y="{move_y}"/>
+                  </RetryUntilSuccessful>
+                  <RetryUntilSuccessful num_attempts="-1">
+                    <Rotate name="Rotate" rotate_state="{rotate_state}" final_yaw="{final_yaw}"/>
+                  </RetryUntilSuccessful>
+                  <Inverter>
+                    <KeepRunningUntilFailure name="small_movement">
+                      <Sequence name="Sequence4">
+                        <Inverter>
+                          <Checkforprox name="Checkforprox"
+                            climb_state="{climb_state}"
+                            brake_gain_x="10.0"
+                            brake_gain_y="-10.0"
+                            max_brake_vel="1.0"
+                            brake_duration_ms="500"
+                            y_direction_flip="false"
+                          />
+                        </Inverter>
+                        <VelPublish name="VelPublish" climb_state="{climb_state}"/>
+                      </Sequence>
+                    </KeepRunningUntilFailure>
+                  </Inverter>
+                  <RetryUntilSuccessful num_attempts="-1">
+                    <Climb name="Climb" up_down="1"/>
+                  </RetryUntilSuccessful>
+                  <RetryUntilSuccessful num_attempts="-1">
+                    <Roll name="Roll" climb_state="{climb_state}"/>
+                  </RetryUntilSuccessful>
+                  <RetryUntilSuccessful num_attempts="-1">
+                    <Climb name="Retract" up_down="-1"
+                      next_climb_state="{next_climb_state}"
+                      climb_state="{climb_state}"/>
+                  </RetryUntilSuccessful>
+                </Sequence>
+
+              </IfThenElse>
+
+            </IfThenElse>
+
+          </Sequence>
+        </KeepRunningUntilFailure>
+      </Inverter>
+
+    </Sequence>
+  </BehaviorTree>
+
+  <BehaviorTree ID="out_tree">
+    <Sequence name="RootSequence">
+
+      <!-- <Sequence name="Sequence1">
+        <Inverter>
+          <KeepRunningUntilFailure name="small_movement">
+            <Sequence name="Sequence4">
+              <VelPublish name="VelPublish" climb_state="1"/>
+              <Inverter>
+                <Checkforprox name="Checkforprox" climb_state="1"/>
+              </Inverter>
+            </Sequence>
+          </KeepRunningUntilFailure>
+        </Inverter>
+      </Sequence> -->
+
+      <!-- <Sequence name="Sequence2">
+        <RetryUntilSuccessful num_attempts="-1">
+          <Climb name="Climb" up_down="1"/>
+        </RetryUntilSuccessful>
+        <RetryUntilSuccessful num_attempts="-1">
+          <Roll name="Roll" climb_state="{climb_state}"/>
+        </RetryUntilSuccessful>
+        <RetryUntilSuccessful num_attempts="-1">
+          <Climb name="Retract" up_down="-1"
+            next_climb_state="{next_climb_state}"
+            climb_state="1"/>
+        </RetryUntilSuccessful>
+      </Sequence> -->
+
+      <Sequence name="Sequence3">
+        <!-- <RetryUntilSuccessful num_attempts="-1">
+          <Rotate name="Rotate" rotate_state="180" final_yaw="{final_yaw}"/>
+        </RetryUntilSuccessful> -->
+        <RetryUntilSuccessful num_attempts="-1">
+          <Move name="Move" move_x="0" move_y="-1100"/>
+        </RetryUntilSuccessful>
+        <RetryUntilSuccessful num_attempts="-1">
+          <Move name="Move" move_x="-3000" move_y="0"/>
+        </RetryUntilSuccessful>
+      </Sequence>
+
+    </Sequence>
+  </BehaviorTree>
+
+  <BehaviorTree ID="arena_tree">
+    <Sequence name="RootSequence">
+
+      
+        <RetryUntilSuccessful num_attempts="-1">
+          <Rotate name="Rotate" rotate_state="90" final_yaw="{final_yaw}"/>
+        </RetryUntilSuccessful>
+        <RetryUntilSuccessful num_attempts="-1">
+              <Move name="Move" move_x="2000" move_y="-20"/>
+        </RetryUntilSuccessful>
+        <Parallel>
+          <Sequence name="Sequence3">
+            
+            <RetryUntilSuccessful num_attempts="-1">
+              <Move name="Move" move_x="2000" move_y="-45"/>
+            </RetryUntilSuccessful>
+          </Sequence>
+          <SubTree ID = "ScrollReady"/>
+        </Parallel>
+      
+        
+         
+        <SubTree ID = "ScrollArenaPlace"/>
+        <RetryUntilSuccessful num_attempts="-1">
+          <Move name="Move" move_x="-2000" move_y="0"/>
+        </RetryUntilSuccessful>
+          
+
+    </Sequence>
+  </BehaviorTree>
+
+</root>

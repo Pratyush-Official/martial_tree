@@ -41,7 +41,7 @@
             <input_port name="next_node_state" type="int"/>
         </Action>
         <Action ID="Climb">
-            <input_port name="climb_state" type="int">Current climb direction: UP or DOWN</input_port>
+            <input_port name="climb_state" type="int" default="1">Current climb direction: UP or DOWN</input_port>
             <input_port name="next_climb_state" type="int">Used for preset roll after retract</input_port>
             <input_port name="up_down" type="int"/>
         </Action>
@@ -60,12 +60,8 @@
             <input_port name="merged_path" type="std::vector&lt;int, std::allocator&lt;int&gt; &gt;"/>
         </Action>
         <Action ID="DecisionOdom">
-            <inout_port name="ran_through" type="int">Used to decide wether the picking/navigation logic has been done before (for reset purposes</inout_port>
-            <output_port name="pick_from_entrance" type="int">Used to decide wether to pickup scroll from the climbing block or just climb</output_port>
-            <inout_port name="climb_position_reached" type="int">Used to decide wehter the robot as gone to the middle block or not</inout_port>
             <input_port name="color" type="std::string">red or blue</input_port>
             <output_port name="turn" type="std::string">Direction you wish the robot to rotate: Right, Left, Back, Front</output_port>
-            <output_port name="under_roi" type="std::string">The roi where the robot currently is</output_port>
             <input_port name="current_yaw" type="CurrentYaw"/>
             <inout_port name="stage1" type="StageDetections"/>
         </Action>
@@ -156,10 +152,7 @@
             <input_port name="color" type="std::string"/>
         </Action>
         <Action ID="SickPIDClient">
-            <input_port name="SP4" type="float">Setpoint 4</input_port>
-            <input_port name="SP3" type="float">Setpoint 3</input_port>
-            <input_port name="SP2" type="float">Setpoint 2</input_port>
-            <input_port name="SP1" type="float">Setpoint 1</input_port>
+            <input_port name="setpoint" type="std::vector&lt;float, std::allocator&lt;float&gt; &gt;">All 4 sick setpoints</input_port>
         </Action>
         <Action ID="StallDetection">
             <input_port name="threshold" type="float">Delta threshold to count as stall</input_port>

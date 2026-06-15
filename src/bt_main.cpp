@@ -46,25 +46,49 @@ void tree_ticker::create_behavior_tree()
     blackboard->set<int>("in_arena",0);
     blackboard->set<int>("placed_1",0);
     blackboard->set<int>("placed_2",0);
-    blackboard->set<int>("pick_from_entrance",1); //Remove this
-
+    
     std_msgs::msg::Float32MultiArray arr;
     arr.data = {0.0f, 0.0f};
-    blackboard->set<std::vector<float>>("entrance_movement", std::vector<float>{140.0f, 1170.0f}); // The key that gets assigned to the actual client in xml
+    // blackboard->set<std::vector<float>>("entrance_movement", std::vector<float>{140.0f, 1170.0f}); // The key that gets assigned to the actual client in xml
 
     blackboard->set<CurrentYaw>("current_yaw", CurrentYaw::FRONT);
 
     const std::string pkg = ament_index_cpp::get_package_share_directory("martial_tree");
 
     try {
-        factory.registerBehaviorTreeFromFile(pkg + "/bt_xml/main_trees/climb_three_photos.xml");
-        RCLCPP_INFO(get_logger(), "climb_three_photos OK");
-        factory.registerBehaviorTreeFromFile(pkg + "/bt_xml/main_trees/odom_pick_from_entrance.xml");
-        RCLCPP_INFO(get_logger(), "scroll_pick_from_entrance OK");
-        factory.registerBehaviorTreeFromFile(pkg + "/bt_xml/main_trees/spear_assembly.xml");
+        factory.registerBehaviorTreeFromFile(pkg + "/bt_xml/main_trees/martial_club/spear_assembly.xml");
         RCLCPP_INFO(get_logger(), "spear_assembly OK");
+
+        factory.registerBehaviorTreeFromFile(pkg + "/bt_xml/main_trees/martial_club/sick_scroll_pick_from_entrance.xml");
+        RCLCPP_INFO(get_logger(), "sick_scroll_pick_from_entrance OK");
+
+        factory.registerBehaviorTreeFromFile(pkg + "/bt_xml/main_trees/martial_club/odom_scroll_pick_from_entrance.xml");
+        RCLCPP_INFO(get_logger(), "odom_scroll_pick_from_entrance OK");
+
+        factory.registerBehaviorTreeFromFile(pkg + "/bt_xml/main_trees/martial_club/climb_three_photos.xml");
+        RCLCPP_INFO(get_logger(), "climb_three_photos OK");
+
+        // factory.registerBehaviorTreeFromFile(pkg + "/bt_xml/main_trees/mahua_forest/forest_tree.xml");
+        // RCLCPP_INFO(get_logger(), "forest_tree OK");
+
+        // factory.registerBehaviorTreeFromFile(pkg + "/bt_xml/main_trees/mahua_forest/gripper_subtree.xml");
+        // RCLCPP_INFO(get_logger(), "gripper_subtree OK");
+
+        // factory.registerBehaviorTreeFromFile(pkg + "/bt_xml/main_trees/mahua_forest/out_tree.xml");
+        // RCLCPP_INFO(get_logger(), "out_tree OK");
+
+        // factory.registerBehaviorTreeFromFile(pkg + "/bt_xml/main_trees/mahua_forest/sequential_tree.xml");
+        // RCLCPP_INFO(get_logger(), "sequential_tree OK");
+
+        // factory.registerBehaviorTreeFromFile(pkg + "/bt_xml/main_trees/arena/arena_test.xml");
+        // RCLCPP_INFO(get_logger(), "arena_test OK");
+
+        // factory.registerBehaviorTreeFromFile(pkg + "/bt_xml/main_trees/arena/arena.xml");
+        // RCLCPP_INFO(get_logger(), "arena OK");  
+
         factory.registerBehaviorTreeFromFile(pkg + "/bt_xml/main_trees/main_bt.xml");
-        RCLCPP_INFO(get_logger(), "test OK");
+        RCLCPP_INFO(get_logger(), "main_bt OK");
+
 
         tree_ = factory.createTree("MainTree", blackboard);
         RCLCPP_INFO(get_logger(), "tree created OK");

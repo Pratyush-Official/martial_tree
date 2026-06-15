@@ -1,16 +1,9 @@
 <root BTCPP_format="4">
     <BehaviorTree ID="ClimbThreePhotos">
-        <SequenceWithMemory>
+        <Sequence>
 
-            <Precondition if="climb_position_reached != 1" else="SUCCESS">
-                <GoToEntrance name="after_scroll_picking" 
-                    stage1="{stage1_detections}" 
-                    current_yaw="{current_yaw}" 
-                    turn="{turn}" 
-                    color="{color}" 
-                    check="{check}" 
-                    first_stage_done="{first_stage_done}" 
-                    climb_position_reached="{climb_position_reached}"/>
+            <Precondition if="climb_position_reached != 1" else="SUCCESS">               
+                <SickPIDClient name="go_to_climb_(photo_tree)" setpoint="{sick_martial_middle_entrance}"/>
             </Precondition>
 
             <!-- <Delay name="delay_1" delay_msec="1000">
@@ -24,8 +17,24 @@
                     </Sequence>
                 </RetryUntilSuccessful>
             </Delay> -->
+            <Inverter>
+                <ReactiveSequence>
+                    <Inverter>
+                        <CheckForProx climb_state="0"/>
+                    </Inverter>
+                    <KeepRunningUntilFailure>
+                        <VelPublish climb_state="0" next_climb_state="0"/>
+                    </KeepRunningUntilFailure>
+                </ReactiveSequence>
+            </Inverter>
 
-            <AkClient name="ak_client" up="true" down="false"/>
+            <Delay delay_msec="400">
+                <AlwaysSuccess/>
+            </Delay>
+
+            <Climb name="Climb" up_down="1"/>
+            <Roll name="Roll" climb_state="0" />
+            <Climb name="Retract" up_down="-1" next_climb_state="0"/>
 
             <!-- <Delay name="delay_2" delay_msec="1000">
                 <RetryUntilSuccessful num_attempts="-1">
@@ -51,6 +60,6 @@
                 </RetryUntilSuccessful>
             </Delay> -->
 
-        </SequenceWithMemory>
+        </Sequence>
     </BehaviorTree>
 </root>

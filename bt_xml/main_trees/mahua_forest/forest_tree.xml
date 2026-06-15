@@ -1,15 +1,15 @@
-<root BTCPP_format="4" main_tree_to_execute="MainTree1">
-  <BehaviorTree ID="MainTree1">
+<root BTCPP_format="4" main_tree_to_execute="MainTree2">
+  <BehaviorTree ID="MainTree2">
     <Sequence name="RootSequence">
 
-      <!-- <PlanPath name="PlanPathToForest"
+      <PlanPath name="PlanPathToForest"
         detection_s1="{detection_s1}"
         detection_s2="{detection_s2}"
         detection_s3="{detection_s3}"
         detection_s4="{detection_s4}"
         path="{path}"
         ar_nodes="{ar_nodes}"
-      /> -->
+      />
 
       <NodeAnalysis name="NodeAnalysis"
         path="{path}"
@@ -47,10 +47,10 @@
             
                 <Sequence name="Sequence1">
                   <RetryUntilSuccessful num_attempts="-1">
-                    <OdomPIDClient name="Move" move_x="{move_x}" move_y="{move_y}"/>
+                    <Move name="Move" move_x="{move_x}" move_y="{move_y}"/>
                   </RetryUntilSuccessful>
                   <RetryUntilSuccessful num_attempts="-1">
-                    <YawPIDClient name="Rotate" rotate_state="{rotate_state}" final_yaw="{final_yaw}"/>
+                    <Rotate name="Rotate" rotate_state="{rotate_state}" final_yaw="{final_yaw}"/>
                   </RetryUntilSuccessful>
                   <Inverter>
                   <KeepRunningUntilFailure name = "small_movement">
@@ -83,11 +83,11 @@
                     <Parallel name="Parallel1" >
                       <SubTree ID="scrollready" />
                       <RetryUntilSuccessful num_attempts="-1">
-                      <OdomPIDClient name="Move" move_x="{move_x}" move_y="{move_y}"/>
+                      <Move name="Move" move_x="{move_x}" move_y="{move_y}"/>
                       </RetryUntilSuccessful>
                     </Parallel>
                     <RetryUntilSuccessful num_attempts="-1">
-                      <YawPIDClient name="Rotate" rotate_state="{rotate_state}" final_yaw="{final_yaw}"/>
+                      <Rotate name="Rotate" rotate_state="{rotate_state}" final_yaw="{final_yaw}"/>
                     </RetryUntilSuccessful>
                     <Inverter>
                     <KeepRunningUntilFailure name = "small_movement">
@@ -99,8 +99,8 @@
                       </Sequence>  
                     </KeepRunningUntilFailure>
                     </Inverter>
-                    <!-- <SubTree ID="GripperPickAction"/>
-                    <SubTree ID = "ScrollStore"/>  -->
+                    <SubTree ID="GripperPickAction"/>
+                    <SubTree ID = "ScrollStore"/> 
                     
                   </Sequence>
                       <!-- </Inverter>
@@ -112,12 +112,12 @@
                     <Parallel name="Parallel2" >
                       <SubTree ID="ScrollReady" />
                     <RetryUntilSuccessful num_attempts="-1">
-                      <OdomPIDClient name="Move" move_x="{move_x}" move_y="{move_y}"/>
+                      <Move name="Move" move_x="{move_x}" move_y="{move_y}"/>
                     </RetryUntilSuccessful>
                     </Parallel>
                     
                     <RetryUntilSuccessful num_attempts="-1">
-                      <YawPIDClient name="Rotate" rotate_state="{rotate_state}" final_yaw="{final_yaw}"/>
+                      <Rotate name="Rotate" rotate_state="{rotate_state}" final_yaw="{final_yaw}"/>
                     </RetryUntilSuccessful>
                     <Inverter>
                     <KeepRunningUntilFailure name = "small_movement">
@@ -129,8 +129,8 @@
                       </Sequence>  
                     </KeepRunningUntilFailure>
                     </Inverter>
-                    <!-- <SubTree ID="GripperPickAction"/>
-                    <SubTree ID = "ScrollStore"/>  -->
+                    <SubTree ID="GripperPickAction"/>
+                    <SubTree ID = "ScrollStore"/> 
                     <RetryUntilSuccessful num_attempts="-1">
                       <Climb name="Climb" up_down="1"/>
                     </RetryUntilSuccessful>

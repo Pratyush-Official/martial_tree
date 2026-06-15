@@ -1,0 +1,74 @@
+<root BTCPP_format="4">
+    <BehaviorTree ID="SickScrollPickFromEntrance">
+        <SequenceWithMemory>
+
+            <DecisionSick name="1st_sick_decision" 
+                stage1="{stage1_detections}"
+                current_yaw="{current_yaw}"
+                turn="{turn}"
+                climb_position_reached="{climb_position_reached}"
+                pick_from_entrance="{pick_from_entrance}"
+                ran_through="{ran_through}"
+                under_roi="{under_roi}"/> <!--Decides between three setpoints on the x-axis based on camera or display input-->
+
+            <SickPIDClient name="entrance_sick_pid" setpoint="{entrance_movement_sick}"/> <!--Robot goes to the decided setpoint-->
+            
+            <Precondition if="climb_position_reached == 1" else="SUCCESS"> <!--If climbing block is where the entrance_zone_decision has taken the robot-->
+                <SequenceWithMemory>
+                    <Parallel success_count="2" failure_count="-1">
+                        <ReactiveSequence>
+                            <Inverter>
+                                <CheckForProx climb_state="0"/>
+                            </Inverter>
+                            <KeepRunningUntilFailure>
+                                <VelPublish climb_state="0" next_climb_state="0"/>
+                            </KeepRunningUntilFailure>
+                        </ReactiveSequence>
+                    
+                    <SequenceWithMemory>
+                        <Precondition if="pick_from_entrance == 1" else="SUCCESS"> <!--To parallely run the grabber if we need to grab scroll-->
+                            <SequenceWithMemory>
+                                <GripperPose angle="3.1"/> <!--Set pitch grab scroll-->
+                                <!-- <GripperAct state="1.2"/>  Fully Open the gripper -->
+                            </SequenceWithMemory>
+                        </Precondition>
+                    </SequenceWithMemory>
+                    </Parallel>
+
+                    <Precondition if="pick_from_entrance == 1" else="SUCCESS"> <!--After prox is detected, check if we need to pick up scroll-->
+                        <SequenceWithMemory> 
+                            <!-- <GripperAct state="2.0"/> Close the gripper to grab the scroll -->
+                            <GripperPose angle="1.5"/> <!--Raise the scroll after grabbing-->
+                            <!-- <setExtension length="0.0"/> Extend the elevator to make room for storing -->
+                            <GripperPose angle="0.0"/> <!--Pitch the gripper to store the scroll in the robot-->
+                            <!-- <GripperAct state="0.0"/> Open the gripper to drop the scroll in the robot -->
+                            <SetBlackboard output_key="scroll_picked_from_entrance" value="1" />
+                        </SequenceWithMemory>
+                    </Precondition>
+
+                </SequenceWithMemory>
+            </Precondition>
+
+            <Precondition if="climb_position_reached == 0" else="SUCCESS"> <!--If the robot didnt go to the climbing block, the robot MUST pickup the scroll-->
+                <SequenceWithMemory> 
+                            <setHeight height="10.0"/> <!--Raise the gripper to the height of the scroll-->
+                            <GripperPose angle="3.1"/> <!--Rotate the pitch to be horizontal-->
+                            <!-- <GripperAct state="1.2"/>  Fully Open the gripper -->
+                            <setExtension length="30.0"/> <!--Extend the gripper to reach the scroll-->
+
+                            <!-- <GripperAct state="2.0"/> Close the gripper to grab the scroll -->
+
+                            <Delay name="gripping_delay" delay_msec="2000">
+                                <AlwaysSuccess/>
+                            </Delay>                           
+
+                            <GripperPose angle="1.5"/> 
+                            <SetBlackboard output_key="scroll_picked_from_entrance" value="1" />
+
+                            <!-- <GripperAct state="1.9"/> Open the gripper to drop the scroll in the robot -->
+                            <SickPIDClient name="go_to_climb" setpoint="{sick_martial_middle_entrance}"/> <!--If robot is not at the "right" of climbing block, adjust position with sick to try to get to the right of climbing block-->
+                </SequenceWithMemory>
+            </Precondition>
+        </SequenceWithMemory>
+    </BehaviorTree>
+</root>

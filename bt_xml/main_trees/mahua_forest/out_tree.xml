@@ -1,0 +1,53 @@
+<root BTCPP_format="4" main_tree_to_execute="out_tree">
+  <BehaviorTree ID="out_tree">
+    <Sequence name="RootSequence">
+        <Sequence name="Sequence1">
+            <Inverter>
+            <KeepRunningUntilFailure name = "small_movement">
+                <Sequence name="Sequence4">
+                    <VelPublish name = "VelPublish"  climb_state="{climb_state}"/>
+                    <Inverter>
+                        <Checkforprox name = "Checkforprox" climb_state="{climb_state}"/>
+                    </Inverter>
+                </Sequence>  
+            </KeepRunningUntilFailure>
+            </Inverter>
+        </Sequence>
+        <Sequence name="Sequence2">
+            <RetryUntilSuccessful num_attempts="-1">
+                <Climb name="Climb" up_down="1"/>
+            </RetryUntilSuccessful>
+            <RetryUntilSuccessful num_attempts="-1">
+                <Roll name="Roll" climb_state="{climb_state}" />
+            </RetryUntilSuccessful>
+            <RetryUntilSuccessful num_attempts = "-1">
+                <Climb name="Retract" up_down="-1"  next_climb_state="{next_climb_state}" climb_state="{climb_state}"/>
+            </RetryUntilSuccessful>
+        </Sequence>
+        <Sequence>
+            <RetryUntilSuccessful num_attempts="-1">
+                <Rotate
+                    name="Rotate"
+                    rotate_state="180"
+                    final_yaw="{final_yaw}"
+                />
+            </RetryUntilSuccessful>
+            <RetryUntilSuccessful num_attempts="-1">
+                  <Move
+                    name="Move"
+                    move_x="0"
+                    move_y="1000"
+                  />
+            </RetryUntilSuccessful>
+            <RetryUntilSuccessful num_attempts="-1">
+                  <Move
+                    name="Move"
+                    move_x="3000"
+                    move_y="0"
+                  />
+            </RetryUntilSuccessful>
+        </Sequence>
+
+    </Sequence>
+  </BehaviorTree>
+</root>

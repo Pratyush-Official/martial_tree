@@ -26,7 +26,7 @@ public:
     BT::NodeStatus tick() override;
 
     void set_setpoints(const StageDetections &det, const int yaw_int_,
-                       std::string &turn_output, int ran_through);
+                       std::string &turn_output);
 
     void resetVel();
 
@@ -35,7 +35,7 @@ private:
     rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr cmd_pub_;
 
     std::string under_roi;
-    int climb_position_reached{0};
+    // int climb_position_reached{0};
     int pick_from_entrance{0};
     std::vector<float>true_setpoint_;
 

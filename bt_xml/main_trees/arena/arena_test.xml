@@ -1,0 +1,81 @@
+<root BTCPP_format="4" main_tree_to_execute="MainTree">
+    <BehaviorTree ID="MainTree">
+        <KeepRunningUntilFailure name="MainLoop">
+            
+            <WhileDoElse> 
+                    <IsPathClear name="checkForfrontObstacle"/>
+                    <Sequence name="MainSequence">
+                        <RetryUntilSuccessful num_attempts="-1">
+                            <Move name="goToRamp" move_x="{0.0}" move_y="{0.0}"/>
+                        </RetryUntilSuccessful>
+
+                        <RetryUntilSuccessful num_attempts="-1">
+                            <Move name="climbRamp" move_x="{0.0}" move_y="{0.0}"/>
+                        </RetryUntilSuccessful>
+
+                        <RetryUntilSuccessful num_attempts="-1">
+                            <Rotate name="FaceRack" rotate_state="{0.0}" final_yaw="{final_yaw}"/>
+                        </RetryUntilSuccessful>
+
+                        <RetryUntilSuccessful num_attempts="-1">
+                            <Move name="goNearRack" move_x="{0.0}" move_y="{0.0}"/>
+                        </RetryUntilSuccessful>
+
+                        <IfThenElse>
+
+                            <CheckSecondRow name="CheckSecondRow" move_x="{move_x}" move_y="{move_y}"/>
+
+                            <Sequence name="2ndRow">
+                                <Parallel name="Parallel1" >
+                                    <RetryUntilSuccessful num_attempts="-1">
+                                        <Move name="Move" move_x="{move_x}" move_y="{move_y}"/>
+                                    </RetryUntilSuccessful>
+                                    <SubTree ID= "ScrollReadyToPlace"/>                  
+                                </Parallel>
+
+                                <RetryUntilSuccessful num_attempts="-1">
+                                    <Align name="AlingWRack" set_x="{0.0}" set_y="{0.0}" angle="{0.0}"/>
+                                </RetryUntilSuccessful>
+
+                                <SubTree ID="placeScroll"/>
+
+                                <Parallel name="Parallel" >
+                                    <RetryUntilSuccessful num_attempts="-1">
+                                        <Move name="goToMiddle" move_x="{move_x}" move_y="{move_y}"/>
+                                    </RetryUntilSuccessful>
+                                    <SubTree ID= "ScrollSteadyState"/>                  
+                                </Parallel>
+                            </Sequence>
+
+                            <Sequence name="3rdRow">
+                                <Parallel name="Parallel" >
+                                    <RetryUntilSuccessful num_attempts="-1">
+                                        <Move name="Move" move_x="{move_x}" move_y="{move_y}"/>
+                                    </RetryUntilSuccessful>
+                                    <SubTree ID= "ScrollReadyToPlace"/>                  
+                                </Parallel>
+
+                                <WaitForUpLift name = "return true when lifting is completed"/>                                
+                                <SubTree ID="ScrollPlaceInRack"/>
+                                <WaitForDownLift name = "return true when lifting is completed"/>
+                                <WaitForMS name="wait for some milliseconds" time="{ms}"/>
+                                
+                                <RetryUntilSuccessful num_attempts="-1">
+                                        <Move name="goToMiddle" move_x="{move_x}" move_y="{move_y}"/>
+                                </RetryUntilSuccessful>
+                            </Sequence>
+
+                    
+                        </IfThenElse>
+
+                    </Sequence>
+
+                    <WaitForMS name="wait for some milliseconds" time="{20}"/>
+                    
+            </WhileDoElse> 
+
+        </KeepRunningUntilFailure>
+
+
+    </BehaviorTree>
+</root>

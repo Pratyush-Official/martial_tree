@@ -1,0 +1,55 @@
+<root BTCPP_format="4" main_tree_to_execute="MainTree">
+
+    <BehaviorTree ID="IdleState">
+        <Sequence name="scrollready">
+            <setHeight height="1.0"/>
+            <setExtension length="1.0"/>
+            <GripperPose angle="1.0"/>
+            <GripperAct state="0"/>
+        </Sequence>
+    </BehaviorTree>
+
+    <BehaviorTree ID="ScrollReady">
+        <Sequence name="scrollready">
+            <setHeight height="10.0"/>
+            <setExtension length="1.0"/>
+            <GripperPose angle="3.0"/>
+            <GripperAct state="0"/>
+        </Sequence>
+    </BehaviorTree>
+
+    <BehaviorTree ID="ScrollStore">
+        <Sequence name="StoreScroll">
+            <GripperPose angle="1.0"/>
+            <GripperAct state="0"/>
+            <GripperPose angle="-1.0"/>
+        </Sequence>
+    </BehaviorTree>
+
+    <BehaviorTree ID="ScrollArenaPlace">
+        <Sequence name="StoreScroll">
+            <setHeight height="10.0"/>
+            <setExtension length="1.0"/>
+            <GripperPose angle="3.0"/>
+            <GripperAct state="1"/>
+        </Sequence>
+    </BehaviorTree>
+
+    <BehaviorTree ID="ScrollHold">
+        <Sequence name="StoreScroll">
+            <setHeight height="10.0"/>
+            <setExtension length="1.0"/>
+            <GripperPose angle="1.0"/>
+            <GripperAct state="0"/>
+        </Sequence>
+    </BehaviorTree>
+
+    <BehaviorTree ID="GripperPickAction">
+        <GripperAct state="1"/>
+    </BehaviorTree>
+
+    <BehaviorTree ID="GripperReleaseAction">
+        <GripperAct state="0"/>
+    </BehaviorTree>
+
+</root>
